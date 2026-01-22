@@ -1,0 +1,214 @@
+// -------------------------------------
+// Datasource & Generator
+// -------------------------------------
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------
+// ENUMS
+// -------------------------------------
+enum TaskStatus {
+  todo
+  in_progress
+  done
+}
+
+enum TaskPriority {
+  low
+  medium
+  high
+}
+
+enum ReminderStatus {
+  scheduled
+  processing
+  completed
+  failed
+}
+
+enum WorkspaceRole {
+  admin
+  member
+}
+
+// -------------------------------------
+// MODELS
+// -------------------------------------
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String?
+  email        String   @unique
+  password     String?
+  profileImage String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  workspacesOwned  Workspace[]       @relation("WorkspaceOwner")
+  workspaceMembers WorkspaceMember[]
+  projectsCreated  Project[]         @relation("ProjectCreator")
+  tasksCreated     Task[]            @relation("TaskCreator")
+  tasksAssigned    Task[]            @relation("TaskAssignedTo")
+  activityLogs     ActivityLog[]
+  refreshTokens    RefreshToken[]
+  oauthAccounts    OAuthAccount[]
+  notifications    Notification[]
+}
+
+model Workspace {
+  id        Int      @id @default(autoincrement())
+  name      String
+  ownerId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  owner    User              @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  members  WorkspaceMember[]
+  projects Project[]
+  activity ActivityLog[]
+}
+
+model WorkspaceMember {
+  id          Int           @id @default(autoincrement())
+  workspaceId Int
+  userId      Int
+  role        WorkspaceRole
+  createdAt   DateTime      @default(now())
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([workspaceId, userId])
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  workspaceId Int
+  name        String
+  description String?
+  createdBy   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  workspace Workspace     @relation(fields: [workspaceId], references: [id])
+  creator   User          @relation("ProjectCreator", fields: [createdBy], references: [id])
+  tasks     Task[]
+  activity  ActivityLog[]
+}
+
+model Task {
+  id          Int          @id @default(autoincrement())
+  projectId   Int
+  title       String
+  description String?
+  status      TaskStatus   @default(todo)
+  priority    TaskPriority @default(medium)
+  dueDate     DateTime?
+  assignedTo  Int?
+  createdBy   Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  project   Project        @relation(fields: [projectId], references: [id])
+  assigned  User?          @relation("TaskAssignedTo", fields: [assignedTo], references: [id])
+  creator   User           @relation("TaskCreator", fields: [createdBy], references: [id])
+  reminders TaskReminder[]
+  files     Attachment[]
+  logs      ActivityLog[]
+}
+
+model TaskReminder {
+  id           Int            @id @default(autoincrement())
+  taskId       Int
+  reminderTime DateTime
+  status       ReminderStatus @default(scheduled)
+  createdAt    DateTime       @default(now())
+  executedAt   DateTime?
+
+  // NEW - Retry tracking fields
+  retryCount Int     @default(0)
+  lastError  String?
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([status, reminderTime])
+  @@index([reminderTime])
+}
+
+model Attachment {
+  id        Int      @id @default(autoincrement())
+  taskId    Int
+  filename  String
+  mimetype  String
+  size      Int
+  url       String
+  createdAt DateTime @default(now())
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id])
+}
+
+model ActivityLog {
+  id          Int      @id @default(autoincrement())
+  workspaceId Int?
+  projectId   Int?
+  taskId      Int?
+  userId      Int?
+  type        String
+  title       String    // NEW
+  icon        String    // NEW
+  metadata    Json
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id])
+  project     Project?  @relation(fields: [projectId], references: [id])
+  task        Task?     @relation(fields: [taskId], references: [id])
+  user        User?     @relation(fields: [userId], references: [id])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+}
+
+model OAuthAccount {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  provider          String
+  providerAccountId String
+  createdAt         DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String
+  title     String
+  body      String
+  data      Json?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}

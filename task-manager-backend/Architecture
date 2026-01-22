@@ -1,0 +1,95 @@
+#Folder Structure
+backend/
+│
+├── prisma/
+│   ├── schema.prisma        // your DB models + relations
+│   ├── migrations/          // auto-generated DB migrations
+│   └── prisma.config.ts     // Prisma 5/7 datasource config
+│
+├── src/
+│   ├── app.js               // Express app config (middlewares, routes)
+│   ├── server.js            // Server startup + socket.io + Bree
+│   ├── socket.js            // Socket.io event handlers
+│   │
+│   ├── core/                // Core backend engine
+│   │   ├── config/
+│   │   │   ├── env.js       // Load env vars in one place
+│   │   │   └── rateLimit.js // Rate limiter presets
+│   │   │
+│   │   ├── database/
+│   │   │   └── prisma.js    // Prisma client instance
+│   │   │
+│   │   ├── middlewares/
+│   │   │   ├── auth.middleware.js       // JWT auth middleware
+│   │   │   ├── error.middleware.js      // Global error handler
+│   │   │   ├── validate.middleware.js   // Zod validation handler
+│   │   │   └── permission.middleware.js // RBAC checks (workspace roles)
+│   │   │
+│   │   └── utils/
+│   │       ├── jwt.js        // sign/verify tokens
+│   │       ├── hash.js       // bcrypt hashing
+│   │       ├── response.js   // standard API responses
+│   │       └── logger.js     // winston logger config
+│   │
+│   ├── modules/              // Feature-based modules (scalable structure)
+│   │   ├── auth/             // login/signup/refresh/OAuth
+│   │   │   ├── auth.controller.js
+│   │   │   ├── auth.service.js
+│   │   │   ├── auth.routes.js
+│   │   │   └── auth.schemas.js
+│   │   │
+│   │   ├── users/            // user profile, settings
+│   │   │   ├── user.controller.js
+│   │   │   ├── user.service.js
+│   │   │   ├── user.routes.js
+│   │   │   └── user.schemas.js
+│   │   │
+│   │   ├── workspaces/       // workspace CRUD, add member, roles
+│   │   │   ├── workspace.controller.js
+│   │   │   ├── workspace.service.js
+│   │   │   ├── workspace.routes.js
+│   │   │   └── workspace.schemas.js
+│   │   │
+│   │   ├── projects/         // project CRUD (inside workspace)
+│   │   │   ├── project.controller.js
+│   │   │   ├── project.service.js
+│   │   │   ├── project.routes.js
+│   │   │   └── project.schemas.js
+│   │   │
+│   │   ├── tasks/            // tasks, assignment, status updates
+│   │   │   ├── task.controller.js
+│   │   │   ├── task.service.js
+│   │   │   ├── task.routes.js
+│   │   │   └── task.schemas.js
+│   │   │
+│   │   ├── reminders/        // task reminders via Bree.js
+│   │   │   ├── reminder.controller.js
+│   │   │   ├── reminder.service.js
+│   │   │   ├── reminder.routes.js
+│   │   │   └── reminder.schemas.js
+│   │   │
+│   │   ├── attachments/      // file uploads per task
+│   │   │   ├── attachment.controller.js
+│   │   │   ├── attachment.service.js
+│   │   │   ├── attachment.routes.js
+│   │   │   └── attachment.schemas.js
+│   │   │
+│   │   └── activity/         // activity logs for workspace actions
+│   │       ├── activity.controller.js
+│   │       ├── activity.service.js
+│   │       ├── activity.routes.js
+│   │       └── activity.schemas.js
+│   │
+│   ├── workers/              // Scheduled Cron Jobs (Bree.js)
+│   │   ├── bree.js           // Bree instance + configuration
+│   │   ├── reminder.worker.js // send reminders 
+│   │   └── cleanup.worker.js  // delete old tokens / logs
+│   │
+│   └── docs/
+│       └── swagger.js        // Swagger(OpenAPI) API documentation
+│
+├── uploads/                  // Local file uploads (unless using S3 later)
+│
+├── .env
+├── package.json
+└── README.md

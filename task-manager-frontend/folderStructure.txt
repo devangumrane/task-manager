@@ -1,0 +1,100 @@
+│   App.css
+│   App.jsx
+│   index.css
+│   main.jsx
+│   
+├───components
+│   │   ProtectedRoute.jsx
+│   │   ThemeProvider.jsx
+│   │   ThemeToggle.jsx
+│   │   
+│   ├───activity
+│   │       ActivityFeed.jsx
+│   │       ActivityIcon.jsx
+│   │       ActivityItem.jsx
+│   │       
+│   ├───attachments
+│   │       AttachmentItem.jsx
+│   │       AttachmentList.jsx
+│   │       AttachmentUploader.jsx
+│   │       
+│   ├───layout
+│   │       AppShell.jsx
+│   │       DashboardLayout.jsx
+│   │       Navbar.jsx
+│   │       Sidebar.jsx
+│   │       Topbar.jsx
+│   │
+│   ├───projects
+│   │       CreateProjectDialog.jsx
+│   │       ProjectList.jsx
+│   │
+│   ├───reminders
+│   │       CreateReminderDialog.jsx
+│   │       ReminderItem.jsx
+│   │       ReminderList.jsx
+│   │
+│   ├───shared
+│   │       ConfirmDialog.jsx
+│   │       EmptyState.jsx
+│   │       ErrorMessage.jsx
+│   │       LoadingSpinner.jsx
+│   │
+│   ├───tasks
+│   │       TaskCard.jsx
+│   │       TaskForm.jsx
+│   │       TaskItem.jsx
+│   │       TaskList.jsx
+│   │       TaskModal.jsx
+│   │
+│   ├───ui
+│   │       button.jsx
+│   │       card.jsx
+│   │       dialog.jsx
+│   │       dropdown-menu.jsx
+│   │       input.jsx
+│   │       label.jsx
+│   │       table.jsx
+│   │       textarea.jsx
+│   │
+│   └───workspaces
+│           CreateWorkspaceDialog.jsx
+│           WorkspaceTable.jsx
+│
+├───hooks
+│       useActivityFeed.js
+│       useAttachments.js
+│       useAuth.js
+│       useProjects.js
+│       useReminders.js
+│       useSocketEvents.js
+│       useTasks.js
+│       useWorkspaces.js
+│
+├───lib
+│       queryClient.js
+│       rbac.js
+│       socketClient.js
+│       utils.js
+│
+├───pages
+│   │   Dashboard.jsx
+│   │   ProjectDetails.jsx
+│   │   TaskDetails.jsx
+│   │   WorkspaceDetails.jsx
+│   │
+│   └───Auth
+│           Login.jsx
+│           Register.jsx
+│
+├───services
+│       api.js
+│       authService.js
+│       projectService.js
+│       taskService.js
+│
+└───store
+        authStore.js
+        projectStore.js
+        uiStore.js
+        workspaceStore.js
