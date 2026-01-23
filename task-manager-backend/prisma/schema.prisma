@@ -19,17 +19,30 @@ enum TaskStatus {
   done
 }
 
-enum TaskPriority {
-  low
-  medium
-  high
+enum MissionStatus {
+  LOCKED
+  AVAILABLE
+  IN_PROGRESS
+  REVIEW_READY
+  COMPLETED
 }
 
-enum ReminderStatus {
-  scheduled
-  processing
-  completed
-  failed
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum SkillCategory {
+  BACKEND
+  DATABASE
+  DEVOPS
+  SYSTEM_DESIGN
+  ALGORITHMS
+  TESTING
+  SECURITY
+  FRONTEND
 }
 
 enum WorkspaceRole {
@@ -38,7 +51,7 @@ enum WorkspaceRole {
 }
 
 // -------------------------------------
-// MODELS
+// CORE USER MODELS
 // -------------------------------------
 
 model User {
@@ -47,10 +60,16 @@ model User {
   email        String   @unique
   password     String?
   profileImage String?
+  role         String   @default("student") // student, mentor, admin
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // Relations
+  // Learning System Relations
+  stats           UserStats?
+  skillProgress   UserSkillProgress[]
+  missionProgress UserMissionProgress[]
+  
+  // Legacy / Basic Task Manager Relations
   workspacesOwned  Workspace[]       @relation("WorkspaceOwner")
   workspaceMembers WorkspaceMember[]
   projectsCreated  Project[]         @relation("ProjectCreator")
@@ -62,6 +81,100 @@ model User {
   notifications    Notification[]
 }
 
+model UserStats {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  totalXP        Int      @default(0)
+  currentLevel   Int      @default(1)
+  currentStreak  Int      @default(0)
+  lastActivityAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// -------------------------------------
+// LEARNING SYSTEM MODELS (NEW)
+// -------------------------------------
+
+model Skill {
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  slug          String        @unique
+  category      SkillCategory
+  description   String?
+  level         Difficulty    @default(BEGINNER)
+  icon          String?
+  
+  // Tree Structure
+  parentId      Int?
+  parent        Skill?        @relation("SkillTree", fields: [parentId], references: [id])
+  children      Skill[]       @relation("SkillTree")
+  
+  // Relations
+  missions      Mission[]
+  userProgress  UserSkillProgress[]
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Mission {
+  id               Int           @id @default(autoincrement())
+  title            String
+  slug             String        @unique
+  skillId          Int
+  difficulty       Difficulty
+  xpReward         Int           @default(100)
+  description      String        // Markdown content
+  objectives       String[]      // List of specific requirements
+  acceptanceCriteria String[]    // Checkbox items for user
+  starterCodeUrl   String?
+  
+  // Unlock Logic
+  prerequisites    Json?         // Logic for unlocking (e.g. { "missionIds": [1, 2] })
+  
+  // Relations
+  skill            Skill         @relation(fields: [skillId], references: [id])
+  userProgress     UserMissionProgress[]
+  
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model UserSkillProgress {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  skillId      Int
+  masteryLevel Int      @default(0) // 0-100%
+  isUnlocked   Boolean  @default(false)
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill        Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, skillId])
+}
+
+model UserMissionProgress {
+  id             Int           @id @default(autoincrement())
+  userId         Int
+  missionId      Int
+  status         MissionStatus @default(LOCKED)
+  submissionUrl  String?       // GitHub PR link
+  reflection     String?       // User notes
+  feedback       String?       // Mentor/AI feedback
+  completedAt    DateTime?
+  startedAt      DateTime?
+  
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission        Mission       @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, missionId])
+}
+
+// -------------------------------------
+// LEGACY / UTILITY MODELS
+// -------------------------------------
+
 model Workspace {
   id        Int      @id @default(autoincrement())
   name      String
@@ -69,7 +182,6 @@ model Workspace {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
   owner    User              @relation("WorkspaceOwner", fields: [ownerId], references: [id])
   members  WorkspaceMember[]
   projects Project[]
@@ -83,7 +195,6 @@ model WorkspaceMember {
   role        WorkspaceRole
   createdAt   DateTime      @default(now())
 
-  // Relations
   workspace Workspace @relation(fields: [workspaceId], references: [id])
   user      User      @relation(fields: [userId], references: [id])
 
@@ -99,7 +210,6 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relations
   workspace Workspace     @relation(fields: [workspaceId], references: [id])
   creator   User          @relation("ProjectCreator", fields: [createdBy], references: [id])
   tasks     Task[]
@@ -112,39 +222,19 @@ model Task {
   title       String
   description String?
   status      TaskStatus   @default(todo)
-  priority    TaskPriority @default(medium)
   dueDate     DateTime?
   assignedTo  Int?
   createdBy   Int
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  // Relations
-  project   Project        @relation(fields: [projectId], references: [id])
-  assigned  User?          @relation("TaskAssignedTo", fields: [assignedTo], references: [id])
-  creator   User           @relation("TaskCreator", fields: [createdBy], references: [id])
-  reminders TaskReminder[]
-  files     Attachment[]
-  logs      ActivityLog[]
-}
-
-model TaskReminder {
-  id           Int            @id @default(autoincrement())
-  taskId       Int
-  reminderTime DateTime
-  status       ReminderStatus @default(scheduled)
-  createdAt    DateTime       @default(now())
-  executedAt   DateTime?
-
-  // NEW - Retry tracking fields
-  retryCount Int     @default(0)
-  lastError  String?
-
-  // Relations
-  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
-
-  @@index([status, reminderTime])
-  @@index([reminderTime])
+  project     Project      @relation(fields: [projectId], references: [id])
+  assigned    User?        @relation("TaskAssignedTo", fields: [assignedTo], references: [id])
+  creator     User         @relation("TaskCreator", fields: [createdBy], references: [id])
+  
+  // Keeping these for now to not break legacy code too hard, but they might be unused
+  files       Attachment[]
+  logs        ActivityLog[]
 }
 
 model Attachment {
@@ -156,8 +246,7 @@ model Attachment {
   url       String
   createdAt DateTime @default(now())
 
-  // Relations
-  task Task @relation(fields: [taskId], references: [id])
+  task      Task     @relation(fields: [taskId], references: [id])
 }
 
 model ActivityLog {
@@ -167,15 +256,15 @@ model ActivityLog {
   taskId      Int?
   userId      Int?
   type        String
-  title       String    // NEW
-  icon        String    // NEW
+  title       String
+  icon        String
   metadata    Json
   createdAt   DateTime @default(now())
 
   workspace   Workspace? @relation(fields: [workspaceId], references: [id])
-  project     Project?  @relation(fields: [projectId], references: [id])
-  task        Task?     @relation(fields: [taskId], references: [id])
-  user        User?     @relation(fields: [userId], references: [id])
+  project     Project?   @relation(fields: [projectId], references: [id])
+  task        Task?      @relation(fields: [taskId], references: [id])
+  user        User?      @relation(fields: [userId], references: [id])
 }
 
 model RefreshToken {
@@ -185,8 +274,7 @@ model RefreshToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
 
-  // Relations
-  user User @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model OAuthAccount {
@@ -196,8 +284,7 @@ model OAuthAccount {
   providerAccountId String
   createdAt         DateTime @default(now())
 
-  // Relations
-  user User @relation(fields: [userId], references: [id])
+  user              User     @relation(fields: [userId], references: [id])
 }
 
 model Notification {
@@ -210,5 +297,5 @@ model Notification {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }

@@ -8,6 +8,9 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 
 import Dashboard from "./pages/Dashboard";
+import SkillsPage from "./pages/SkillsPage";
+import MissionsPage from "./pages/MissionsPage";
+import MissionDetailsPage from "./pages/MissionDetailsPage";
 import WorkspacesIndex from "./pages/WorkspacesIndex";
 import WorkspaceDetails from "./pages/WorkspaceDetails";
 
@@ -29,6 +32,10 @@ function ProtectedLayout() {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
+  // Prevent infinite loops if user is already authenticated but tries to access login/register
+  // This logic is usually better placed in the Login/Register components themselves (e.g. AuthGate)
+  // so we'll leave this simple.
+
   return (
     <DashboardLayout>
       <Outlet />
@@ -47,7 +54,11 @@ export default function App() {
 
       {/* Protected */}
       <Route element={<ProtectedLayout />}>
-        <Route index element={<Dashboard />} />
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/skills" element={<SkillsPage />} />
+        <Route path="/missions" element={<MissionsPage />} />
+        <Route path="/missions/:id" element={<MissionDetailsPage />} />
 
         <Route path={ROUTES.PROFILE} element={<Profile />} />
         <Route path="/users/:id" element={<UserProfile />} />
