@@ -47,8 +47,8 @@ export default function MissionDetailsPage() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight mb-2">{mission.title}</h1>
                     <div className="flex gap-3">
-                        <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs px-2 font-bold uppercase">{mission.difficulty}</span>
-                        <span className="bg-muted text-muted-foreground px-2 py-1 rounded text-xs px-2 font-bold">{mission.xpReward} XP</span>
+                        <span className="bg-primary/10 text-primary py-1 rounded text-xs font-bold uppercase">{mission.difficulty}</span>
+                        <span className="bg-muted text-muted-foreground py-1 rounded text-xs font-bold">{mission.xpReward} XP</span>
                         {mission.skill && <span className="bg-muted/50 text-muted-foreground px-2 py-1 rounded text-xs">{mission.skill.name}</span>}
                     </div>
                 </div>
