@@ -2,7 +2,7 @@ import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import { ROUTES } from "./router/paths";
 
-import DashboardLayout from "./components/layout/DashboardLayout";
+import AppShell from "./components/layout/AppShell";
 
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
@@ -34,9 +34,9 @@ function ProtectedLayout() {
   // so we'll leave this simple.
 
   return (
-    <DashboardLayout>
+    <AppShell>
       <Outlet />
-    </DashboardLayout>
+    </AppShell>
   );
 }
 

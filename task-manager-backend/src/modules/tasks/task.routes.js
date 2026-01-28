@@ -5,6 +5,7 @@ import { workspaceAccessGuard } from "../../core/middlewares/workspace-access.mi
 import attachmentRoutes from "../attachments/attachment.routes.js";
 import reminderRoutes from "../reminders/reminder.routes.js";
 import { workspaceRoleGuard } from "../../core/middlewares/workspace-role.middleware.js";
+import commentRoutes from "../comments/comment.routes.js";
 
 const router = express.Router({ mergeParams: true });
 

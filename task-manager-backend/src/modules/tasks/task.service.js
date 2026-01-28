@@ -116,6 +116,15 @@ export const taskService = {
       include: {
         assigned: true,
         creator: true,
+        labels: true,
+        subtasks: {
+          include: { assigned: true },
+          orderBy: { order: "asc" }
+        },
+        comments: {
+          include: { user: true },
+          orderBy: { createdAt: "asc" }
+        },
         project: {
           select: { id: true, workspaceId: true },
         },

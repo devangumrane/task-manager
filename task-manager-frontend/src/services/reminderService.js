@@ -1,23 +1,24 @@
 import api from "./api";
 
-export const listReminders = async (wsId, pId, taskId) => {
+export const getReminders = async (workspaceId, projectId, taskId) => {
   const res = await api.get(
-    `/workspaces/${wsId}/projects/${pId}/tasks/${taskId}/reminders`
+    `/workspaces/${workspaceId}/projects/${projectId}/tasks/${taskId}/reminders`
   );
-  return res.data;
+  return res.data.data;
 };
 
-export const createReminder = async (wsId, pId, taskId, payload) => {
+export const createReminder = async (workspaceId, projectId, taskId, payload) => {
+  // payload: { reminderTime: ISOString, note: string }
   const res = await api.post(
-    `/workspaces/${wsId}/projects/${pId}/tasks/${taskId}/reminders`,
+    `/workspaces/${workspaceId}/projects/${projectId}/tasks/${taskId}/reminders`,
     payload
   );
-  return res.data;
+  return res.data.data;
 };
 
-export const deleteReminder = async (wsId, pId, taskId, reminderId) => {
+export const deleteReminder = async (workspaceId, projectId, taskId, reminderId) => {
   const res = await api.delete(
-    `/workspaces/${wsId}/projects/${pId}/tasks/${taskId}/reminders/${reminderId}`
+    `/workspaces/${workspaceId}/projects/${projectId}/tasks/${taskId}/reminders/${reminderId}`
   );
-  return res.data;
+  return res.data.data;
 };

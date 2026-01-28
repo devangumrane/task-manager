@@ -4,19 +4,34 @@ import prisma from "../../core/database/prisma.js";
 import { getEmitters } from "../../core/realtime/socket.js";
 
 // Mail transport
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.ethereal.email",
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: process.env.SMTP_SECURE === "true",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+// Mail transport
+const startSmtp = () => {
+  const options = {
+    host: process.env.SMTP_HOST || "smtp.ethereal.email",
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: process.env.SMTP_SECURE === "true",
+  };
+
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    options.auth = {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    };
+  }
+
+  return nodemailer.createTransport(options);
+};
+
+const transporter = startSmtp();
 
 export const notificationService = {
   async sendEmail({ to, subject, text, html }) {
     if (!to) return;
+
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.log(`[NOTIFY] (Stub) Email to ${to}: ${subject}`);
+      return { messageId: "stub-id" };
+    }
 
     const info = await transporter.sendMail({
       from: process.env.EMAIL_FROM || "no-reply@task.app",
@@ -70,7 +85,7 @@ export const notificationService = {
   async sendTaskReminder({ reminder, task, user }) {
     const title = `Reminder: ${task.title}`;
     const message =
-      reminder.note ||
+      reminder?.note ||
       task.description ||
       "You have a task reminder.";
 
@@ -80,7 +95,7 @@ export const notificationService = {
       type: "reminder",
       title,
       body: message,
-      data: { taskId: task.id, reminderId: reminder.id },
+      data: { taskId: task.id, reminderId: reminder?.id },
     });
 
     // email fallback

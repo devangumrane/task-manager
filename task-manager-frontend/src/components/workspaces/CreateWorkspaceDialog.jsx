@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
 
-export default function CreateWorkspaceDialog({ open, onClose }) {
+export default function CreateWorkspaceDialog({ open, onClose, onSuccess }) {
   const [name, setName] = useState("");
   const createWorkspace = useCreateWorkspace();
 
@@ -17,7 +17,8 @@ export default function CreateWorkspaceDialog({ open, onClose }) {
       {
         onSuccess: () => {
           setName("");
-          onClose();
+          if (onSuccess) onSuccess();
+          else onClose();
         },
       }
     );

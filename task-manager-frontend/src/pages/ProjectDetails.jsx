@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { getProjectById } from "../services/projectService";
 import { useProjectTasks, useUpdateTaskStatus } from "../hooks/useTasks";
 
-import TaskCard from "../components/tasks/TaskCard";
+import KanbanBoard from "../components/projects/KanbanBoard";
 import CreateTaskDialog from "../components/tasks/CreateTaskDialog";
 import { ROUTES } from "../router/paths";
 
@@ -39,11 +39,7 @@ export default function ProjectDetails() {
   if (!project) return <p>Project not found</p>;
 
   // ---------------- STRICT BACKEND ENUMS ----------------
-  const columns = {
-    todo: tasks.filter((t) => t.status === "todo"),
-    in_progress: tasks.filter((t) => t.status === "in_progress"),
-    done: tasks.filter((t) => t.status === "done"),
-  };
+
 
   // ---------------- UI ----------------
   return (
@@ -75,37 +71,18 @@ export default function ProjectDetails() {
         </button>
       </div>
 
-      {/* Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {Object.entries(columns).map(([status, list]) => (
-          <div
-            key={status}
-            className="bg-gray-50 p-4 rounded-lg border min-h-[200px]"
-          >
-            <h3 className="font-semibold mb-3">
-              {status.replace("_", " ")}
-            </h3>
-
-            <div className="space-y-3">
-              {list.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onStatusChange={(taskId, nextStatus) =>
-                    updateTaskStatus.mutate({
-                      taskId,
-                      status: nextStatus,
-                    })
-                  }
-                />
-              ))}
-
-              {list.length === 0 && (
-                <p className="text-sm text-gray-500">No tasks</p>
-              )}
-            </div>
-          </div>
-        ))}
+      {/* Kanban Board */}
+      <div className="h-[calc(100vh-200px)]">
+        <KanbanBoard
+          tasks={tasks}
+          onTaskUpdate={(taskId, updates) =>
+            updateTaskStatus.mutate({ taskId, status: updates.status })
+          }
+          onTaskClick={(task) => {
+            // Optional: Open task details or dialog
+            navigate(ROUTES.TASK(workspaceId, projectId, task.id));
+          }}
+        />
       </div>
 
       {/* Create Task Dialog */}

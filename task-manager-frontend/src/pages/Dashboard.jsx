@@ -3,17 +3,28 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { LayoutDashboard, Folder, CheckSquare, Users } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
+import { useQuery } from "@tanstack/react-query";
+import { getDashboardStats } from "../services/dashboardService";
 import { ROUTES } from "../router/paths";
 
 export default function Dashboard() {
   const user = useAuthStore((s) => s.user);
 
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: getDashboardStats,
+  });
+
   const statItems = [
-    { label: "Active Workspaces", value: "3", icon: Users, color: "text-blue-500" },
-    { label: "Projects", value: "12", icon: Folder, color: "text-emerald-500" },
-    { label: "Pending Tasks", value: "8", icon: CheckSquare, color: "text-orange-500" },
-    { label: "Completed", value: "156", icon: LayoutDashboard, color: "text-primary" },
+    { label: "Active Workspaces", value: stats?.workspaces ?? "-", icon: Users, color: "text-blue-500" },
+    { label: "Projects", value: stats?.projects ?? "-", icon: Folder, color: "text-emerald-500" },
+    { label: "Pending Tasks", value: stats?.pendingTasks ?? "-", icon: CheckSquare, color: "text-orange-500" },
+    { label: "Completed", value: stats?.completedTasks ?? "-", icon: LayoutDashboard, color: "text-primary" },
   ];
+
+  if (isLoading) {
+    return <div className="p-8">Loading dashboard...</div>;
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">

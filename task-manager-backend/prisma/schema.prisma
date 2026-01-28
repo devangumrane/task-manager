@@ -43,14 +43,7 @@ enum SkillCategory {
   TESTING
   SECURITY
   FRONTEND
-}
-
-enum WorkspaceRole {
-  admin
-  member
-}
-
-// -------------------------------------
+}// -------------------------------------
 // CORE USER MODELS
 // -------------------------------------
 
@@ -64,10 +57,12 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // Learning System Relations
-  stats           UserStats?
-  skillProgress   UserSkillProgress[]
-  missionProgress UserMissionProgress[]
+  
+  // Enhanced Profile Fields
+  title        String?
+  bio          String?
+  isActive     Boolean  @default(true)
+  lastActiveAt DateTime @default(now())
   
   // Legacy / Basic Task Manager Relations
   workspacesOwned  Workspace[]       @relation("WorkspaceOwner")
@@ -75,104 +70,34 @@ model User {
   projectsCreated  Project[]         @relation("ProjectCreator")
   tasksCreated     Task[]            @relation("TaskCreator")
   tasksAssigned    Task[]            @relation("TaskAssignedTo")
+  comments         Comment[]
   activityLogs     ActivityLog[]
   refreshTokens    RefreshToken[]
   oauthAccounts    OAuthAccount[]
   notifications    Notification[]
 }
 
-model UserStats {
-  id             Int      @id @default(autoincrement())
-  userId         Int      @unique
-  totalXP        Int      @default(0)
-  currentLevel   Int      @default(1)
-  currentStreak  Int      @default(0)
-  lastActivityAt DateTime @default(now())
-  
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+// -------------------------------------
+// ENUMS (UPDATED)
+// -------------------------------------
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum WorkspaceRole {
+  admin
+  member
+  guest
+  viewer
 }
 
 // -------------------------------------
-// LEARNING SYSTEM MODELS (NEW)
-// -------------------------------------
-
-model Skill {
-  id            Int           @id @default(autoincrement())
-  name          String        @unique
-  slug          String        @unique
-  category      SkillCategory
-  description   String?
-  level         Difficulty    @default(BEGINNER)
-  icon          String?
-  
-  // Tree Structure
-  parentId      Int?
-  parent        Skill?        @relation("SkillTree", fields: [parentId], references: [id])
-  children      Skill[]       @relation("SkillTree")
-  
-  // Relations
-  missions      Mission[]
-  userProgress  UserSkillProgress[]
-  
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-}
-
-model Mission {
-  id               Int           @id @default(autoincrement())
-  title            String
-  slug             String        @unique
-  skillId          Int
-  difficulty       Difficulty
-  xpReward         Int           @default(100)
-  description      String        // Markdown content
-  objectives       String[]      // List of specific requirements
-  acceptanceCriteria String[]    // Checkbox items for user
-  starterCodeUrl   String?
-  
-  // Unlock Logic
-  prerequisites    Json?         // Logic for unlocking (e.g. { "missionIds": [1, 2] })
-  
-  // Relations
-  skill            Skill         @relation(fields: [skillId], references: [id])
-  userProgress     UserMissionProgress[]
-  
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-}
-
-model UserSkillProgress {
-  id           Int      @id @default(autoincrement())
-  userId       Int
-  skillId      Int
-  masteryLevel Int      @default(0) // 0-100%
-  isUnlocked   Boolean  @default(false)
-  
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  skill        Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, skillId])
-}
-
-model UserMissionProgress {
-  id             Int           @id @default(autoincrement())
-  userId         Int
-  missionId      Int
-  status         MissionStatus @default(LOCKED)
-  submissionUrl  String?       // GitHub PR link
-  reflection     String?       // User notes
-  feedback       String?       // Mentor/AI feedback
-  completedAt    DateTime?
-  startedAt      DateTime?
-  
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mission        Mission       @relation(fields: [missionId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, missionId])
-}
-
-// -------------------------------------
-// LEGACY / UTILITY MODELS
+// TASK & PROJECT MODELS (ENHANCED)
 // -------------------------------------
 
 model Workspace {
@@ -192,7 +117,7 @@ model WorkspaceMember {
   id          Int           @id @default(autoincrement())
   workspaceId Int
   userId      Int
-  role        WorkspaceRole
+  role        WorkspaceRole @default(member)
   createdAt   DateTime      @default(now())
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
@@ -207,34 +132,74 @@ model Project {
   name        String
   description String?
   createdBy   Int
+  viewParams  Json?    // Store default view (Kanban/List) and sort settings
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   workspace Workspace     @relation(fields: [workspaceId], references: [id])
   creator   User          @relation("ProjectCreator", fields: [createdBy], references: [id])
   tasks     Task[]
+  labels    TaskLabel[]
   activity  ActivityLog[]
+}
+
+model TaskLabel {
+  id        Int      @id @default(autoincrement())
+  projectId Int
+  name      String
+  color     String   @default("#808080")
+  
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks     Task[]
 }
 
 model Task {
   id          Int          @id @default(autoincrement())
   projectId   Int
   title       String
-  description String?
+  description String?      // Rich Text (HTML/JSON)
   status      TaskStatus   @default(todo)
+  priority    TaskPriority @default(MEDIUM)
+  order       Float        @default(0)   // For Kanban ordering
   dueDate     DateTime?
+  
+  // Relations
   assignedTo  Int?
   createdBy   Int
+  
+  // Subtasks (Recursive)
+  parentId    Int?
+  parent      Task?        @relation("Subtasks", fields: [parentId], references: [id])
+  subtasks    Task[]       @relation("Subtasks")
+  
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
+  // Connections
   project     Project      @relation(fields: [projectId], references: [id])
   assigned    User?        @relation("TaskAssignedTo", fields: [assignedTo], references: [id])
   creator     User         @relation("TaskCreator", fields: [createdBy], references: [id])
   
-  // Keeping these for now to not break legacy code too hard, but they might be unused
+  labels      TaskLabel[]
+  comments    Comment[]
   files       Attachment[]
   logs        ActivityLog[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  taskId    Int
+  userId    Int
+  content   String
+  parentId  Int?     // Threading
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+  parent    Comment? @relation("CommentThread", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentThread")
 }
 
 model Attachment {

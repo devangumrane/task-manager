@@ -13,10 +13,16 @@ export function buildTaskUpdatePayload(data) {
   if ("description" in data) allowed.description = data.description;
   if ("priority" in data) allowed.priority = data.priority;
   if ("status" in data) allowed.status = data.status;
+  if ("order" in data) allowed.order = data.order;
+  if ("parentId" in data) allowed.parentId = data.parentId;
+
   if ("dueDate" in data) {
     allowed.dueDate = data.dueDate ? new Date(data.dueDate) : null;
   }
-  if ("assignedTo" in data) allowed.assignedTo = data.assignedTo;
+  if ("assignedTo" in data) {
+    // Check if explicitly null (unassign) or number
+    allowed.assignedTo = data.assignedTo;
+  }
 
   if (Object.keys(allowed).length === 0) {
     throw new ApiError("INVALID_INPUT", "No valid fields to update", 400);
