@@ -9,9 +9,6 @@ import errorMiddleware from "./core/middlewares/error.middleware.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import userRoutes from "./modules/users/user.routes.js";
 import workspaceRoutes from "./modules/workspaces/workspace.routes.js";
-import skillRoutes from "./modules/skills/skill.routes.js";
-import missionRoutes from "./modules/missions/mission.routes.js";
-import gamificationRoutes from "./modules/gamification/gamification.routes.js";
 import { requireAuth } from "./core/middlewares/auth.middleware.js";
 
 const app = express();
@@ -58,9 +55,6 @@ app.use(`${API_PREFIX}/users`, userRoutes);
 // ---------------------------------------------
 app.use(API_PREFIX, requireAuth);
 app.use(`${API_PREFIX}/workspaces`, workspaceRoutes);
-app.use(`${API_PREFIX}/skills`, skillRoutes);
-app.use(`${API_PREFIX}/missions`, missionRoutes);
-app.use(`${API_PREFIX}/gamification`, gamificationRoutes);
 
 // ---------------------------------------------
 // GLOBAL ERROR HANDLER

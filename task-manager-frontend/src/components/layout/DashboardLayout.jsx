@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
-import { LayoutDashboard, Brain, Target, Layers, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Layers, Settings, LogOut } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 const SidebarItem = ({ icon: Icon, label, href }) => {
@@ -37,8 +37,6 @@ export default function DashboardLayout() {
 
           <div className="flex-1 py-6 px-3 space-y-1">
             <SidebarItem icon={LayoutDashboard} label="Dashboard" href="/dashboard" />
-            <SidebarItem icon={Brain} label="Skill Tree" href="/skills" />
-            <SidebarItem icon={Target} label="Missions" href="/missions" />
           </div>
 
           <div className="p-4 border-t border-border/50">
@@ -46,7 +44,7 @@ export default function DashboardLayout() {
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">U</div>
               <div className="flex-1 overflow-hidden">
                 <p className="text-sm font-medium truncate">User</p>
-                <p className="text-xs text-muted-foreground">Lvl 1 Novice</p>
+                <p className="text-xs text-muted-foreground">Member</p>
               </div>
               <button className="text-muted-foreground hover:text-destructive transition-colors">
                 <LogOut className="w-4 h-4" />

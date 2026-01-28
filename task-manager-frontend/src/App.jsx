@@ -8,9 +8,6 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 
 import Dashboard from "./pages/Dashboard";
-import SkillsPage from "./pages/SkillsPage";
-import MissionsPage from "./pages/MissionsPage";
-import MissionDetailsPage from "./pages/MissionDetailsPage";
 import WorkspacesIndex from "./pages/WorkspacesIndex";
 import WorkspaceDetails from "./pages/WorkspaceDetails";
 
@@ -56,9 +53,6 @@ export default function App() {
       <Route element={<ProtectedLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/skills" element={<SkillsPage />} />
-        <Route path="/missions" element={<MissionsPage />} />
-        <Route path="/missions/:id" element={<MissionDetailsPage />} />
 
         <Route path={ROUTES.PROFILE} element={<Profile />} />
         <Route path="/users/:id" element={<UserProfile />} />

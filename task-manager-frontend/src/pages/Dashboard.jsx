@@ -1,40 +1,30 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Activity, Award, Flame, Zap } from "lucide-react";
-import { gamificationService } from "../services/gamificationService";
+import { LayoutDashboard, Folder, CheckSquare, Users } from "lucide-react";
+import { useAuthStore } from "../store/authStore";
+import { ROUTES } from "../router/paths";
 
-export default function DashboardPage() {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    gamificationService.getStats()
-      .then(data => {
-        setStats(data);
-      })
-      .catch(err => console.error("Failed to fetch stats", err))
-      .finally(() => setLoading(false));
-  }, []);
+export default function Dashboard() {
+  const user = useAuthStore((s) => s.user);
 
   const statItems = [
-    { label: "Total XP", value: stats?.totalXP || 0, icon: Zap, color: "text-amber-400" },
-    { label: "Current Level", value: `Lvl ${stats?.currentLevel || 1}`, icon: Award, color: "text-primary" },
-    { label: "Day Streak", value: `${stats?.currentStreak || 0} Days`, icon: Flame, color: "text-orange-500" },
-    { label: "Completion Rate", value: "0%", icon: Activity, color: "text-emerald-400" },
+    { label: "Active Workspaces", value: "3", icon: Users, color: "text-blue-500" },
+    { label: "Projects", value: "12", icon: Folder, color: "text-emerald-500" },
+    { label: "Pending Tasks", value: "8", icon: CheckSquare, color: "text-orange-500" },
+    { label: "Completed", value: "156", icon: LayoutDashboard, color: "text-primary" },
   ];
-
-  if (loading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading command center...</div>;
 
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back!</h1>
-        <p className="text-muted-foreground mt-2">Ready to continue your learning mission?</p>
+        <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.name || "User"}!</h1>
+        <p className="text-muted-foreground mt-2">Here is an overview of your projects and tasks.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statItems.map((stat) => (
-          <Card key={stat.label} className="bg-card/50 backdrop-blur border-primary/10 transition-all hover:border-primary/30">
+          <Card key={stat.label} className="bg-card/50 backdrop-blur border-primary/10 hover:border-primary/30 transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.label}
@@ -48,35 +38,55 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4 bg-card/50 backdrop-blur border-primary/10">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Quick Actions */}
+        <Card className="col-span-2 bg-card/50 backdrop-blur border-primary/10">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>Quick Access</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="h-[200px] flex items-center justify-center text-muted-foreground border-2 border-dashed border-muted rounded-md bg-muted/10">
-              No recent activity logs found. Start a mission!
-            </div>
+          <CardContent className="grid gap-4 md:grid-cols-2">
+            <Link to={ROUTES.WORKSPACES} className="p-4 rounded-lg bg-primary/5 hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all flex items-center gap-4">
+              <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                <Users size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold">My Workspaces</h3>
+                <p className="text-sm text-muted-foreground">Manage teams and permissions</p>
+              </div>
+            </Link>
+
+            <Link to={ROUTES.PROJECTS} className="p-4 rounded-lg bg-teal-500/5 hover:bg-teal-500/10 border border-transparent hover:border-teal-500/20 transition-all flex items-center gap-4">
+              <div className="h-10 w-10 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-600">
+                <Folder size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold">All Projects</h3>
+                <p className="text-sm text-muted-foreground">View progress and timelines</p>
+              </div>
+            </Link>
           </CardContent>
         </Card>
 
-        <Card className="col-span-3 bg-card/50 backdrop-blur border-primary/10">
+        {/* System Status / Info */}
+        <Card className="bg-card/50 backdrop-blur border-primary/10">
           <CardHeader>
-            <CardTitle>Next Mission</CardTitle>
+            <CardTitle>System Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-primary uppercase tracking-wider">Recommended</span>
-                  <span className="text-xs text-muted-foreground">100 XP</span>
-                </div>
-                <h3 className="font-semibold text-lg">Backend Basics</h3>
-                <p className="text-sm text-muted-foreground mt-1 mb-3">Complete your first specialized backend mission.</p>
-                <button className="w-full py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium rounded-md transition-colors">
-                  Find Missions
-                </button>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Server</span>
+                <span className="text-green-600 font-medium flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-green-600"></span> Online
+                </span>
               </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Version</span>
+                <span className="text-foreground">v1.2.0 (Pro)</span>
+              </div>
+            </div>
+            <div className="mt-6 pt-6 border-t">
+              <p className="text-xs text-muted-foreground">Need help? Contact system administrator.</p>
             </div>
           </CardContent>
         </Card>
