@@ -2,6 +2,8 @@ import { useAuthStore } from "../../store/authStore";
 import ThemeToggle from "../ThemeToggle";
 import { LogOut, User } from "lucide-react";
 import { Button } from "../ui/button";
+import { Link } from "react-router-dom";
+import { ROUTES } from "../../router/paths";
 
 export default function Navbar() {
     const user = useAuthStore((s) => s.user);
@@ -23,14 +25,16 @@ export default function Navbar() {
                 <ThemeToggle />
 
                 <div className="flex items-center gap-3 pl-4 border-l">
-                    <div className="text-right hidden sm:block">
-                        <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
-                        <p className="text-xs text-muted-foreground">{user?.email}</p>
-                    </div>
+                    <Link to={ROUTES.PROFILE} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                        <div className="text-right hidden sm:block">
+                            <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
+                            <p className="text-xs text-muted-foreground">{user?.email}</p>
+                        </div>
 
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="h-4 w-4 text-primary" />
-                    </div>
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="h-4 w-4 text-primary" />
+                        </div>
+                    </Link>
 
                     <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
                         <LogOut className="h-4 w-4" />

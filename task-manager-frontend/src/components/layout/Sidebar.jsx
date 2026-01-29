@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, Home, Grid, Users, FileText } from "lucide-react";
+import { Menu, Home, Grid, Users, FileText, User } from "lucide-react";
 import { ROUTES } from "../../router/paths";
 
 export default function Sidebar() {
@@ -20,7 +20,7 @@ export default function Sidebar() {
         "sidebar-collapsed",
         JSON.stringify(collapsed)
       );
-    } catch {}
+    } catch { }
   }, [collapsed]);
 
   // -----------------------------------------
@@ -61,6 +61,11 @@ export default function Sidebar() {
       icon: FileText,
       disabled: !activeWorkspaceId,
     },
+    {
+      label: "Profile",
+      to: ROUTES.PROFILE,
+      icon: User,
+    },
   ];
 
   return (
@@ -73,17 +78,15 @@ export default function Sidebar() {
         {/* -------------------------------- */}
         {/* Header */}
         {/* -------------------------------- */}
-        <div className="flex items-center justify-between px-3 h-16 border-b">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded bg-primary-foreground text-primary flex items-center justify-center font-semibold">
-              TM
+        <div className={`flex items-center h-16 border-b px-3 ${collapsed ? "justify-center" : "justify-between"}`}>
+          {!collapsed && (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded bg-primary-foreground text-primary flex items-center justify-center font-semibold">
+                TM
+              </div>
+              <span className="ml-2 font-medium">Task Manager</span>
             </div>
-            {!collapsed && (
-              <span className="ml-2 font-medium">
-                Task Manager
-              </span>
-            )}
-          </div>
+          )}
 
           <button
             aria-label="Toggle sidebar"
@@ -111,15 +114,13 @@ export default function Sidebar() {
                     to={item.to}
                     aria-disabled={item.disabled}
                     className={`flex items-center gap-3 w-full rounded-md px-3 py-2 text-sm transition
-                      ${
-                        isActive
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:bg-muted/40"
+                      ${isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted/40"
                       }
-                      ${
-                        item.disabled
-                          ? "opacity-50 pointer-events-none"
-                          : ""
+                      ${item.disabled
+                        ? "opacity-50 pointer-events-none"
+                        : ""
                       }
                       ${collapsed ? "justify-center" : ""}`}
                   >
