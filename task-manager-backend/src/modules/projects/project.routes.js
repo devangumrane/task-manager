@@ -2,7 +2,7 @@
 import express from "express";
 import { projectController } from "./project.controller.js";
 import taskRoutes from "../tasks/task.routes.js";
-import { authenticate } from "../../core/middlewares/auth.middleware.js";
+import { requireAuth as authenticate } from "../../core/middlewares/auth.middleware.js";
 
 const router = express.Router();
 

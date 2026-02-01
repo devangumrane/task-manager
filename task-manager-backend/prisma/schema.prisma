@@ -139,3 +139,19 @@ model RefreshToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
+
+// -----------------------------
+// NOTIFICATIONS
+// -----------------------------
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String   // 'reminder', 'system', 'mention'
+  title     String
+  body      String?
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

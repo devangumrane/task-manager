@@ -1,7 +1,7 @@
 // src/modules/tasks/task.routes.js
 import express from "express";
 import { taskController } from "./task.controller.js";
-import { authenticate } from "../../core/middlewares/auth.middleware.js";
+import { requireAuth as authenticate } from "../../core/middlewares/auth.middleware.js";
 
 const router = express.Router({ mergeParams: true });
 

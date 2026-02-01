@@ -1,20 +1,12 @@
 import prisma from "../../core/database/prisma.js";
 import ApiError from "../../core/errors/ApiError.js";
 
-import { assertWorkspaceMember } from "../../core/authorization/workspace.guard.js";
-import { assertTaskWorkspaceAccess } from "../../core/authorization/task.guard.js";
 
 import { createTaskCore } from "./task.logic.js";
 import { buildTaskUpdatePayload } from "./task.update.logic.js";
 
 import { onTaskCreated } from "./task.effects.js";
 import { onTaskUpdated } from "./task.update.effects.js";
-
-import prisma from "../../core/database/prisma.js";
-import ApiError from "../../core/errors/ApiError.js";
-
-import { createTaskCore } from "./task.logic.js";
-import { buildTaskUpdatePayload } from "./task.update.logic.js";
 
 export const taskService = {
   // --------------------------------------------------------
