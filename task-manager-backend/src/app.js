@@ -8,7 +8,7 @@ import errorMiddleware from "./core/middlewares/error.middleware.js";
 
 import authRoutes from "./modules/auth/auth.routes.js";
 import userRoutes from "./modules/users/user.routes.js";
-import workspaceRoutes from "./modules/workspaces/workspace.routes.js";
+import projectRoutes from "./modules/projects/project.routes.js"; // [NEW]
 import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
 import { requireAuth } from "./core/middlewares/auth.middleware.js";
 
@@ -57,7 +57,7 @@ app.use(`${API_PREFIX}/users`, userRoutes);
 // PROTECTED ROUTES
 // ---------------------------------------------
 app.use(API_PREFIX, requireAuth);
-app.use(`${API_PREFIX}/workspaces`, workspaceRoutes);
+app.use(`${API_PREFIX}/projects`, projectRoutes); // [UPDATED]
 app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 
 // ---------------------------------------------

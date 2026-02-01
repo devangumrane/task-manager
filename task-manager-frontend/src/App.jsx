@@ -7,15 +7,10 @@ import AppShell from "./components/layout/AppShell";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 
-import Dashboard from "./pages/Dashboard";
-import WorkspacesIndex from "./pages/WorkspacesIndex";
-import WorkspaceDetails from "./pages/WorkspaceDetails";
-
-import ProjectsIndex from "./pages/ProjectsIndex";
+// import Dashboard from "./pages/Dashboard"; // We might rename this to ProjectsIndex eventually
+import ProjectsIndex from "./pages/ProjectsIndex"; // Renaming dashboard to projects list usually
 import ProjectDetails from "./pages/ProjectDetails";
-
 import TaskDetails from "./pages/TaskDetails";
-import ActivityPage from "./pages/ActivityPage";
 
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
@@ -28,10 +23,6 @@ function ProtectedLayout() {
   if (!token) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
-
-  // Prevent infinite loops if user is already authenticated but tries to access login/register
-  // This logic is usually better placed in the Login/Register components themselves (e.g. AuthGate)
-  // so we'll leave this simple.
 
   return (
     <AppShell>
@@ -51,33 +42,23 @@ export default function App() {
 
       {/* Protected */}
       <Route element={<ProtectedLayout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route index element={<ProjectsIndex />} /> {/* Dashboard is now just Project List */}
+
+        <Route path={ROUTES.PROJECTS} element={<ProjectsIndex />} />
+        <Route
+          path="/projects/:projectId"
+          element={<ProjectDetails />}
+        />
+        <Route
+          path="/projects/:projectId/tasks/:taskId"
+          element={<TaskDetails />}
+        />
 
         <Route path={ROUTES.PROFILE} element={<Profile />} />
         <Route path="/users/:id" element={<UserProfile />} />
 
-        <Route path={ROUTES.WORKSPACES} element={<WorkspacesIndex />} />
-        <Route
-          path={`${ROUTES.WORKSPACES}/:workspaceId`}
-          element={<WorkspaceDetails />}
-        />
-
-        <Route path={ROUTES.PROJECTS} element={<ProjectsIndex />} />
-        <Route
-          path={`${ROUTES.WORKSPACES}/:workspaceId/projects/:projectId`}
-          element={<ProjectDetails />}
-        />
-
-        <Route
-          path={`${ROUTES.WORKSPACES}/:workspaceId/projects/:projectId/tasks/:taskId`}
-          element={<TaskDetails />}
-        />
-
-        <Route
-          path="/workspaces/:workspaceId/activity"
-          element={<ActivityPage />}
-        />
+        {/* Legacy redirect */}
+        <Route path="/workspaces/*" element={<Navigate to="/" replace />} />
       </Route>
 
       {/* Fallback */}

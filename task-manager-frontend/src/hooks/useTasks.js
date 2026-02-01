@@ -7,61 +7,59 @@ import {
   updateTaskStatus,
 } from "../services/taskService";
 
-export const useProjectTasks = (workspaceId, projectId) => {
+export const useProjectTasks = (projectId) => {
   return useQuery({
-    queryKey: ["projectTasks", workspaceId, projectId],
+    queryKey: ["projectTasks", projectId],
     queryFn: async () => {
-      const res = await getTasksByProject(workspaceId, projectId);
-      return Array.isArray(res) ? res : res?.data ?? [];
+      const res = await getTasksByProject(projectId);
+      return Array.isArray(res) ? res : res ?? [];
     },
-    enabled: !!workspaceId && !!projectId,
+    enabled: !!projectId,
   });
 };
 
-export const useTask = (workspaceId, projectId, taskId) => {
+export const useTask = (projectId, taskId) => {
   return useQuery({
-    queryKey: ["task", workspaceId, projectId, taskId],
-    queryFn: () => getTaskById(workspaceId, projectId, taskId),
-    enabled: !!workspaceId && !!projectId && !!taskId,
+    queryKey: ["task", projectId, taskId],
+    queryFn: () => getTaskById(projectId, taskId),
+    enabled: !!projectId && !!taskId,
   });
 };
 
-export const useCreateTask = (workspaceId, projectId) => {
+export const useCreateTask = (projectId) => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload) => createTask(workspaceId, projectId, payload),
+    mutationFn: (payload) => createTask(projectId, payload),
     onSuccess: () => {
-      qc.invalidateQueries(["projectTasks", workspaceId, projectId]);
+      qc.invalidateQueries(["projectTasks", projectId]);
     },
   });
 };
 
-export const useUpdateTaskStatus = (workspaceId, projectId) => {
+export const useUpdateTaskStatus = (projectId) => {
   const qc = useQueryClient();
 
   return useMutation({
     // HARD CONTRACT: ONLY status allowed
     mutationFn: ({ taskId, status }) =>
       updateTaskStatus(
-        workspaceId,
         projectId,
         taskId,
-        { status } // <-- EXACT backend schema
+        { status }
       ),
 
     // OPTIMISTIC UPDATE
     onMutate: async ({ taskId, status }) => {
-      await qc.cancelQueries(["projectTasks", workspaceId, projectId]);
+      await qc.cancelQueries(["projectTasks", projectId]);
 
       const previousTasks = qc.getQueryData([
         "projectTasks",
-        workspaceId,
         projectId,
       ]);
 
       qc.setQueryData(
-        ["projectTasks", workspaceId, projectId],
+        ["projectTasks", projectId],
         (old = []) =>
           old.map((task) =>
             task.id === taskId ? { ...task, status } : task
@@ -74,14 +72,14 @@ export const useUpdateTaskStatus = (workspaceId, projectId) => {
     // ROLLBACK
     onError: (_err, _vars, ctx) => {
       qc.setQueryData(
-        ["projectTasks", workspaceId, projectId],
+        ["projectTasks", projectId],
         ctx?.previousTasks
       );
     },
 
     // FINAL SYNC
     onSettled: () => {
-      qc.invalidateQueries(["projectTasks", workspaceId, projectId]);
+      qc.invalidateQueries(["projectTasks", projectId]);
     },
   });
 };

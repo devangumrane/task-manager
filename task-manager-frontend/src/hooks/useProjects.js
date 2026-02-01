@@ -1,56 +1,43 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getProjectById,
-  getTasksByProject,
   createProject,
   listProjects,
 } from "../services/projectService";
 
-// LIST PROJECTS FOR WORKSPACE
-export const useProjects = (workspaceId) => {
+// LIST PROJECTS (User's projects)
+export const useProjects = () => {
   return useQuery({
-    queryKey: ["workspaceProjects", workspaceId],
+    queryKey: ["projects"],
     queryFn: async () => {
-      const res = await listProjects(workspaceId);
-      return Array.isArray(res?.data) ? res.data : []; // FIXED
+      const res = await listProjects();
+      // Service now returns res.data directly or we handle it there.
+      // projects/projectService.js: returns res.data
+      return Array.isArray(res) ? res : res?.data ?? [];
     },
-    enabled: !!workspaceId,
   });
 };
 
 // GET SINGLE PROJECT
-export const useProject = (workspaceId, projectId) => {
+export const useProject = (projectId) => {
   return useQuery({
-    queryKey: ["project", workspaceId, projectId],
+    queryKey: ["project", projectId],
     queryFn: async () => {
-      const res = await getProjectById(workspaceId, projectId);
-      return res?.data ?? null; // FIXED
+      const res = await getProjectById(projectId);
+      return res?.data ?? res ?? null;
     },
-    enabled: !!workspaceId && !!projectId,
-  });
-};
-
-// GET TASKS FOR PROJECT
-export const useProjectTasks = (workspaceId, projectId) => {
-  return useQuery({
-    queryKey: ["projectTasks", workspaceId, projectId],
-    queryFn: async () => {
-      const res = await getTasksByProject(workspaceId, projectId);
-      return Array.isArray(res?.data) ? res.data : []; // FIXED
-    },
-    enabled: !!workspaceId && !!projectId,
+    enabled: !!projectId,
   });
 };
 
 // CREATE PROJECT
-export const useCreateProject = (workspaceId) => {
+export const useCreateProject = () => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload) => createProject(workspaceId, payload),
+    mutationFn: (payload) => createProject(payload),
     onSuccess: () => {
-      qc.invalidateQueries(["workspaceProjects", workspaceId]);
-      qc.invalidateQueries(["workspaces"]);
+      qc.invalidateQueries(["projects"]);
     },
   });
 };

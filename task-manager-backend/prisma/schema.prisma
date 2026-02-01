@@ -1,6 +1,3 @@
-// -------------------------------------
-// Datasource & Generator
-// -------------------------------------
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,257 +7,135 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// -------------------------------------
-// ENUMS
-// -------------------------------------
-enum TaskStatus {
-  todo
-  in_progress
-  done
-}
+// =====================================================
+// PROFESSIONAL TASK MANAGER SCHEMA (MySQL + Prisma)
+// Scope: Execution-focused, non-gamified, portfolio-grade
+// =====================================================
 
-enum MissionStatus {
-  LOCKED
-  AVAILABLE
-  IN_PROGRESS
-  REVIEW_READY
-  COMPLETED
-}
-
-enum Difficulty {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-  EXPERT
-}
-
-enum SkillCategory {
-  BACKEND
-  DATABASE
-  DEVOPS
-  SYSTEM_DESIGN
-  ALGORITHMS
-  TESTING
-  SECURITY
-  FRONTEND
-}// -------------------------------------
-// CORE USER MODELS
-// -------------------------------------
-
+// -----------------------------
+// USER
+// -----------------------------
 model User {
-  id           Int      @id @default(autoincrement())
-  name         String?
-  email        String   @unique
-  password     String?
-  profileImage String?
-  role         String   @default("student") // student, mentor, admin
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  
-  // Enhanced Profile Fields
-  title        String?
-  bio          String?
-  isActive     Boolean  @default(true)
-  lastActiveAt DateTime @default(now())
-  
-  // Legacy / Basic Task Manager Relations
-  workspacesOwned  Workspace[]       @relation("WorkspaceOwner")
-  workspaceMembers WorkspaceMember[]
-  projectsCreated  Project[]         @relation("ProjectCreator")
-  tasksCreated     Task[]            @relation("TaskCreator")
-  tasksAssigned    Task[]            @relation("TaskAssignedTo")
-  comments         Comment[]
-  activityLogs     ActivityLog[]
-  refreshTokens    RefreshToken[]
-  oauthAccounts    OAuthAccount[]
-  notifications    Notification[]
-}
-
-
-// -------------------------------------
-// ENUMS (UPDATED)
-// -------------------------------------
-
-enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-enum WorkspaceRole {
-  admin
-  member
-  guest
-  viewer
-}
-
-// -------------------------------------
-// TASK & PROJECT MODELS (ENHANCED)
-// -------------------------------------
-
-model Workspace {
   id        Int      @id @default(autoincrement())
+  email     String   @unique
   name      String
-  ownerId   Int
+  password  String
+
+  projects  ProjectMember[]
+  tasks     Task[]           @relation("AssignedTasks")
+  comments  TaskComment[]
+  activities ActivityLog[]
+  refreshTokens RefreshToken[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  owner    User              @relation("WorkspaceOwner", fields: [ownerId], references: [id])
-  members  WorkspaceMember[]
-  projects Project[]
-  activity ActivityLog[]
 }
 
-model WorkspaceMember {
-  id          Int           @id @default(autoincrement())
-  workspaceId Int
-  userId      Int
-  role        WorkspaceRole @default(member)
-  createdAt   DateTime      @default(now())
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
-  user      User      @relation(fields: [userId], references: [id])
-
-  @@unique([workspaceId, userId])
-}
-
+// -----------------------------
+// PROJECT (WORKSPACE)
+// -----------------------------
 model Project {
   id          Int      @id @default(autoincrement())
-  workspaceId Int
   name        String
   description String?
-  createdBy   Int
-  viewParams  Json?    // Store default view (Kanban/List) and sort settings
+
+  members     ProjectMember[]
+  tasks       Task[]
+  activities  ActivityLog[]
+
+  createdAt   DateTime @default(now())
+}
+
+// -----------------------------
+// PROJECT MEMBER (RBAC PER PROJECT)
+// -----------------------------
+model ProjectMember {
+  userId    Int
+  projectId Int
+  role      ProjectRole @default(MEMBER)
+
+  user      User    @relation(fields: [userId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id])
+
+  @@id([userId, projectId])
+}
+
+enum ProjectRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// -----------------------------
+// TASK (KANBAN-SAFE)
+// -----------------------------
+model Task {
+  id          Int      @id @default(autoincrement())
+  projectId   Int
+  assigneeId  Int?
+
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  position    Int        // ordering inside a column
+
+  dueDate     DateTime?
+
+  project     Project @relation(fields: [projectId], references: [id])
+  assignee    User?   @relation("AssignedTasks", fields: [assigneeId], references: [id])
+  comments    TaskComment[]
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  workspace Workspace     @relation(fields: [workspaceId], references: [id])
-  creator   User          @relation("ProjectCreator", fields: [createdBy], references: [id])
-  tasks     Task[]
-  labels    TaskLabel[]
-  activity  ActivityLog[]
+  @@index([projectId, status, position])
 }
 
-model TaskLabel {
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+// -----------------------------
+// TASK COMMENTS
+// -----------------------------
+model TaskComment {
+  id        Int      @id @default(autoincrement())
+  taskId    Int
+  userId    Int
+  content   String  @db.Text
+
+  task      Task @relation(fields: [taskId], references: [id])
+  user      User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+// -----------------------------
+// ACTIVITY LOG (AUDIT TRAIL)
+// -----------------------------
+model ActivityLog {
   id        Int      @id @default(autoincrement())
   projectId Int
-  name      String
-  color     String   @default("#808080")
-  
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tasks     Task[]
-}
-
-model Task {
-  id          Int          @id @default(autoincrement())
-  projectId   Int
-  title       String
-  description String?      // Rich Text (HTML/JSON)
-  status      TaskStatus   @default(todo)
-  priority    TaskPriority @default(MEDIUM)
-  order       Float        @default(0)   // For Kanban ordering
-  dueDate     DateTime?
-  
-  // Relations
-  assignedTo  Int?
-  createdBy   Int
-  
-  // Subtasks (Recursive)
-  parentId    Int?
-  parent      Task?        @relation("Subtasks", fields: [parentId], references: [id])
-  subtasks    Task[]       @relation("Subtasks")
-  
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  // Connections
-  project     Project      @relation(fields: [projectId], references: [id])
-  assigned    User?        @relation("TaskAssignedTo", fields: [assignedTo], references: [id])
-  creator     User         @relation("TaskCreator", fields: [createdBy], references: [id])
-  
-  labels      TaskLabel[]
-  comments    Comment[]
-  files       Attachment[]
-  logs        ActivityLog[]
-}
-
-model Comment {
-  id        Int      @id @default(autoincrement())
-  taskId    Int
   userId    Int
-  content   String
-  parentId  Int?     // Threading
-  
+  action    String
+  metadata  Json?
+
+  project   Project @relation(fields: [projectId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
-  parent    Comment? @relation("CommentThread", fields: [parentId], references: [id])
-  replies   Comment[] @relation("CommentThread")
 }
 
-model Attachment {
-  id        Int      @id @default(autoincrement())
-  taskId    Int
-  filename  String
-  mimetype  String
-  size      Int
-  url       String
-  createdAt DateTime @default(now())
-
-  task      Task     @relation(fields: [taskId], references: [id])
-}
-
-model ActivityLog {
-  id          Int      @id @default(autoincrement())
-  workspaceId Int?
-  projectId   Int?
-  taskId      Int?
-  userId      Int?
-  type        String
-  title       String
-  icon        String
-  metadata    Json
-  createdAt   DateTime @default(now())
-
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id])
-  project     Project?   @relation(fields: [projectId], references: [id])
-  task        Task?      @relation(fields: [taskId], references: [id])
-  user        User?      @relation(fields: [userId], references: [id])
-}
-
+// -----------------------------
+// REFRESH TOKEN (INFRA)
+// -----------------------------
 model RefreshToken {
   id        Int      @id @default(autoincrement())
-  userId    Int
   token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id])
-}
-
-model OAuthAccount {
-  id                Int      @id @default(autoincrement())
-  userId            Int
-  provider          String
-  providerAccountId String
-  createdAt         DateTime @default(now())
-
-  user              User     @relation(fields: [userId], references: [id])
-}
-
-model Notification {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  type      String
-  title     String
-  body      String
-  data      Json?
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id])
 }

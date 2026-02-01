@@ -1,25 +1,21 @@
 import api from "./api";
 
-export const createProject = async (workspaceId, payload) => {
-  const res = await api.post(`/workspaces/${workspaceId}/projects`, payload);
+export const createProject = async (payload) => {
+  const res = await api.post(`/projects`, payload);
   return res.data;
 };
 
-export const getProjectById = async (workspaceId, projectId) => {
-  const res = await api.get(
-    `/workspaces/${workspaceId}/projects/${projectId}`
-  );
+export const getProjectById = async (projectId) => {
+  const res = await api.get(`/projects/${projectId}`);
   return res.data;
 };
 
-export const listProjects = async (workspaceId) => {
-  const res = await api.get(`/workspaces/${workspaceId}/projects`);
+export const listProjects = async () => {
+  const res = await api.get(`/projects`);
   return res.data;
 };
 
-export const getTasksByProject = async (workspaceId, projectId) => {
-  const res = await api.get(
-    `/workspaces/${workspaceId}/projects/${projectId}/tasks`
-  );
+export const getTasksByProject = async (projectId) => {
+  const res = await api.get(`/projects/${projectId}/tasks`);
   return res.data;
 };

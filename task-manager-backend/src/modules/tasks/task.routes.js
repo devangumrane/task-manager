@@ -1,44 +1,39 @@
 // src/modules/tasks/task.routes.js
 import express from "express";
 import { taskController } from "./task.controller.js";
-import { workspaceAccessGuard } from "../../core/middlewares/workspace-access.middleware.js";
-import attachmentRoutes from "../attachments/attachment.routes.js";
-import reminderRoutes from "../reminders/reminder.routes.js";
-import { workspaceRoleGuard } from "../../core/middlewares/workspace-role.middleware.js";
-import commentRoutes from "../comments/comment.routes.js";
+import { authenticate } from "../../core/middlewares/auth.middleware.js";
 
 const router = express.Router({ mergeParams: true });
 
-// mounted at: /api/v1/workspaces/:workspaceId/projects/:projectId/tasks
+// Mounted at: /api/v1/projects/:projectId/tasks
+// AND/OR /api/v1/tasks (if we mount it globally for GET /:taskId)
 
 router.post(
   "/",
-  workspaceAccessGuard,
-  workspaceRoleGuard("member"),
+  authenticate,
   taskController.create
 );
 
 router.get(
   "/",
-  workspaceAccessGuard,
+  authenticate,
   taskController.list
 );
 
 router.get(
   "/:taskId",
-  workspaceAccessGuard,
+  authenticate,
   taskController.get
 );
 
 router.patch(
   "/:taskId",
-  workspaceAccessGuard,
-  workspaceRoleGuard("member"),
+  authenticate,
   taskController.update
 );
 
-// Mount attachments & reminders under /:taskId/*
-router.use("/:taskId/attachments", attachmentRoutes);
-router.use("/:taskId/reminders", reminderRoutes);
+// We might want to remove attachment/reminder routes for now or leave them routed if they don't depend on workspace
+// router.use("/:taskId/attachments", attachmentRoutes);
+// router.use("/:taskId/reminders", reminderRoutes);
 
 export default router;

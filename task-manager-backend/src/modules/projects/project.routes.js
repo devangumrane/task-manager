@@ -1,22 +1,21 @@
 // src/modules/projects/project.routes.js
 import express from "express";
 import { projectController } from "./project.controller.js";
-import { workspaceAccessGuard } from "../../core/middlewares/workspace-access.middleware.js";
 import taskRoutes from "../tasks/task.routes.js";
-import { workspaceRoleGuard } from "../../core/middlewares/workspace-role.middleware.js";
+import { authenticate } from "../../core/middlewares/auth.middleware.js";
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router();
 
-// mounted at: /api/v1/workspaces/:workspaceId/projects
+// Mounted at: /api/v1/projects
 
-// List projects
-router.get("/", workspaceAccessGuard, projectController.list);
+// List user's projects
+router.get("/", authenticate, projectController.list);
 
 // Create project
-router.post("/", workspaceAccessGuard, workspaceRoleGuard("admin"), projectController.create);
+router.post("/", authenticate, projectController.create);
 
 // Get project
-router.get("/:projectId", workspaceAccessGuard, projectController.get);
+router.get("/:projectId", authenticate, projectController.get);
 
 // Mount tasks under /:projectId/tasks
 router.use("/:projectId/tasks", taskRoutes);

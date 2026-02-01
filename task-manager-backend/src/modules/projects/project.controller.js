@@ -8,23 +8,13 @@ import { projectService } from "./project.service.js";
 
 export const projectController = {
   // --------------------------------------------------------
-  // Create a new project inside a workspace
+  // Create a new project
   // --------------------------------------------------------
   create: asyncHandler(async (req, res) => {
-    const workspaceId = Number(req.params.workspaceId);
-
-    if (!workspaceId) {
-      throw new ApiError(
-        "INVALID_WORKSPACE_ID",
-        "Invalid or missing workspace ID",
-        400
-      );
-    }
-
+    // Validate body
     const parsed = createProjectSchema.parse(req.body);
 
     const project = await projectService.createProject(
-      workspaceId,
       req.user.id,
       parsed
     );
@@ -33,26 +23,15 @@ export const projectController = {
   }),
 
   // --------------------------------------------------------
-  // List projects inside a workspace
+  // List user's projects
   // --------------------------------------------------------
   list: asyncHandler(async (req, res) => {
-    const workspaceId = Number(req.params.workspaceId);
-
-    if (!workspaceId) {
-      throw new ApiError(
-        "INVALID_WORKSPACE_ID",
-        "Invalid or missing workspace ID",
-        400
-      );
-    }
-
-    const projects = await projectService.listWorkspaceProjects(workspaceId);
-
+    const projects = await projectService.listUserProjects(req.user.id);
     res.json({ success: true, data: projects });
   }),
 
   // --------------------------------------------------------
-  // Get a single project inside workspace
+  // Get a single project
   // --------------------------------------------------------
   get: asyncHandler(async (req, res) => {
     const projectId = Number(req.params.projectId);
@@ -65,15 +44,7 @@ export const projectController = {
       );
     }
 
-    const project = await projectService.getProject(projectId);
-
-    if (!project) {
-      throw new ApiError(
-        "PROJECT_NOT_FOUND",
-        "Project not found",
-        404
-      );
-    }
+    const project = await projectService.getProject(projectId, req.user.id);
 
     res.json({ success: true, data: project });
   }),

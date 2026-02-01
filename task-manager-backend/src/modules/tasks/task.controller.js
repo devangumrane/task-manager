@@ -11,15 +11,10 @@ import { taskService } from "./task.service.js";
 export const taskController = {
   // --------------------------------------------------------
   // Create task inside project
-  // POST /workspaces/:workspaceId/projects/:projectId/tasks
+  // POST /projects/:projectId/tasks
   // --------------------------------------------------------
   create: asyncHandler(async (req, res) => {
-    const workspaceId = Number(req.params.workspaceId);
     const projectId = Number(req.params.projectId);
-
-    if (!workspaceId) {
-      throw new ApiError("INVALID_WORKSPACE_ID", "Workspace ID is invalid", 400);
-    }
 
     if (!projectId) {
       throw new ApiError("INVALID_PROJECT_ID", "Project ID is invalid", 400);
@@ -27,7 +22,6 @@ export const taskController = {
 
     const parsed = createTaskSchema.parse(req.body);
 
-    // ✅ CREATE TASK (not list)
     const task = await taskService.createTask(
       projectId,
       req.user.id,
@@ -42,21 +36,16 @@ export const taskController = {
 
   // --------------------------------------------------------
   // List tasks inside project
-  // GET /workspaces/:workspaceId/projects/:projectId/tasks
+  // GET /projects/:projectId/tasks
   // --------------------------------------------------------
   list: asyncHandler(async (req, res) => {
-    const workspaceId = Number(req.params.workspaceId);
     const projectId = Number(req.params.projectId);
-
-    if (!workspaceId) {
-      throw new ApiError("INVALID_WORKSPACE_ID", "Workspace ID is invalid", 400);
-    }
 
     if (!projectId) {
       throw new ApiError("INVALID_PROJECT_ID", "Project ID is invalid", 400);
     }
 
-    const tasks = await taskService.listTasks(projectId);
+    const tasks = await taskService.listTasks(projectId, req.user.id);
 
     res.json({
       success: true,
@@ -75,7 +64,7 @@ export const taskController = {
       throw new ApiError("INVALID_TASK_ID", "Task ID is invalid", 400);
     }
 
-    const task = await taskService.getTask(taskId);
+    const task = await taskService.getTask(taskId, req.user.id);
 
     res.json({
       success: true,

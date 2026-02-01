@@ -11,46 +11,44 @@ import CreateTaskDialog from "../components/tasks/CreateTaskDialog";
 import { ROUTES } from "../router/paths";
 
 export default function ProjectDetails() {
-  const { workspaceId, projectId } = useParams();
+  const { projectId } = useParams();
   const navigate = useNavigate();
 
   // ---------------- STATE ----------------
   const [openTaskDialog, setOpenTaskDialog] = useState(false);
 
   // ---------------- DATA ----------------
+  // We can switch to useProject hook later, but for now update this query
   const { data: rawProject, isLoading: loadingProject } = useQuery({
-    queryKey: ["project", workspaceId, projectId],
-    queryFn: () => getProjectById(workspaceId, projectId),
-    enabled: !!workspaceId && !!projectId,
+    queryKey: ["project", projectId],
+    queryFn: () => getProjectById(projectId),
+    enabled: !!projectId,
   });
 
   const {
     data: tasks = [],
     isLoading: loadingTasks,
-  } = useProjectTasks(workspaceId, projectId);
+  } = useProjectTasks(projectId);
 
-  const updateTaskStatus = useUpdateTaskStatus(workspaceId, projectId);
+  const updateTaskStatus = useUpdateTaskStatus(projectId);
 
   // ---------------- NORMALIZE ----------------
   const project = rawProject?.data ?? rawProject ?? null;
 
   // ---------------- GUARDS ----------------
-  if (loadingProject || loadingTasks) return <p>Loading…</p>;
-  if (!project) return <p>Project not found</p>;
-
-  // ---------------- STRICT BACKEND ENUMS ----------------
-
+  if (loadingProject || loadingTasks) return <p className="p-8">Loading…</p>;
+  if (!project) return <p className="p-8">Project not found</p>;
 
   // ---------------- UI ----------------
   return (
     <div className="space-y-6">
       {/* Back */}
       <button
-        onClick={() => navigate(ROUTES.WORKSPACE(workspaceId))}
+        onClick={() => navigate(ROUTES.PROJECTS)}
         className="flex items-center gap-2 text-gray-600 hover:text-black"
       >
         <ArrowLeft size={20} />
-        Back
+        Back to Projects
       </button>
 
       {/* Header */}
@@ -58,6 +56,9 @@ export default function ProjectDetails() {
         <h1 className="text-2xl font-semibold">
           {project.title || project.name}
         </h1>
+        {project.description && (
+          <p className="text-gray-500 mt-2">{project.description}</p>
+        )}
       </div>
 
       {/* Tasks header */}
@@ -72,15 +73,14 @@ export default function ProjectDetails() {
       </div>
 
       {/* Kanban Board */}
-      <div className="h-[calc(100vh-200px)]">
+      <div className="h-[calc(100vh-300px)]">
         <KanbanBoard
           tasks={tasks}
           onTaskUpdate={(taskId, updates) =>
             updateTaskStatus.mutate({ taskId, status: updates.status })
           }
           onTaskClick={(task) => {
-            // Optional: Open task details or dialog
-            navigate(ROUTES.TASK(workspaceId, projectId, task.id));
+            navigate(ROUTES.TASK(projectId, task.id));
           }}
         />
       </div>
@@ -89,7 +89,6 @@ export default function ProjectDetails() {
       <CreateTaskDialog
         open={openTaskDialog}
         onClose={() => setOpenTaskDialog(false)}
-        workspaceId={workspaceId}
         projectId={projectId}
       />
     </div>

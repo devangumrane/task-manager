@@ -10,84 +10,59 @@ export const activityService = {
    * This function MUST NEVER break core flows.
    */
   async log({
-    workspaceId = null,
+    projectId,
     userId,
-    taskId = null,
-    projectId = null,
-    type,
+    type, // mapped to 'action'
     metadata = {},
   }) {
-    if (!userId) {
-      throw new ApiError("INVALID_INPUT", "userId is required for logging", 400);
+    if (!userId || !projectId) {
+      // console.warn("activityService.log: userId and projectId are required", { userId, projectId });
+      return null;
     }
-
-    if (!type) {
-      throw new ApiError("INVALID_INPUT", "type is required for logging", 400);
-    }
-
-    // All activities use standardized formatting
-    const formatted = ActivityFormatter.format(type, metadata);
 
     try {
       return await prisma.activityLog.create({
         data: {
-          workspaceId,
-          userId,
-          taskId,
           projectId,
-          type,
-          title: formatted.title,
-          icon: formatted.icon,
-          metadata: formatted.details,
+          userId,
+          action: type,
+          metadata, // Store rich details here
         },
       });
     } catch (err) {
-      // If DB error occurs, do NOT crash core workflows
       console.error("activityService.log failed:", err);
       return null;
     }
   },
 
   /**
-   * List workspace activity logs with stable pagination.
+   * List project activity logs.
    */
-  async listByWorkspace(workspaceId, { page = 1, perPage = 25 } = {}) {
-    if (!workspaceId) {
-      throw new ApiError("INVALID_INPUT", "workspaceId is required", 400);
+  async listByProject(projectId, { page = 1, perPage = 25 } = {}) {
+    if (!projectId) {
+      throw new ApiError("INVALID_INPUT", "projectId is required", 400);
     }
 
-    // Sanitize pagination
-    page = Number(page);
-    perPage = Number(perPage);
-
-    if (Number.isNaN(page) || page < 1) page = 1;
-    if (Number.isNaN(perPage) || perPage < 1 || perPage > 100) perPage = 25;
-
+    page = Number(page) || 1;
+    perPage = Number(perPage) || 25;
     const skip = (page - 1) * perPage;
 
     const [items, total] = await Promise.all([
       prisma.activityLog.findMany({
-        where: { workspaceId },
+        where: { projectId },
         orderBy: { createdAt: "desc" },
         skip,
         take: perPage,
         include: {
           user: { select: { id: true, name: true, email: true } },
-          task: { select: { id: true, title: true } },
-          project: { select: { id: true, name: true } },
         },
       }),
-      prisma.activityLog.count({ where: { workspaceId } }),
+      prisma.activityLog.count({ where: { projectId } }),
     ]);
 
     return {
       items,
-      meta: {
-        page,
-        perPage,
-        total,
-        totalPages: Math.max(1, Math.ceil(total / perPage)),
-      },
+      meta: { page, perPage, total, totalPages: Math.ceil(total / perPage) },
     };
   },
 };

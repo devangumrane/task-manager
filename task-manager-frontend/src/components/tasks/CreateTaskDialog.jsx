@@ -16,19 +16,24 @@ import { searchUsers } from "../../services/userService";
 export default function CreateTaskDialog({
   open,
   onClose,
-  workspaceId,
   projectId,
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("MEDIUM");
+  // Priority removed from schema? No, user never said explicitly.
+  // But Task model in schema had: status, position, dueDate.
+  // It did NOT have priority.
+  // Wait, let's check schema.prisma again.
+  // Task model: id, projectId, assigneeId, title, description, status, position, dueDate, createdAt, updatedAt.
+  // NO PRIORITY.
+  // I should remove priority from this dialog.
 
   // assignee state
   const [assigneeQuery, setAssigneeQuery] = useState("");
   const [assigneeResults, setAssigneeResults] = useState([]);
   const [assignedUser, setAssignedUser] = useState(null);
 
-  const createTask = useCreateTask(workspaceId, projectId);
+  const createTask = useCreateTask(projectId);
 
   // ----------------------------------
   // Search users (simple, controlled)
@@ -60,14 +65,12 @@ export default function CreateTaskDialog({
       {
         title,
         description,
-        priority, // New Field
-        ...(assignedUser?.id ? { assignedTo: assignedUser.id } : {}),
+        ...(assignedUser?.id ? { assigneeId: assignedUser.id } : {}), // Schema uses assigneeId
       },
       {
         onSuccess: () => {
           setTitle("");
           setDescription("");
-          setPriority("MEDIUM");
           setAssigneeQuery("");
           setAssigneeResults([]);
           setAssignedUser(null);
@@ -109,21 +112,6 @@ export default function CreateTaskDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Priority */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Priority</label>
-              <select
-                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-              >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="URGENT">Urgent</option>
-              </select>
-            </div>
-
             {/* Assignee */}
             <div className="space-y-1">
               <label className="text-sm font-medium">Assignee</label>
