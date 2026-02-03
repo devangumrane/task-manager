@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
+import toast from "react-hot-toast";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -45,6 +46,13 @@ api.interceptors.response.use(
         useAuthStore.getState().clearAuth();
         return Promise.reject(err);
       }
+    }
+
+    if (!status || status >= 500) {
+      toast.error("Something went wrong. Please try again later.");
+    } else if (status === 400 && err.response?.data?.message) {
+      // Optional: auto-show validation errors if they are simple strings
+      // toast.error(err.response.data.message);
     }
 
     return Promise.reject(err);
