@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
+import rateLimit from "express-rate-limit";
+import xss from "xss-clean";
 import errorMiddleware from "./core/middlewares/error.middleware.js";
 
 import authRoutes from "./modules/auth/auth.routes.js";
@@ -43,6 +45,19 @@ app.use(
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
+
+// Rate limiting: 100 requests per 15 minutes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+app.use(limiter);
+
+// Data Sanitization against XSS
+app.use(xss());
+
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
