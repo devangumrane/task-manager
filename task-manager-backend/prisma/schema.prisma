@@ -75,6 +75,18 @@ model User {
   refreshTokens    RefreshToken[]
   oauthAccounts    OAuthAccount[]
   notifications    Notification[]
+  failedTasks      FailedTask[]      @relation("FailedTaskOwner")
+}
+
+model FailedTask {
+  id             Int      @id @default(autoincrement())
+  originalTaskId Int?
+  reason         String?
+  failedAt       DateTime @default(now())
+  data           Json?    // Snapshot of the task data at failure
+  userId         Int?     // Who marked it as failed, or who it was assigned to
+
+  user           User?    @relation("FailedTaskOwner", fields: [userId], references: [id])
 }
 
 
