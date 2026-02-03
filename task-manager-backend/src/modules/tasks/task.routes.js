@@ -37,6 +37,13 @@ router.patch(
   taskController.update
 );
 
+router.post(
+  "/:taskId/fail",
+  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
+  taskController.fail
+);
+
 // Mount attachments & reminders under /:taskId/*
 router.use("/:taskId/attachments", attachmentRoutes);
 router.use("/:taskId/reminders", reminderRoutes);

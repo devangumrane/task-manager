@@ -186,6 +186,43 @@ export const taskService = {
   // --------------------------------------------------------
   // DELETE TASK
   // --------------------------------------------------------
+  // --------------------------------------------------------
+  // FAIL TASK (Archive)
+  // --------------------------------------------------------
+  async failTask(taskId, userId, reason) {
+    return prisma.$transaction(async (tx) => {
+      // 1️⃣ Get task with data to snapshot
+      const task = await tx.task.findUnique({
+        where: { id: taskId },
+        include: {
+          project: { select: { id: true, workspaceId: true } },
+        },
+      });
+
+      if (!task) {
+        throw new ApiError("TASK_NOT_FOUND", "Task not found", 404);
+      }
+
+      // 2️⃣ Authorization
+      await assertWorkspaceMember(tx, userId, task.project.workspaceId);
+
+      // 3️⃣ Archive to FailedTask
+      const failedTask = await tx.failedTask.create({
+        data: {
+          originalTaskId: task.id,
+          reason,
+          userId,
+          data: task, // Snapshot full task object
+        },
+      });
+
+      // 4️⃣ Delete original task
+      await tx.task.delete({ where: { id: taskId } });
+
+      return failedTask;
+    });
+  },
+
   async deleteTask(taskId, userId) {
     const task = await prisma.task.findUnique({
       where: { id: taskId },

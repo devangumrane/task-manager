@@ -107,4 +107,23 @@ export const taskController = {
       data: task,
     });
   }),
+  // --------------------------------------------------------
+  // Fail task
+  // POST /tasks/:taskId/fail
+  // --------------------------------------------------------
+  fail: asyncHandler(async (req, res) => {
+    const taskId = Number(req.params.taskId);
+    const { reason } = req.body;
+
+    if (!taskId) {
+      throw new ApiError("INVALID_TASK_ID", "Task ID is invalid", 400);
+    }
+
+    const failedTask = await taskService.failTask(taskId, req.user.id, reason);
+
+    res.status(201).json({
+      success: true,
+      data: failedTask,
+    });
+  }),
 };
