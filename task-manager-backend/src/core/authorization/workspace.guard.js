@@ -1,5 +1,5 @@
 import { WorkspaceMember } from "../../models/index.js";
-import ApiError from "../../errors/ApiError.js";
+import ApiError from "../errors/ApiError.js";
 
 export async function assertWorkspaceMember(tx, userId, workspaceId) {
   // tx is optional, can be null (Sequelize doesn't restrict read without tx usually, but if provided we use it)

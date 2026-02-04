@@ -28,10 +28,10 @@ export const activityService = {
 
     try {
       return await ActivityLog.create({
-        workspace_id: workspaceId,
-        user_id: userId,
-        task_id: taskId,
-        project_id: projectId,
+        workspaceId,
+        userId,
+        taskId,
+        projectId,
         type,
         title: formatted.title,
         icon: formatted.icon,

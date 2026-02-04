@@ -92,7 +92,7 @@ export default function Login() {
               {login.isPending ? "Logging in..." : "Login"}
             </Button>
             <Grid container justifyContent="flex-end">
-              <Grid item>
+              <Grid>
                 <Link component={RouterLink} to="/register" variant="body2">
                   {"Don't have an account? Sign Up"}
                 </Link>

@@ -109,7 +109,7 @@ export default function Register() {
               {registerMutation.isPending ? "Registering..." : "Register"}
             </Button>
             <Grid container justifyContent="flex-end">
-              <Grid item>
+              <Grid>
                 <Link component={RouterLink} to="/login" variant="body2">
                   Already have an account? Login
                 </Link>

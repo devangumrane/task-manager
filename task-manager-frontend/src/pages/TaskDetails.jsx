@@ -89,7 +89,7 @@ export default function TaskDetails() {
       {/* Main Grid */}
       <Grid container spacing={3}>
         {/* Left Column: Task Details + Attachments */}
-        <Grid item xs={12} md={8} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Grid xs={12} md={8} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Card variant="outlined" sx={{ boxShadow: 0 }}>
             <CardHeader
               title={
@@ -167,7 +167,7 @@ export default function TaskDetails() {
         </Grid>
 
         {/* Right Column: Reminders (Side Panel) */}
-        <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Grid xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Card variant="outlined">
             <CardHeader
               title={<Typography variant="h6">Reminders</Typography>}

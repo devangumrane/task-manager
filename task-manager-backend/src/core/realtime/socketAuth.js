@@ -1,4 +1,4 @@
-import { verifyToken } from "../utils/jwt.js";
+import { verifyAccessToken } from "../utils/jwt.js";
 import { User } from "../../models/index.js";
 
 export const socketAuth = async (socket, next) => {
@@ -12,14 +12,14 @@ export const socketAuth = async (socket, next) => {
 
     // "Bearer <token>"
     const cleanToken = token.replace("Bearer ", "");
-    const decoded = verifyToken(cleanToken);
+    const decoded = verifyAccessToken(cleanToken);
 
     if (!decoded) {
       return next(new Error("Authentication error"));
     }
 
-    const user = await User.findByPk(decoded.id, {
-      attributes: ['id', 'name', 'email']
+    const user = await User.findByPk(decoded.userId, {
+      attributes: ['id', 'username', 'email']
     });
 
     if (!user) {

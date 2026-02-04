@@ -1,3 +1,4 @@
+import fs from 'fs';
 import ApiError from "../errors/ApiError.js";
 
 /**
@@ -71,6 +72,10 @@ export default function errorMiddleware(err, req, res, next) {
   // Log the original error for ops/debug
   // eslint-disable-next-line no-console
   console.error(`[ERROR] ${req.method} ${req.originalUrl} ->`, err);
+
+  try {
+    fs.appendFileSync('backend-fatal.log', `[${new Date().toISOString()}] ${req.method} ${req.originalUrl}\n${err.stack || err.message}\n---\n`);
+  } catch (e) { console.error("Failed to write log", e); }
 
   return res.status(fallback.status).json(fallback.toJSON());
 }

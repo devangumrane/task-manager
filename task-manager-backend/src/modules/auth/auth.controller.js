@@ -22,13 +22,20 @@ const cookieOptions = {
 export const authController = {
   // ---------------- REGISTER ----------------
   register: asyncHandler(async (req, res) => {
-    const parsed = registerSchema.parse(req.body);
-    const user = await authService.register(parsed);
+    try {
+      const parsed = registerSchema.parse(req.body);
+      const user = await authService.register(parsed);
 
-    res.status(201).json({
-      success: true,
-      data: user,
-    });
+      res.status(201).json({
+        success: true,
+        data: user,
+      });
+    } catch (error) {
+      console.error("REGISTER ERROR:", error);
+      const fs = await import('fs');
+      fs.appendFileSync('backend-error.log', new Date().toISOString() + ' ' + (error.stack || error.message) + '\n');
+      throw error;
+    }
   }),
 
   // ---------------- LOGIN ----------------

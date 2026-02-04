@@ -31,6 +31,22 @@ const Task = sequelize.define('Task', {
             key: 'id',
         },
     },
+    assigned_to: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'users',
+            key: 'id',
+        },
+    },
+    created_by: {
+        type: DataTypes.INTEGER,
+        allowNull: true, // or false depending on logic, typically false
+        references: {
+            model: 'users',
+            key: 'id',
+        },
+    },
     status: {
         type: DataTypes.ENUM('pending', 'in_progress', 'completed'),
         defaultValue: 'pending',

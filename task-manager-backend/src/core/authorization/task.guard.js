@@ -1,6 +1,6 @@
 import { Task, Project } from "../../models/index.js";
 import { WorkspaceMember } from "../../models/index.js";
-import ApiError from "../../errors/ApiError.js";
+import ApiError from "../errors/ApiError.js";
 
 export async function assertTaskWorkspaceAccess(tx, userId, taskId) {
   const options = {};

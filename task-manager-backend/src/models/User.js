@@ -19,7 +19,7 @@ const User = sequelize.define('User', {
             isEmail: true,
         },
     },
-    password_hash: {
+    password: {
         type: DataTypes.STRING,
         allowNull: false,
     },
@@ -29,7 +29,7 @@ const User = sequelize.define('User', {
     },
     is_verified: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        defaultValue: 0,
     },
     otp_secret: {
         type: DataTypes.STRING,

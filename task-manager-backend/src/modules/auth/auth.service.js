@@ -11,7 +11,7 @@ import sequelize from "../../config/database.js";
 
 function safeUser(user) {
   const u = user.toJSON();
-  delete u.password_hash;
+  delete u.password;
   delete u.otp_secret;
   return u;
 }
@@ -45,7 +45,7 @@ export const authService = {
     const user = await User.create({
       username: name || email.split('@')[0],
       email,
-      password_hash: hashed
+      password: hashed
     });
 
     return safeUser(user);
@@ -59,7 +59,7 @@ export const authService = {
     if (!user)
       throw new ApiError("INVALID_CREDENTIALS", "Invalid credentials", 401);
 
-    const ok = await comparePassword(password, user.password_hash);
+    const ok = await comparePassword(password, user.password);
     if (!ok)
       throw new ApiError("INVALID_CREDENTIALS", "Invalid credentials", 401);
 

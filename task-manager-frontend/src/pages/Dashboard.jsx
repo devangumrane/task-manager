@@ -59,7 +59,7 @@ export default function Dashboard() {
       {/* Stats Grid */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {statItems.map((stat) => (
-          <Grid item xs={12} sm={6} md={3} key={stat.label}>
+          <Grid xs={12} sm={6} md={3} key={stat.label}>
             <Paper
               elevation={2}
               sx={{
@@ -87,13 +87,13 @@ export default function Dashboard() {
       {/* Actions & Status */}
       <Grid container spacing={3}>
         {/* Quick Actions */}
-        <Grid item xs={12} md={8}>
+        <Grid xs={12} md={8}>
           <Paper sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
               Quick Access
             </Typography>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Button
                   component={RouterLink}
                   to={ROUTES.WORKSPACES}
@@ -114,7 +114,7 @@ export default function Dashboard() {
                   </Box>
                 </Button>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Button
                   component={RouterLink}
                   to={ROUTES.PROJECTS}
@@ -140,7 +140,7 @@ export default function Dashboard() {
         </Grid>
 
         {/* System Status */}
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Paper sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6" gutterBottom>
               System Status

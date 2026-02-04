@@ -11,9 +11,9 @@ import "./models/index.js"; // Init associations
 import errorMiddleware from "./core/middlewares/error.middleware.js";
 
 import authRoutes from "./modules/auth/auth.routes.js";
-// import userRoutes from "./modules/users/user.routes.js";
-// import workspaceRoutes from "./modules/workspaces/workspace.routes.js";
-// import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
+import userRoutes from "./modules/users/user.routes.js";
+import workspaceRoutes from "./modules/workspaces/workspace.routes.js";
+import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
 import { requireAuth } from "./core/middlewares/auth.middleware.js";
 
 const app = express();
@@ -32,6 +32,8 @@ app.use(
       const allowed = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
       ];
 
       if (allowed.includes(origin)) {
@@ -59,7 +61,7 @@ const limiter = rateLimit({
 // app.use(limiter);
 
 // Data Sanitization against XSS
-app.use(xss());
+// app.use(xss());
 
 app.use(morgan("dev"));
 app.use(express.json());
@@ -69,10 +71,10 @@ app.use(cookieParser());
 // PUBLIC ROUTES
 // ---------------------------------------------
 app.use(`${API_PREFIX}/auth`, authRoutes);
-// app.use(`${API_PREFIX}/users`, userRoutes);
-// app.use(API_PREFIX, requireAuth);
-// app.use(`${API_PREFIX}/workspaces`, workspaceRoutes);
-// app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
+app.use(`${API_PREFIX}/users`, userRoutes);
+app.use(API_PREFIX, requireAuth);
+app.use(`${API_PREFIX}/workspaces`, workspaceRoutes);
+app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 
 // ---------------------------------------------
 // GLOBAL ERROR HANDLER
