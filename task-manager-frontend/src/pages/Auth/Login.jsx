@@ -2,18 +2,17 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../../hooks/useAuth";
-import { useNavigate, Link } from "react-router-dom";
-
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import { Button } from "../../components/ui/button";
-import { Label } from "../../components/ui/label";
+  Container,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Link,
+  Paper
+} from "@mui/material";
 
 const schema = z.object({
   email: z.string().email(),
@@ -32,63 +31,76 @@ export default function Login() {
   const onSubmit = (values) => {
     login.mutate(values, {
       onSuccess: () => {
-        // Redirect AFTER Zustand token update
         navigate("/", { replace: true });
       },
     });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Login</CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <form
-            className="space-y-4"
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
+          <Typography component="h1" variant="h5" align="center" gutterBottom>
+            Sign in
+          </Typography>
+          <Box
+            component="form"
             onSubmit={form.handleSubmit(onSubmit)}
             noValidate
+            sx={{ mt: 1 }}
           >
-            {/* EMAIL */}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" {...form.register("email")} />
-              {form.formState.errors.email && (
-                <p className="text-sm text-red-500">
-                  {form.formState.errors.email.message}
-                </p>
-              )}
-            </div>
-
-            {/* PASSWORD */}
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" {...form.register("password")} />
-              {form.formState.errors.password && (
-                <p className="text-sm text-red-500">
-                  {form.formState.errors.password.message}
-                </p>
-              )}
-            </div>
-
-            {/* SUBMIT */}
-            <Button type="submit" className="w-full" disabled={login.isPending}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              autoComplete="email"
+              autoFocus
+              {...form.register("email")}
+              error={!!form.formState.errors.email}
+              helperText={form.formState.errors.email?.message}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              {...form.register("password")}
+              error={!!form.formState.errors.password}
+              helperText={form.formState.errors.password?.message}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              disabled={login.isPending}
+            >
               {login.isPending ? "Logging in..." : "Login"}
             </Button>
-          </form>
-        </CardContent>
-
-        <CardFooter className="justify-center text-sm">
-          <span className="text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link to="/register" className="text-primary underline">
-              Register
-            </Link>
-          </span>
-        </CardFooter>
-      </Card>
-    </div>
+            <Grid container justifyContent="flex-end">
+              <Grid item>
+                <Link component={RouterLink} to="/register" variant="body2">
+                  {"Don't have an account? Sign Up"}
+                </Link>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
+      </Box>
+    </Container>
   );
 }

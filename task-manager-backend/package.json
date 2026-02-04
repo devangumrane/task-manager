@@ -10,11 +10,9 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@prisma/client": "6.19.0",
     "@types/bree": "^6.2.1",
     "jest": "^30.2.0",
     "nodemon": "^3.1.11",
-    "prisma": "6.19.0",
     "supertest": "^7.1.4"
   },
   "dependencies": {
@@ -22,6 +20,7 @@
     "bree": "^9.2.4",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-rate-limit": "^8.2.1",
     "express-validator": "^7.3.1",
@@ -29,7 +28,9 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
+    "mysql2": "^3.16.3",
     "nodemailer": "^7.0.11",
+    "sequelize": "^6.37.7",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "uuid": "^13.0.0",

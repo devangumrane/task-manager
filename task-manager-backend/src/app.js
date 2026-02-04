@@ -6,15 +6,18 @@ import cors from "cors";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import xss from "xss-clean";
+import sequelize from "./config/database.js";
+import "./models/index.js"; // Init associations
 import errorMiddleware from "./core/middlewares/error.middleware.js";
 
 import authRoutes from "./modules/auth/auth.routes.js";
-import userRoutes from "./modules/users/user.routes.js";
-import workspaceRoutes from "./modules/workspaces/workspace.routes.js";
-import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
+// import userRoutes from "./modules/users/user.routes.js";
+// import workspaceRoutes from "./modules/workspaces/workspace.routes.js";
+// import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
 import { requireAuth } from "./core/middlewares/auth.middleware.js";
 
 const app = express();
+app.get('/debug-health', (req, res) => res.send('ok'));
 const API_PREFIX = "/api/v1";
 
 // ---------------------------------------------
@@ -42,9 +45,9 @@ app.use(
 );
 
 
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-}));
+// app.use(helmet({
+//   crossOriginResourcePolicy: { policy: "cross-origin" },
+// }));
 
 // Rate limiting: 100 requests per 15 minutes
 const limiter = rateLimit({
@@ -53,7 +56,7 @@ const limiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
-app.use(limiter);
+// app.use(limiter);
 
 // Data Sanitization against XSS
 app.use(xss());
@@ -66,14 +69,10 @@ app.use(cookieParser());
 // PUBLIC ROUTES
 // ---------------------------------------------
 app.use(`${API_PREFIX}/auth`, authRoutes);
-app.use(`${API_PREFIX}/users`, userRoutes);
-
-// ---------------------------------------------
-// PROTECTED ROUTES
-// ---------------------------------------------
-app.use(API_PREFIX, requireAuth);
-app.use(`${API_PREFIX}/workspaces`, workspaceRoutes);
-app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
+// app.use(`${API_PREFIX}/users`, userRoutes);
+// app.use(API_PREFIX, requireAuth);
+// app.use(`${API_PREFIX}/workspaces`, workspaceRoutes);
+// app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 
 // ---------------------------------------------
 // GLOBAL ERROR HANDLER
