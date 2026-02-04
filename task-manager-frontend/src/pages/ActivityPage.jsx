@@ -1,6 +1,16 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  CircularProgress,
+  Link as MuiLink
+} from "@mui/material";
 
 import { getWorkspaceActivity } from "../services/activityService";
 
@@ -13,47 +23,65 @@ export default function ActivityPage() {
     enabled: !!workspaceId,
   });
 
-  if (isLoading) return <p>Loading activity…</p>;
+  if (isLoading) return (
+    <Box p={4} display="flex" justifyContent="center">
+      <CircularProgress />
+    </Box>
+  );
 
   if (activities.length === 0) {
-    return <p className="text-sm text-gray-500">No activity yet.</p>;
+    return (
+      <Typography variant="body2" color="text.secondary" p={2}>
+        No activity yet.
+      </Typography>
+    );
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Activity Log</h1>
+    <Box>
+      <Typography variant="h5" fontWeight="600" mb={3}>Activity Log</Typography>
 
-      <ul className="space-y-3">
-        {activities.map((a) => (
-          <li
+      <List component={Paper} variant="outlined" sx={{ p: 0 }}>
+        {activities.map((a, i) => (
+          <ListItem
             key={a.id}
-            className="p-3 bg-white border rounded text-sm flex gap-2"
+            divider={i < activities.length - 1}
+            sx={{ gap: 1 }}
           >
-            {/* User */}
-            {a.user ? (
-              <Link
-                to={`/users/${a.user.id}`}
-                className="font-medium text-blue-600 hover:underline"
-              >
-                {a.user.name || a.user.email}
-              </Link>
-            ) : (
-              <span className="text-gray-400">Someone</span>
-            )}
+            <ListItemText
+              primary={
+                <Box component="span">
+                  {/* User */}
+                  {a.user ? (
+                    <MuiLink
+                      component={Link}
+                      to={`/users/${a.user.id}`}
+                      underline="hover"
+                      fontWeight="medium"
+                      sx={{ mr: 0.5 }}
+                    >
+                      {a.user.name || a.user.email}
+                    </MuiLink>
+                  ) : (
+                    <Typography component="span" color="text.disabled" sx={{ mr: 0.5 }}>Someone</Typography>
+                  )}
 
-            {/* Action */}
-            <span className="text-gray-700">
-              {humanizeActivity(a)}
-            </span>
+                  {/* Action */}
+                  <Typography component="span" variant="body2" color="text.primary">
+                    {humanizeActivity(a)}
+                  </Typography>
+                </Box>
+              }
+            />
 
             {/* Time */}
-            <span className="ml-auto text-xs text-gray-400">
+            <Typography variant="caption" color="text.secondary" whiteSpace="nowrap">
               {new Date(a.createdAt).toLocaleString()}
-            </span>
-          </li>
+            </Typography>
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Box>
   );
 }
 

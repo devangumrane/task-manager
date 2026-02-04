@@ -1,4 +1,4 @@
-import prisma from "../database/prisma.js";
+import { Workspace, WorkspaceMember } from "../../models/index.js";
 
 export async function workspaceAccessGuard(req, res, next) {
   try {
@@ -14,9 +14,8 @@ export async function workspaceAccessGuard(req, res, next) {
     // ---------------------------------------
     // 1. Check if workspace exists
     // ---------------------------------------
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
-      select: { ownerId: true },
+    const workspace = await Workspace.findByPk(workspaceId, {
+      attributes: ['owner_id'],
     });
 
     if (!workspace) {
@@ -28,7 +27,7 @@ export async function workspaceAccessGuard(req, res, next) {
     // ---------------------------------------
     // 2. If user is owner → full access
     // ---------------------------------------
-    if (workspace.ownerId === userId) {
+    if (workspace.owner_id === userId) {
       req.workspaceRole = "admin"; // Owner = top role
       return next();
     }
@@ -36,14 +35,12 @@ export async function workspaceAccessGuard(req, res, next) {
     // ---------------------------------------
     // 3. Check if user is a workspace member
     // ---------------------------------------
-    const member = await prisma.workspaceMember.findUnique({
+    const member = await WorkspaceMember.findOne({
       where: {
-        workspaceId_userId: {
-          workspaceId,
-          userId,
-        },
+        workspace_id: workspaceId,
+        user_id: userId,
       },
-      select: { role: true },
+      attributes: ['role'],
     });
 
     if (!member) {

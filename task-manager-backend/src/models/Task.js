@@ -15,6 +15,22 @@ const Task = sequelize.define('Task', {
         type: DataTypes.TEXT,
         allowNull: true,
     },
+    project_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'projects',
+            key: 'id',
+        },
+    },
+    workspace_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'workspaces',
+            key: 'id',
+        },
+    },
     status: {
         type: DataTypes.ENUM('pending', 'in_progress', 'completed'),
         defaultValue: 'pending',

@@ -1,68 +1,35 @@
-// src/core/realtime/socketAuth.js
-import { verifyAccessToken } from "../utils/jwt.js";
-import prisma from "../database/prisma.js";
+import { verifyToken } from "../utils/jwt.js";
+import { User } from "../../models/index.js";
 
-/**
- * Socket authentication middleware.
- * - Verifies JWT from handshake.auth.token or Authorization header
- * - Attaches socket.user = { id, email, name }
- * - Initializes socket.roles.workspaces = {}
- */
-export async function socketAuthMiddleware(socket, next) {
+export const socketAuth = async (socket, next) => {
   try {
-    // 1. Extract token from handshake
     const token =
-      socket.handshake?.auth?.token ||
-      (socket.handshake?.headers?.authorization || "").split(" ")[1];
+      socket.handshake.auth?.token || socket.handshake.headers?.authorization;
 
     if (!token) {
-      return next({
-        code: "UNAUTHORIZED",
-        message: "Unauthorized: token missing",
-      });
+      return next(new Error("Authentication error"));
     }
 
-    // 2. Verify JWT
-    let payload;
-    try {
-      payload = verifyAccessToken(token);
-    } catch (err) {
-      return next({
-        code: "INVALID_TOKEN",
-        message: "Unauthorized: invalid token",
-      });
+    // "Bearer <token>"
+    const cleanToken = token.replace("Bearer ", "");
+    const decoded = verifyToken(cleanToken);
+
+    if (!decoded) {
+      return next(new Error("Authentication error"));
     }
 
-    // 3. Fetch user
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, email: true, name: true },
+    const user = await User.findByPk(decoded.id, {
+      attributes: ['id', 'name', 'email']
     });
 
     if (!user) {
-      return next({
-        code: "USER_NOT_FOUND",
-        message: "Unauthorized: user not found",
-      });
+      return next(new Error("Authentication error"));
     }
 
-    // 4. Attach minimal identity
-    socket.user = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-    };
-
-    // 5. Initialize RBAC cache
-    socket.roles = {
-      workspaces: Object.create(null), // { [workspaceId]: "member" | "admin" }
-    };
-
-    return next();
+    // Attach user to socket
+    socket.user = user;
+    next();
   } catch (err) {
-    return next({
-      code: "SOCKET_AUTH_ERROR",
-      message: err.message || "Socket authentication failed",
-    });
+    next(new Error("Authentication error"));
   }
-}
+};

@@ -1,4 +1,4 @@
-import prisma from "../../core/database/prisma.js";
+import { Project, Task } from "../../models/index.js";
 import { activityService } from "../activity/activity.service.js";
 import { getEmitters } from "../../core/realtime/socket.js";
 import ApiError from "../../core/errors/ApiError.js";
@@ -10,17 +10,15 @@ export const projectService = {
 
     let project;
     try {
-      project = await prisma.project.create({
-        data: {
-          workspaceId,
-          name,
-          description: data.description || null,
-          createdBy: userId,
-        },
+      project = await Project.create({
+        workspace_id: workspaceId,
+        name,
+        description: data.description || null,
+        owner_id: userId,
       });
     } catch (err) {
-      if (err?.code === "P2002") {
-        throw new ApiError("CONFLICT", "Project with same unique field exists", 409, { meta: err.meta });
+      if (err.name === 'SequelizeUniqueConstraintError') {
+        throw new ApiError("CONFLICT", "Project with same unique field exists", 409, { meta: err.fields });
       }
       throw err;
     }
@@ -63,17 +61,16 @@ export const projectService = {
   },
 
   async listWorkspaceProjects(workspaceId) {
-    return prisma.project.findMany({
-      where: { workspaceId },
-      include: { tasks: true },
-      orderBy: { createdAt: "desc" },
+    return Project.findAll({
+      where: { workspace_id: workspaceId },
+      include: [{ model: Task, as: 'tasks' }],
+      order: [["createdAt", "DESC"]],
     });
   },
 
   async getProject(projectId) {
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      include: { tasks: true },
+    const project = await Project.findByPk(projectId, {
+      include: [{ model: Task, as: 'tasks' }],
     });
 
     if (!project) throw new ApiError("PROJECT_NOT_FOUND", "Project not found", 404);

@@ -1,5 +1,6 @@
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { Paper, Box, Typography, Chip } from "@mui/material";
 import KanbanCard from "./KanbanCard";
 
 const titleMap = {
@@ -14,30 +15,49 @@ export default function KanbanColumn({ status, tasks, onTaskClick }) {
   });
 
   return (
-    <div className="flex flex-col w-80 shrink-0">
-      <div className="flex items-center justify-between mb-3 px-1">
-        <h3 className="font-semibold text-gray-700">{titleMap[status]}</h3>
-        <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs font-medium">
-          {tasks.length}
-        </span>
-      </div>
+    <Box display="flex" flexDirection="column" width={320} flexShrink={0}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} px={1}>
+        <Typography variant="subtitle1" fontWeight="bold" color="text.secondary">
+          {titleMap[status]}
+        </Typography>
+        <Chip
+          label={tasks.length}
+          size="small"
+          sx={{ height: 20, bgcolor: 'action.hover', fontWeight: 'bold' }}
+        />
+      </Box>
 
-      <div
+      <Paper
         ref={setNodeRef}
-        className="flex-1 bg-gray-50/50 rounded-xl p-2 space-y-3 min-h-[500px] border-2 border-transparent transition-colors hover:border-gray-100"
+        elevation={0}
+        variant="outlined"
+        sx={{
+          flex: 1,
+          bgcolor: 'background.default',
+          p: 1,
+          borderRadius: 2,
+          minHeight: 500,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.5,
+          transition: 'border-color 0.2s',
+          '&:hover': { borderColor: 'primary.main' }
+        }}
       >
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-             {tasks.map((task) => (
-                <KanbanCard key={task.id} task={task} onClick={() => onTaskClick?.(task)} />
-             ))}
+          {tasks.map((task) => (
+            <KanbanCard key={task.id} task={task} onClick={() => onTaskClick?.(task)} />
+          ))}
         </SortableContext>
-        
+
         {tasks.length === 0 && (
-            <div className="h-full w-full flex items-center justify-center text-gray-400 text-sm italic">
-                No tasks
-            </div>
+          <Box height="100%" display="flex" alignItems="center" justifyContent="center">
+            <Typography variant="body2" color="text.disabled" fontStyle="italic">
+              No tasks
+            </Typography>
+          </Box>
         )}
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 }

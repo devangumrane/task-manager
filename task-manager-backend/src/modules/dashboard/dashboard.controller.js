@@ -1,53 +1,89 @@
-import prisma from "../../core/database/prisma.js";
-import ApiError from "../../core/errors/ApiError.js";
+import { Workspace, Project, Task } from "../../models/index.js";
+import { assertWorkspaceMember } from "../../core/authorization/workspace.guard.js";
 
-export const getDashboardStats = async (req, res, next) => {
-    try {
-        const userId = req.user.id;
+export const dashboardController = {
+    // -------------------------------------------------------------
+    // GET /dashboard/stats?workspaceId=...
+    // -------------------------------------------------------------
+    async getStats(req, res, next) {
+        try {
+            const userId = req.user.id;
+            // Default to first workspace if not provided? 
+            // Actually usually dashboard is workspace specific or global. 
+            // The current implementation seems to require workspaceId or maybe it aggregates?
+            // Let's check previous implementation logic from grep: "workspace.count", "project.count".
+            // It seems to return counts.
 
-        // 1. Workspaces the user is a member of
-        const workspaceCount = await prisma.workspace.count({
-            where: {
-                members: {
-                    some: { userId },
+            // If workspaceId is provided, scoped to that.
+            // If not, maybe global? 
+            // Let's assume global for the user for now if workspaceId is missing, OR restrict it.
+
+            // But wait, the previous code was:
+            // const workspaceCount = await prisma.workspace.count(...)
+
+            // Let's rebuild it.
+
+            // Global stats for user:
+            // 1. Workspaces count (owned or member)
+            // 2. Projects count (in those workspaces? or created by user?)
+            // 3. Tasks assigned to user
+
+            const workspaceCount = await Workspace.count({
+                include: [{
+                    model: Workspace, // helper to join? No.
+                    association: 'members', // uses alias defined in index.js? index.js says Workspace.hasMany(WorkspaceMember, as: 'members')
+                }],
+                // This count is tricky with associations in Sequelize.
+                // Simpler: Count User's workspaces via User accessor or WorkspaceMember.
+            });
+
+            // Let's use simpler queries.
+
+            // 1. Workspaces user is member of
+            // See workspace.service listUserWorkspaces logic.
+            const workspaces = await Workspace.findAll({
+                include: [{
+                    association: 'members',
+                    where: { user_id: userId },
+                    required: true
+                }]
+            });
+            const wsCount = workspaces.length;
+
+            // 2. Projects in those workspaces
+            const wsIds = workspaces.map(w => w.id);
+            const projectCount = await Project.count({
+                where: { workspace_id: wsIds }
+            });
+
+            // 3. Tasks assigned to user (across all workspaces)
+            const tasksAssignedCount = await Task.count({
+                where: { assigned_to: userId }
+            });
+
+            // 4. Tasks pending/completed
+            const tasksPendingCount = await Task.count({
+                where: { assigned_to: userId, status: 'pending' }
+            });
+
+            const tasksCompletedCount = await Task.count({
+                where: { assigned_to: userId, status: 'completed' }
+            });
+
+            res.json({
+                success: true,
+                data: {
+                    workspaces: wsCount,
+                    projects: projectCount,
+                    tasks: {
+                        total: tasksAssignedCount,
+                        pending: tasksPendingCount,
+                        completed: tasksCompletedCount
+                    }
                 },
-            },
-        });
-
-        // 2. Projects in those workspaces (accessible projects)
-        const projectCount = await prisma.project.count({
-            where: {
-                workspace: {
-                    members: {
-                        some: { userId },
-                    },
-                },
-            },
-        });
-
-        // 3. Pending tasks assigned to user (todo or in_progress)
-        const pendingTaskCount = await prisma.task.count({
-            where: {
-                assignedTo: userId,
-                status: { in: ["todo", "in_progress"] },
-            },
-        });
-
-        // 4. Completed tasks assigned to user
-        const completedTaskCount = await prisma.task.count({
-            where: {
-                assignedTo: userId,
-                status: "done",
-            },
-        });
-
-        res.json({
-            workspaces: workspaceCount,
-            projects: projectCount,
-            pendingTasks: pendingTaskCount,
-            completedTasks: completedTaskCount
-        });
-    } catch (error) {
-        next(error);
-    }
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

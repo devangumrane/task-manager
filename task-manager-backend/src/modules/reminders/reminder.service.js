@@ -1,4 +1,4 @@
-import prisma from "../../core/database/prisma.js";
+import { TaskReminder, Task, Project } from "../../models/index.js";
 import { activityService } from "../activity/activity.service.js";
 import { getEmitters } from "../../core/realtime/socket.js";
 import ApiError from "../../core/errors/ApiError.js";
@@ -16,21 +16,22 @@ export const reminderService = {
     }
 
     // ensure task exists
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
-      select: { id: true, projectId: true },
+    const task = await Task.findByPk(taskId, {
+      attributes: ['id', 'project_id'],
     });
 
     if (!task) {
       throw new ApiError("TASK_NOT_FOUND", "Task not found", 404);
     }
 
-    const reminder = await prisma.taskReminder.create({
-      data: {
-        taskId,
-        reminderTime: normalizedTime,
-        status: "scheduled",
-      },
+    const reminder = await TaskReminder.create({
+      task_id: taskId,
+      reminderTime: normalizedTime, // Mapped in model definition? task_reminders table uses reminder_time.
+      // Wait, in Step 580 I defined model:
+      // reminderTime: { type: DataTypes.DATE, field: 'reminder_time' }
+      // So use key `reminderTime`.
+      status: "scheduled",
+      note,
     });
 
     // -------------------------
@@ -78,63 +79,63 @@ export const reminderService = {
   async listReminders(taskId) {
     if (!taskId) throw new ApiError("INVALID_INPUT", "taskId is required", 400);
 
-    return prisma.taskReminder.findMany({
-      where: { taskId },
-      orderBy: { reminderTime: "asc" },
+    return TaskReminder.findAll({
+      where: { task_id: taskId },
+      order: [["reminderTime", "ASC"]],
     });
   },
 
   async deleteReminder(reminderId, userId = null) {
-    try {
-      const r = await prisma.taskReminder.delete({
-        where: { id: reminderId },
-      });
+    const r = await TaskReminder.findByPk(reminderId);
 
-      const task = await prisma.task.findUnique({
-        where: { id: r.taskId },
-        include: { project: true },
-      });
-
-      if (task) {
-        // -------------------------
-        // ACTIVITY LOG
-        // -------------------------
-        try {
-          await activityService.log({
-            workspaceId: task.project.workspaceId,
-            userId,
-            taskId: r.taskId,
-            projectId: task.projectId,
-            type: "reminder.deleted",
-            metadata: {
-              id: r.id,
-              actorId: userId,
-            },
-          });
-        } catch (err) {
-          console.error("activityService.log (reminder.deleted) failed:", err);
-        }
-
-        // -------------------------
-        // SOCKET EMIT
-        // -------------------------
-        try {
-          const emitters = getEmitters();
-          emitters?.emitToWorkspace(task.project.workspaceId, "reminder.deleted", {
-            reminder: { id: r.id, taskId: r.taskId },
-            meta: { byUserId: userId },
-          });
-        } catch (err) {
-          console.error("emitters.emitToWorkspace (reminder.deleted) failed:", err);
-        }
-      }
-
-      return r;
-    } catch (err) {
-      if (err?.code === "P2025") {
-        throw new ApiError("NOT_FOUND", "Reminder not found", 404);
-      }
-      throw err;
+    if (!r) {
+      throw new ApiError("NOT_FOUND", "Reminder not found", 404);
     }
+
+    await TaskReminder.destroy({ where: { id: reminderId } });
+
+    const task = await Task.findByPk(r.task_id, {
+      include: {
+        model: Project,
+        as: 'project',
+        attributes: ['id', 'workspace_id']
+      },
+    });
+
+    if (task) {
+      // -------------------------
+      // ACTIVITY LOG
+      // -------------------------
+      try {
+        await activityService.log({
+          workspaceId: task.project.workspace_id,
+          userId,
+          taskId: r.task_id,
+          projectId: task.project_id,
+          type: "reminder.deleted",
+          metadata: {
+            id: r.id,
+            actorId: userId,
+          },
+        });
+      } catch (err) {
+        console.error("activityService.log (reminder.deleted) failed:", err);
+      }
+
+      // -------------------------
+      // SOCKET EMIT
+      // -------------------------
+      try {
+        const emitters = getEmitters();
+        emitters?.emitToWorkspace(task.project.workspace_id, "reminder.deleted", {
+          reminder: { id: r.id, taskId: r.task_id },
+          meta: { byUserId: userId },
+        });
+      } catch (err) {
+        console.error("emitters.emitToWorkspace (reminder.deleted) failed:", err);
+      }
+    }
+
+    return r;
   },
 };

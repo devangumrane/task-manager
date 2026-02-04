@@ -5,8 +5,20 @@ import { getTaskById, getTaskAttachments } from "../services/taskService";
 import { getReminders, createReminder, deleteReminder } from "../services/reminderService";
 import { ArrowLeft, Plus } from "lucide-react";
 import { ROUTES } from "../router/paths";
-import { Button } from "../components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card";
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardContent,
+  Typography,
+  Box,
+  Grid,
+  Chip,
+  Link,
+  IconButton,
+  Container,
+  CircularProgress
+} from "@mui/material";
 
 import ReminderList from "../components/reminders/ReminderList";
 import CreateReminderDialog from "../components/reminders/CreateReminderDialog";
@@ -54,100 +66,120 @@ export default function TaskDetails() {
     },
   });
 
-  if (loadingTask) return <p className="p-8">Loading task…</p>;
-  if (!task) return <p className="p-8">Task not found.</p>;
+  if (loadingTask) return (
+    <Box p={8} display="flex" justifyContent="center">
+      <CircularProgress />
+    </Box>
+  );
+  if (!task) return <Typography p={8}>Task not found.</Typography>;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <Container maxWidth="lg" sx={{ py: 4, animation: 'fadeIn 0.5s' }}>
       {/* Back Button */}
-      <button
-        onClick={() => navigate(ROUTES.TASK(workspaceId, projectId, task.id).replace('tasks/' + task.id, ''))} // navigate back to project
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft size={18} />
-        Back to Project
-      </button>
+      <Box mb={2}>
+        <Button
+          startIcon={<ArrowLeft size={18} />}
+          onClick={() => navigate(ROUTES.TASK(workspaceId, projectId, task.id).replace('tasks/' + task.id, ''))} // navigate back to project
+          color="inherit"
+        >
+          Back to Project
+        </Button>
+      </Box>
 
       {/* Main Grid */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <Grid container spacing={3}>
         {/* Left Column: Task Details + Attachments */}
-        <div className="md:col-span-2 space-y-6">
-          <Card className="shadow-none border bg-card">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <h1 className="text-2xl font-bold">{task.title}</h1>
-                  <div className="flex gap-2 mt-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    <span className="px-2 py-1 bg-secondary rounded">{task.status}</span>
-                    <span className="px-2 py-1 bg-secondary rounded">{task.priority}</span>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                <p className="text-muted-foreground whitespace-pre-wrap">{task.description || "No description provided."}</p>
-              </div>
-              <div className="text-sm border-t pt-4 grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-muted-foreground block text-xs">Due Date</span>
-                  <span className="font-medium">
+        <Grid item xs={12} md={8} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Card variant="outlined" sx={{ boxShadow: 0 }}>
+            <CardHeader
+              title={
+                <Box>
+                  <Typography variant="h5" fontWeight="bold">{task.title}</Typography>
+                  <Box display="flex" gap={1} mt={1}>
+                    <Chip label={task.status} size="small" sx={{ textTransform: 'uppercase', fontWeight: 'bold' }} />
+                    <Chip label={task.priority} size="small" color="primary" variant="outlined" sx={{ textTransform: 'uppercase', fontWeight: 'bold' }} />
+                  </Box>
+                </Box>
+              }
+            />
+            <CardContent>
+              <Box className="prose prose-sm dark:prose-invert max-w-none" mb={3}>
+                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', color: 'text.secondary' }}>
+                  {task.description || "No description provided."}
+                </Typography>
+              </Box>
+
+              <Box borderTop={1} borderColor="divider" pt={2} display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" display="block">Due Date</Typography>
+                  <Typography variant="body2" fontWeight="medium">
                     {task.due_date ? new Date(task.due_date).toLocaleDateString() : "No due date"}
-                  </span>
-                </div>
-              </div>
+                  </Typography>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
 
           {/* Attachments Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Attachments</CardTitle>
-            </CardHeader>
+          <Card variant="outlined">
+            <CardHeader title={<Typography variant="h6">Attachments</Typography>} />
             <CardContent>
               {loadingAttachments ? (
-                <p className="text-sm text-muted-foreground">Loading attachments…</p>
+                <Typography variant="body2" color="text.secondary">Loading attachments…</Typography>
               ) : attachments?.length === 0 ? (
-                <p className="text-sm text-muted-foreground italic">No attachments.</p>
+                <Typography variant="body2" color="text.secondary" fontStyle="italic">No attachments.</Typography>
               ) : (
-                <div className="space-y-3">
+                <Box display="flex" flexDirection="column" gap={1}>
                   {attachments.map((file) => (
-                    <div
+                    <Box
                       key={file.id}
-                      className="p-3 rounded-lg border bg-muted/20 flex items-center justify-between"
+                      p={2}
+                      bgcolor="action.hover"
+                      borderRadius={1}
+                      border={1}
+                      borderColor="divider"
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
                     >
-                      <div>
-                        <p className="font-medium text-sm">{file.filename}</p>
-                        <p className="text-xs text-muted-foreground uppercase">{file.mimetype.split('/')[1]}</p>
-                      </div>
-                      <a
+                      <Box>
+                        <Typography variant="body2" fontWeight="medium">{file.filename}</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase' }}>
+                          {file.mimetype.split('/')[1]}
+                        </Typography>
+                      </Box>
+                      <Link
                         href={file.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline text-sm font-medium"
+                        underline="hover"
+                        variant="body2"
+                        fontWeight="medium"
                       >
                         Download
-                      </a>
-                    </div>
+                      </Link>
+                    </Box>
                   ))}
-                </div>
+                </Box>
               )}
             </CardContent>
           </Card>
-        </div>
+        </Grid>
 
         {/* Right Column: Reminders (Side Panel) */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-semibold">Reminders</CardTitle>
-              <Button variant="ghost" size="icon" onClick={() => setIsReminderDialogOpen(true)}>
-                <Plus size={16} />
-              </Button>
-            </CardHeader>
+        <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Card variant="outlined">
+            <CardHeader
+              title={<Typography variant="h6">Reminders</Typography>}
+              action={
+                <IconButton onClick={() => setIsReminderDialogOpen(true)}>
+                  <Plus size={20} />
+                </IconButton>
+              }
+            />
             <CardContent>
               {loadingReminders ? (
-                <p className="text-sm text-muted-foreground">Loading...</p>
+                <Typography variant="body2" color="text.secondary">Loading...</Typography>
               ) : (
                 <ReminderList
                   reminders={reminders || []}
@@ -156,8 +188,8 @@ export default function TaskDetails() {
               )}
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </Grid>
+      </Grid>
 
       {/* Dialogs */}
       <CreateReminderDialog
@@ -174,6 +206,6 @@ export default function TaskDetails() {
         destructive
         onConfirm={() => deleteReminderMutation.mutate(deleteId)}
       />
-    </div>
+    </Container>
   );
 }

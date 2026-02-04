@@ -2,12 +2,18 @@ import { useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from "../ui/dialog";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+  DialogActions,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Box,
+  Typography,
+  Chip
+} from "@mui/material";
 import RichTextEditor from "../ui/RichTextEditor";
 
 import { useCreateTask } from "../../hooks/useTasks";
@@ -82,103 +88,110 @@ export default function CreateTaskDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px]">
-        <DialogHeader>
-          <DialogTitle>Create Task</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Input
-              placeholder="Task title"
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+      <form onSubmit={handleSubmit}>
+        <DialogTitle>Create Task</DialogTitle>
+        <DialogContent dividers>
+          <Box display="flex" flexDirection="column" gap={3}>
+            <TextField
+              autoFocus
+              label="Task Title"
+              variant="outlined"
+              fullWidth
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-lg font-medium"
-              autoFocus
             />
-          </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Description</label>
-            <RichTextEditor
-              content={description}
-              onChange={setDescription}
-              placeholder="Describe the task..."
-            />
-          </div>
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>Description</Typography>
+              {/* RichTextEditor might need refactoring too, but assuming it works for now or is standalone */}
+              <RichTextEditor
+                content={description}
+                onChange={setDescription}
+                placeholder="Describe the task..."
+              />
+            </Box>
 
-          <div className="grid grid-cols-2 gap-4">
-            {/* Priority */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Priority</label>
-              <select
-                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-              >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="URGENT">Urgent</option>
-              </select>
-            </div>
+            <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+              <FormControl fullWidth>
+                <InputLabel>Priority</InputLabel>
+                <Select
+                  value={priority}
+                  label="Priority"
+                  onChange={(e) => setPriority(e.target.value)}
+                >
+                  <MenuItem value="LOW">Low</MenuItem>
+                  <MenuItem value="MEDIUM">Medium</MenuItem>
+                  <MenuItem value="HIGH">High</MenuItem>
+                  <MenuItem value="URGENT">Urgent</MenuItem>
+                </Select>
+              </FormControl>
 
-            {/* Assignee */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Assignee</label>
-
-              {assignedUser ? (
-                <div className="flex items-center justify-between border rounded px-3 py-2 text-sm bg-gray-50">
-                  <span className="font-medium">{assignedUser.name || assignedUser.email}</span>
-                  <button
-                    type="button"
-                    onClick={() => setAssignedUser(null)}
-                    className="text-red-500 hover:text-red-700 text-xs font-medium"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <div className="relative">
-                  <Input
-                    placeholder="Search user..."
-                    value={assigneeQuery}
-                    onChange={(e) => handleAssigneeSearch(e.target.value)}
-                  />
-                  {assigneeResults.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-40 overflow-auto">
-                      {assigneeResults.map((u) => (
-                        <button
-                          key={u.id}
-                          type="button"
-                          onClick={() => {
-                            setAssignedUser(u);
-                            setAssigneeResults([]);
-                            setAssigneeQuery("");
-                          }}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
-                        >
-                          {u.name || u.email}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <DialogFooter className="pt-4">
-            <Button type="button" variant="ghost" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={createTask.isPending}>
-              {createTask.isPending ? "Creating..." : "Create Task"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+              <Box>
+                {assignedUser ? (
+                  <Box display="flex" alignItems="center" gap={1} border={1} borderColor="divider" borderRadius={1} p={1}>
+                    <Typography variant="body2" sx={{ flexGrow: 1, fontWeight: 'medium' }}>
+                      {assignedUser.name || assignedUser.email}
+                    </Typography>
+                    <Button
+                      size="small"
+                      color="error"
+                      onClick={() => setAssignedUser(null)}
+                    >
+                      Remove
+                    </Button>
+                  </Box>
+                ) : (
+                  <div style={{ position: 'relative' }}>
+                    <TextField
+                      label="Assignee"
+                      placeholder="Search user..."
+                      fullWidth
+                      value={assigneeQuery}
+                      onChange={(e) => handleAssigneeSearch(e.target.value)}
+                      autoComplete="off"
+                    />
+                    {assigneeResults.length > 0 && (
+                      <Paper
+                        elevation={3}
+                        sx={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          right: 0,
+                          zIndex: 10,
+                          mt: 0.5,
+                          maxHeight: 200,
+                          overflow: 'auto'
+                        }}
+                      >
+                        {assigneeResults.map((u) => (
+                          <MenuItem
+                            key={u.id}
+                            onClick={() => {
+                              setAssignedUser(u);
+                              setAssigneeResults([]);
+                              setAssigneeQuery("");
+                            }}
+                          >
+                            {u.name || u.email}
+                          </MenuItem>
+                        ))}
+                      </Paper>
+                    )}
+                  </div>
+                )}
+              </Box>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} color="inherit">Cancel</Button>
+          <Button type="submit" variant="contained" disabled={createTask.isPending}>
+            {createTask.isPending ? "Creating..." : "Create Task"}
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 }

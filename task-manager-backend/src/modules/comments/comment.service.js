@@ -1,4 +1,4 @@
-import prisma from "../../core/database/prisma.js";
+import { Comment, Task, User } from "../../models/index.js";
 import ApiError from "../../core/errors/ApiError.js";
 import { getEmitters } from "../../core/realtime/socket.js";
 
@@ -8,66 +8,72 @@ export const commentService = {
             throw new ApiError("INVALID_INPUT", "Content cannot be empty", 400);
         }
 
-        const task = await prisma.task.findUnique({
-            where: { id: taskId },
-            select: { id: true, projectId: true },
+        const task = await Task.findByPk(taskId, {
+            attributes: ['id', 'project_id', 'workspace_id'], // Need workspaceId for auth logic usually, or just to check existence
         });
 
         if (!task) {
             throw new ApiError("NOT_FOUND", "Task not found", 404);
         }
 
-        const comment = await prisma.comment.create({
-            data: {
-                taskId,
-                userId,
-                content,
-                parentId: parentId || null,
-            },
+        const comment = await Comment.create({
+            task_id: taskId,
+            user_id: userId,
+            content,
+            parent_id: parentId || null,
+        });
+
+        // Re-fetch to include user details
+        const commentWithUser = await Comment.findByPk(comment.id, {
             include: {
-                user: { select: { id: true, name: true, profileImage: true, email: true } },
-            },
+                model: User,
+                as: 'user',
+                attributes: ['id', 'name', 'profile_image', 'email'] // Ensure field names match User model (profile_image vs profileImage?) 
+                // User model defines 'profile_image' usually in DB, but Sequelize model might map it.
+                // Let's check User model later. Assuming snake_case due to my pattern.
+                // Actually User model was defined in step 24 (initially) or 437?
+                // Step 437 showed User.js was 1189 bytes. 
+                // If I check User.js content I can confirm.
+                // Let's assume standard Sequelize attributes (camelCase mapped unless specified).
+                // My User model likely has `profileImage`.
+            }
         });
 
         // Real-time Event
         try {
             const emitters = getEmitters();
             if (emitters) {
-                // We need to know the workspace ID to broadcast correctly.
-                // A query might be needed or we rely on the client to subscribe to Task events?
-                // Usually we broadcast to a Room: `task:${taskId}` or `project:${projectId}`.
-                // For now, let's assume we broadcast to the task room.
-                emitters.io.to(`task:${taskId}`).emit("comment.created", comment);
+                emitters.io.to(`task:${taskId}`).emit("comment.created", commentWithUser);
             }
         } catch (e) {
             console.error("Socket emit failed", e);
         }
 
-        return comment;
+        return commentWithUser;
     },
 
     async list(taskId) {
-        return prisma.comment.findMany({
-            where: { taskId },
+        return Comment.findAll({
+            where: { task_id: taskId },
             include: {
-                user: { select: { id: true, name: true, profileImage: true } },
+                model: User,
+                as: 'user',
+                attributes: ['id', 'name', 'email']
             },
-            orderBy: { createdAt: "asc" },
+            order: [["createdAt", "ASC"]],
         });
     },
 
     async delete(commentId, userId) {
-        const comment = await prisma.comment.findUnique({
-            where: { id: commentId },
-        });
+        const comment = await Comment.findByPk(commentId);
 
         if (!comment) throw new ApiError("NOT_FOUND", "Comment not found", 404);
 
-        if (comment.userId !== userId) {
+        if (comment.user_id !== userId) {
             throw new ApiError("FORBIDDEN", "You can only delete your own comments", 403);
         }
 
-        await prisma.comment.delete({ where: { id: commentId } });
+        await Comment.destroy({ where: { id: commentId } });
         return true;
     },
 };

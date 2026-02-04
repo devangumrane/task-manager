@@ -1,87 +1,67 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
     Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
     DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
-
-const schema = z.object({
-    reminderTime: z.string().min(1, "Date/Time is required"),
-    note: z.string().optional(),
-});
+    DialogContent,
+    DialogActions,
+    Button,
+    TextField
+} from "@mui/material";
 
 export default function CreateReminderDialog({ open, onOpenChange, onSubmit }) {
-    const {
-        register,
-        handleSubmit,
-        reset,
-        formState: { errors, isSubmitting },
-    } = useForm({
-        resolver: zodResolver(schema),
-    });
+    const [datetime, setDatetime] = useState("");
+    const [note, setNote] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const onFormSubmit = async (data) => {
-        await onSubmit(data);
-        reset();
-        onOpenChange(false);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!datetime) return;
+
+        try {
+            setLoading(true);
+            await onSubmit({ reminderTime: new Date(datetime).toISOString(), note });
+            setDatetime("");
+            setNote("");
+            onOpenChange(false);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Set Reminder</DialogTitle>
-                    <DialogDescription>
-                        You will receive a notification at the specified time.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 py-2">
-                    <div className="space-y-2">
-                        <Label htmlFor="reminderTime">Time</Label>
-                        <Input
-                            id="reminderTime"
-                            type="datetime-local"
-                            {...register("reminderTime")}
-                        />
-                        {errors.reminderTime && (
-                            <p className="text-xs text-destructive">{errors.reminderTime.message}</p>
-                        )}
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="note">Note (Optional)</Label>
-                        <Textarea
-                            id="note"
-                            placeholder="e.g. Prepare the slide deck"
-                            {...register("note")}
-                        />
-                    </div>
-
-                    <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? "Saving..." : "Set Reminder"}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
+        <Dialog open={open} onClose={() => onOpenChange(false)} fullWidth maxWidth="xs">
+            <form onSubmit={handleSubmit}>
+                <DialogTitle>Set Reminder</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        type="datetime-local"
+                        label="Date & Time"
+                        InputLabelProps={{ shrink: true }}
+                        fullWidth
+                        margin="dense"
+                        value={datetime}
+                        onChange={(e) => setDatetime(e.target.value)}
+                        required
+                    />
+                    <TextField
+                        label="Note (Optional)"
+                        fullWidth
+                        margin="dense"
+                        multiline
+                        rows={3}
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => onOpenChange(false)} color="inherit">Cancel</Button>
+                    <Button type="submit" variant="contained" disabled={loading}>
+                        {loading ? "Setting..." : "Set Reminder"}
+                    </Button>
+                </DialogActions>
+            </form>
         </Dialog>
     );
 }

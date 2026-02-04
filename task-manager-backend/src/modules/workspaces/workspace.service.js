@@ -1,7 +1,8 @@
-import prisma from "../../core/database/prisma.js";
+import { Workspace, WorkspaceMember, User, Project } from "../../models/index.js";
 import { activityService } from "../activity/activity.service.js";
 import { getEmitters } from "../../core/realtime/socket.js";
 import ApiError from "../../core/errors/ApiError.js";
+import sequelize from "../../config/database.js";
 
 export const workspaceService = {
   async createWorkspace(userId, data) {
@@ -10,69 +11,105 @@ export const workspaceService = {
       throw new ApiError("INVALID_INPUT", "Workspace name is required", 400);
     }
 
-    const workspace = await prisma.workspace.create({
-      data: {
-        name,
-        ownerId: userId,
-        members: { create: { userId, role: "admin" } },
-      },
-      include: { members: { include: { user: true } } },
-    });
+    const t = await sequelize.transaction();
 
-    // -------------------------
-    // Activity log
-    // -------------------------
     try {
-      await activityService.log({
-        workspaceId: workspace.id,
-        userId,
-        type: "workspace.created",
-        metadata: {
-          id: workspace.id,
-          name: workspace.name,
-          actorId: userId,
+      const workspace = await Workspace.create(
+        {
+          name,
+          owner_id: userId,
         },
-      });
-    } catch (err) {
-      console.error("activityService.log (workspace.created) failed:", err);
-    }
+        { transaction: t }
+      );
 
-    // -------------------------
-    // Emit realtime
-    // -------------------------
-    try {
-      const emitters = getEmitters();
-      emitters?.emitToWorkspace(workspace.id, "workspace.created", {
-        workspace: {
-          id: workspace.id,
-          name: workspace.name,
+      // Add owner as admin member
+      await WorkspaceMember.create(
+        {
+          workspace_id: workspace.id,
+          user_id: userId,
+          role: "admin",
         },
-        meta: { byUserId: userId },
-      });
-    } catch (err) {
-      console.error("emitters.emitToWorkspace (workspace.created) failed:", err);
-    }
+        { transaction: t }
+      );
 
-    return workspace;
+      await t.commit();
+
+      // Fetch complete workspace with members
+      const createdWorkspace = await Workspace.findByPk(workspace.id, {
+        include: [
+          {
+            model: WorkspaceMember,
+            as: "members",
+            include: [{ model: User, as: "user" }],
+          },
+        ],
+      });
+
+      // -------------------------
+      // Activity log
+      // -------------------------
+      try {
+        await activityService.log({
+          workspaceId: workspace.id,
+          userId,
+          type: "workspace.created",
+          metadata: {
+            id: workspace.id,
+            name: workspace.name,
+            actorId: userId,
+          },
+        });
+      } catch (err) {
+        console.error("activityService.log (workspace.created) failed:", err);
+      }
+
+      // -------------------------
+      // Emit realtime
+      // -------------------------
+      try {
+        const emitters = getEmitters();
+        emitters?.emitToWorkspace(workspace.id, "workspace.created", {
+          workspace: {
+            id: workspace.id,
+            name: workspace.name,
+          },
+          meta: { byUserId: userId },
+        });
+      } catch (err) {
+        console.error("emitters.emitToWorkspace (workspace.created) failed:", err);
+      }
+
+      return createdWorkspace;
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
   },
 
   async listUserWorkspaces(userId) {
-    return prisma.workspace.findMany({
-      where: {
-        OR: [{ ownerId: userId }, { members: { some: { userId } } }],
-      },
-      include: { members: true },
-      orderBy: { updatedAt: "desc" },
+    const user = await User.findByPk(userId, {
+      include: [
+        {
+          model: Workspace,
+          as: 'workspaces',
+          include: [{ model: WorkspaceMember, as: 'members' }]
+        }
+      ]
     });
+
+    return user ? user.workspaces : [];
   },
 
   async getWorkspace(workspaceId) {
-    const ws = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
-      include: {
-        members: { include: { user: true } },
-        projects: true,
-      },
+    const ws = await Workspace.findByPk(workspaceId, {
+      include: [
+        {
+          model: WorkspaceMember,
+          as: "members",
+          include: [{ model: User, as: "user" }],
+        },
+        { model: Project, as: "projects" },
+      ],
     });
 
     if (!ws) {
@@ -83,20 +120,17 @@ export const workspaceService = {
   },
 
   async addMember(workspaceId, data, actorId) {
-    // New param: actorId (admin performing the action)
-
-    const user = await prisma.user.findUnique({
-      where: { email: data.email },
-    });
+    const user = await User.findOne({ where: { email: data.email } });
 
     if (!user) {
       throw new ApiError("USER_NOT_FOUND", "User with this email does not exist", 404);
     }
 
     // prevent duplicate membership
-    const existing = await prisma.workspaceMember.findUnique({
+    const existing = await WorkspaceMember.findOne({
       where: {
-        workspaceId_userId: { workspaceId, userId: user.id },
+        workspace_id: workspaceId,
+        user_id: user.id
       },
     });
 
@@ -104,9 +138,15 @@ export const workspaceService = {
       throw new ApiError("ALREADY_MEMBER", "User is already a member of this workspace", 409);
     }
 
-    const member = await prisma.workspaceMember.create({
-      data: { workspaceId, userId: user.id, role: data.role },
-      include: { user: true },
+    const member = await WorkspaceMember.create({
+      workspace_id: workspaceId,
+      user_id: user.id,
+      role: data.role,
+    });
+
+    // Fetch with user details for return
+    const memberWithUser = await WorkspaceMember.findByPk(member.id, {
+      include: [{ model: User, as: 'user' }]
     });
 
     // -------------------------
@@ -138,6 +178,7 @@ export const workspaceService = {
           id: user.id,
           email: user.email,
           role: data.role,
+          actorId,
         },
         meta: { byUserId: actorId },
       });
@@ -145,6 +186,6 @@ export const workspaceService = {
       console.error("emitters.emitToWorkspace (workspace.member_added) failed:", err);
     }
 
-    return member;
+    return memberWithUser;
   },
 };

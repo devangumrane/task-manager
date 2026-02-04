@@ -1,50 +1,56 @@
 import { useState } from "react";
 import { useCreateProject } from "../../hooks/useProjects";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField
+} from "@mui/material";
 
 export default function CreateProjectDialog({ open, onClose, workspaceId }) {
   const [name, setName] = useState("");
   const createProject = useCreateProject(workspaceId);
 
-  const submit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    createProject.mutate({ name }, {
-      onSuccess: () => {
-        setName("");
-        onClose();
-      },
-    });
+    createProject.mutate(
+      { name, workspaceId },
+      {
+        onSuccess: () => {
+          setName("");
+          onClose();
+        },
+      }
+    );
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create Project</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={submit}>
-          <Input
-            placeholder="Project name"
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+      <form onSubmit={handleSubmit}>
+        <DialogTitle>Create Project</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Project Name"
+            type="text"
+            fullWidth
+            variant="outlined"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mb-4"
           />
-
-          <DialogFooter>
-            <Button variant="secondary" type="button" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={createProject.isPending}>
-              {createProject.isPending ? "Creating..." : "Create"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} color="inherit">Cancel</Button>
+          <Button type="submit" variant="contained" disabled={createProject.isPending}>
+            {createProject.isPending ? "Creating..." : "Create"}
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 }

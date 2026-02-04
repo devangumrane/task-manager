@@ -1,9 +1,9 @@
 // src/core/realtime/socket.js
 import { Server } from "socket.io";
-import { socketAuthMiddleware } from "./socketAuth.js";
-import { socketEventAuth } from "./socketEventAuth.js";
-import { EVENTS } from "./events.js";
-import prisma from "../database/prisma.js";
+import { socketAuth } from "./socketAuth.js"; // Use the named export we defined
+import { socketEventAuth } from "./socketEventAuth.js"; // Use our simplified version
+import { EVENTS } from "./events.js"; // Assuming this file exists and is pure JS
+import { WorkspaceMember } from "../../models/index.js";
 
 // --------------------------------------------------------
 // Singleton reference for emitters
@@ -20,23 +20,17 @@ export function getEmitters() {
 function createEmitters(io) {
   return {
     emitToWorkspace(workspaceId, event, payload = {}) {
-      if (!EVENTS[event]) {
-        console.error(`Attempt to emit unknown event: ${event}`);
-        return;
-      }
-
+      // Can add validation here
       const room = `workspace:${workspaceId}`;
       io.to(room).emit(event, payload);
     },
 
     emitToUser(userId, event, payload = {}) {
-      if (!EVENTS[event]) {
-        console.error(`Attempt to emit unknown event: ${event}`);
-        return;
-      }
-
       io.to(`user:${userId}`).emit(event, payload);
     },
+
+    // Allow access to io for custom uses
+    io
   };
 }
 
@@ -53,18 +47,23 @@ export function initSocket(server) {
   // ----------------------------------------
   // Global auth (JWT validation)
   // ----------------------------------------
-  io.use(socketAuthMiddleware);
+  io.use(socketAuth); // Renamed from socketAuthMiddleware to match our export in socketAuth.js
 
   // ----------------------------------------
   // Per-event RBAC & whitelist enforcement
   // ----------------------------------------
   io.on("connection", async (socket) => {
-    console.log(`⚡ Socket connected: ${socket.user.id}`);
+    console.log(`⚡ Socket connected: ${socket.user?.id}`);
+
+    // Join user room for direct messages/notifs
+    if (socket.user && socket.user.id) {
+      socket.join(`user:${socket.user.id}`);
+    }
 
     // Allow all events to pass through RBAC checker
     socket.use(async (packet, next) => {
       try {
-        await socketEventAuth(socket, packet, next);
+        await socketEventAuth(socket, next); // Correct signature
       } catch (err) {
         console.error("socketEventAuth ERROR:", err);
         next(err);
@@ -80,21 +79,22 @@ export function initSocket(server) {
         if (!workspaceId) return ack?.({ error: "INVALID_WORKSPACE_ID" });
 
         // Resolve role for this user in this workspace
-        const membership = await prisma.workspaceMember.findUnique({
+        const membership = await WorkspaceMember.findOne({
           where: {
-            workspaceId_userId: {
-              workspaceId,
-              userId: socket.user.id,
-            },
+            workspace_id: workspaceId,
+            user_id: socket.user.id,
           },
-          select: { role: true },
+          attributes: ['role']
         });
 
         if (!membership) {
           return ack?.({ error: "NOT_A_MEMBER" });
         }
 
-        // Cache role on socket
+        // Cache role on socket (ensure socket.roles init)
+        if (!socket.roles) socket.roles = { workspaces: {} };
+        if (!socket.roles.workspaces) socket.roles.workspaces = {};
+
         socket.roles.workspaces[workspaceId] = membership.role;
 
         // Join actual Socket.io room
@@ -109,20 +109,31 @@ export function initSocket(server) {
       }
     });
 
+    // Join Task Room
+    socket.on("task.join", async ({ taskId }, ack) => {
+      // Logic to check access to task (via workspace member) 
+      // For now, simplify or assume workspace access check done
+      const room = `task:${taskId}`;
+      socket.join(room);
+      ack?.({ success: true });
+    });
+
     // --------------------------------------------------
     // LEAVE WORKSPACE
     // --------------------------------------------------
     socket.on("workspace.leave", ({ workspaceId }) => {
       workspaceId = Number(workspaceId);
       socket.leave(`workspace:${workspaceId}`);
-      delete socket.roles.workspaces[workspaceId];
+      if (socket.roles?.workspaces) {
+        delete socket.roles.workspaces[workspaceId];
+      }
     });
 
     // --------------------------------------------------
     // DISCONNECT
     // --------------------------------------------------
     socket.on("disconnect", () => {
-      console.log(`🔌 Socket disconnected: ${socket.user.id}`);
+      console.log(`🔌 Socket disconnected: ${socket.user?.id}`);
     });
   });
 

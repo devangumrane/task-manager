@@ -1,34 +1,43 @@
 import { format } from "date-fns";
 import { Bell, Trash2 } from "lucide-react";
-import { Button } from "../ui/button";
+import { Box, Typography, IconButton } from "@mui/material";
 
 export default function ReminderItem({ reminder, onDelete }) {
     return (
-        <div className="flex items-start justify-between p-3 bg-muted/30 rounded-lg border">
-            <div className="flex gap-3">
-                <div className="mt-1 text-primary">
+        <Box
+            display="flex"
+            alignItems="flex-start"
+            justifyContent="space-between"
+            p={1.5}
+            bgcolor="background.paper"
+            borderRadius={1}
+            border={1}
+            borderColor="divider"
+        >
+            <Box display="flex" gap={2}>
+                <Box mt={0.5} color="primary.main">
                     <Bell size={16} />
-                </div>
-                <div>
-                    <p className="font-medium text-sm">
+                </Box>
+                <Box>
+                    <Typography variant="body2" fontWeight="medium">
                         {format(new Date(reminder.reminderTime), "PPP p")}
-                    </p>
+                    </Typography>
                     {reminder.note && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
                             {reminder.note}
-                        </p>
+                        </Typography>
                     )}
-                </div>
-            </div>
+                </Box>
+            </Box>
 
-            <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            <IconButton
+                size="small"
                 onClick={() => onDelete(reminder.id)}
+                color="default"
+                aria-label="delete reminder"
             >
                 <Trash2 size={14} />
-            </Button>
-        </div>
+            </IconButton>
+        </Box>
     );
 }

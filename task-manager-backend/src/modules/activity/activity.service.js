@@ -1,8 +1,6 @@
-// src/modules/activity/activity.service.js
-import prisma from "../../core/database/prisma.js";
+import { ActivityLog, User, Task, Project } from "../../models/index.js";
 import ApiError from "../../core/errors/ApiError.js";
 import { ActivityFormatter } from "../../core/activity/formatters.js";
-import { EVENTS } from "../../core/realtime/events.js";
 
 export const activityService = {
   /**
@@ -29,17 +27,15 @@ export const activityService = {
     const formatted = ActivityFormatter.format(type, metadata);
 
     try {
-      return await prisma.activityLog.create({
-        data: {
-          workspaceId,
-          userId,
-          taskId,
-          projectId,
-          type,
-          title: formatted.title,
-          icon: formatted.icon,
-          metadata: formatted.details,
-        },
+      return await ActivityLog.create({
+        workspace_id: workspaceId,
+        user_id: userId,
+        task_id: taskId,
+        project_id: projectId,
+        type,
+        title: formatted.title,
+        icon: formatted.icon,
+        metadata: formatted.details,
       });
     } catch (err) {
       // If DB error occurs, do NOT crash core workflows
@@ -63,30 +59,39 @@ export const activityService = {
     if (Number.isNaN(page) || page < 1) page = 1;
     if (Number.isNaN(perPage) || perPage < 1 || perPage > 100) perPage = 25;
 
-    const skip = (page - 1) * perPage;
+    const offset = (page - 1) * perPage;
 
-    const [items, total] = await Promise.all([
-      prisma.activityLog.findMany({
-        where: { workspaceId },
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: perPage,
-        include: {
-          user: { select: { id: true, name: true, email: true } },
-          task: { select: { id: true, title: true } },
-          project: { select: { id: true, name: true } },
+    const { count, rows } = await ActivityLog.findAndCountAll({
+      where: { workspace_id: workspaceId },
+      order: [["createdAt", "DESC"]],
+      offset,
+      limit: perPage,
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name", "email"],
         },
-      }),
-      prisma.activityLog.count({ where: { workspaceId } }),
-    ]);
+        {
+          model: Task,
+          as: "task",
+          attributes: ["id", "title"],
+        },
+        {
+          model: Project,
+          as: "project",
+          attributes: ["id", "title"], // Project model uses 'title' not 'name' 
+        },
+      ],
+    });
 
     return {
-      items,
+      items: rows,
       meta: {
         page,
         perPage,
-        total,
-        totalPages: Math.max(1, Math.ceil(total / perPage)),
+        total: count,
+        totalPages: Math.max(1, Math.ceil(count / perPage)),
       },
     };
   },

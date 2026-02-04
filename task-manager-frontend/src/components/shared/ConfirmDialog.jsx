@@ -1,12 +1,11 @@
 import {
     Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
     DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
+    DialogContent,
+    DialogContentText,
+    DialogActions,
+    Button
+} from "@mui/material";
 
 export default function ConfirmDialog({
     open,
@@ -18,27 +17,29 @@ export default function ConfirmDialog({
     destructive = false,
 }) {
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onClose={() => onOpenChange(false)}>
+            <DialogTitle>{title}</DialogTitle>
             <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
-                    <DialogDescription>{description}</DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onConfirm();
-                        }}
-                        variant={destructive ? "destructive" : "default"}
-                    >
-                        {confirmText}
-                    </Button>
-                </DialogFooter>
+                <DialogContentText>
+                    {description}
+                </DialogContentText>
             </DialogContent>
+            <DialogActions>
+                <Button onClick={() => onOpenChange(false)} color="inherit">
+                    Cancel
+                </Button>
+                <Button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onConfirm();
+                    }}
+                    color={destructive ? "error" : "primary"}
+                    variant="contained"
+                    autoFocus
+                >
+                    {confirmText}
+                </Button>
+            </DialogActions>
         </Dialog>
     );
 }

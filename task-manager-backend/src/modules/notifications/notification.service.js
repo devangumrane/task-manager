@@ -1,9 +1,8 @@
 // src/modules/notifications/notification.service.js
 import nodemailer from "nodemailer";
-import prisma from "../../core/database/prisma.js";
+import { Notification } from "../../models/index.js";
 import { getEmitters } from "../../core/realtime/socket.js";
 
-// Mail transport
 // Mail transport
 const startSmtp = () => {
   const options = {
@@ -46,8 +45,12 @@ export const notificationService = {
   },
 
   async createNotificationRecord({ userId, type, title, body, data = null }) {
-    const n = await prisma.notification.create({
-      data: { userId, type, title, body, data },
+    const n = await Notification.create({
+      user_id: userId,
+      type,
+      title,
+      body,
+      data,
     });
 
     // ---- RUNTIME EMITTER RESOLUTION ----

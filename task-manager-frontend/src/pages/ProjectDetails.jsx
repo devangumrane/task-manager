@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
+import {
+  Button,
+  Box,
+  Typography,
+  Container,
+  Paper,
+  CircularProgress,
+  IconButton
+} from "@mui/material";
 
 import { getProjectById } from "../services/projectService";
 import { useProjectTasks, useUpdateTaskStatus } from "../hooks/useTasks";
@@ -35,55 +44,59 @@ export default function ProjectDetails() {
   const project = rawProject?.data ?? rawProject ?? null;
 
   // ---------------- GUARDS ----------------
-  if (loadingProject || loadingTasks) return <p>Loading…</p>;
-  if (!project) return <p>Project not found</p>;
+  if (loadingProject || loadingTasks) return (
+    <Box display="flex" justifyContent="center" p={4}>
+      <CircularProgress />
+    </Box>
+  );
 
-  // ---------------- STRICT BACKEND ENUMS ----------------
-
+  if (!project) return <Typography p={4}>Project not found</Typography>;
 
   // ---------------- UI ----------------
   return (
-    <div className="space-y-6">
+    <Container maxWidth="xl" sx={{ py: 4, height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Back */}
-      <button
-        onClick={() => navigate(ROUTES.WORKSPACE(workspaceId))}
-        className="flex items-center gap-2 text-gray-600 hover:text-black"
-      >
-        <ArrowLeft size={20} />
-        Back
-      </button>
+      <Box mb={2}>
+        <Button
+          startIcon={<ArrowLeft size={18} />}
+          onClick={() => navigate(ROUTES.WORKSPACE(workspaceId))}
+          color="inherit"
+        >
+          Back to Workspace
+        </Button>
+      </Box>
 
       {/* Header */}
-      <div className="bg-white shadow rounded-xl p-6">
-        <h1 className="text-2xl font-semibold">
+      <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+        <Typography variant="h4" component="h1" fontWeight="bold">
           {project.title || project.name}
-        </h1>
-      </div>
+        </Typography>
+      </Paper>
 
       {/* Tasks header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Tasks</h2>
-        <button
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h5" fontWeight="600">Tasks</Typography>
+        <Button
+          variant="contained"
+          startIcon={<Plus size={18} />}
           onClick={() => setOpenTaskDialog(true)}
-          className="px-3 py-1 bg-primary text-white rounded"
         >
-          + Task
-        </button>
-      </div>
+          Task
+        </Button>
+      </Box>
 
       {/* Kanban Board */}
-      <div className="h-[calc(100vh-200px)]">
+      <Box flexGrow={1} overflow="hidden">
         <KanbanBoard
           tasks={tasks}
           onTaskUpdate={(taskId, updates) =>
             updateTaskStatus.mutate({ taskId, status: updates.status })
           }
           onTaskClick={(task) => {
-            // Optional: Open task details or dialog
             navigate(ROUTES.TASK(workspaceId, projectId, task.id));
           }}
         />
-      </div>
+      </Box>
 
       {/* Create Task Dialog */}
       <CreateTaskDialog
@@ -92,6 +105,6 @@ export default function ProjectDetails() {
         workspaceId={workspaceId}
         projectId={projectId}
       />
-    </div>
+    </Container>
   );
 }

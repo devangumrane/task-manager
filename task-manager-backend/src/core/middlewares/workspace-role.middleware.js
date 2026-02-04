@@ -1,5 +1,4 @@
-
-import prisma from "../database/prisma.js";
+import { Workspace, WorkspaceMember } from "../../models/index.js";
 import ApiError from "../errors/ApiError.js";
 
 /**
@@ -42,9 +41,8 @@ export function workspaceRoleGuard(requiredRole = "member") {
       }
 
       // 1) quick fetch workspace owner
-      const workspace = await prisma.workspace.findUnique({
-        where: { id: workspaceId },
-        select: { ownerId: true },
+      const workspace = await Workspace.findByPk(workspaceId, {
+        attributes: ['owner_id'],
       });
 
       if (!workspace) {
@@ -52,20 +50,18 @@ export function workspaceRoleGuard(requiredRole = "member") {
       }
 
       // owner gets admin rights
-      if (workspace.ownerId === userId) {
+      if (workspace.owner_id === userId) {
         req.workspaceRole = "admin";
         return next();
       }
 
       // 2) check membership
-      const member = await prisma.workspaceMember.findUnique({
+      const member = await WorkspaceMember.findOne({
         where: {
-          workspaceId_userId: {
-            workspaceId,
-            userId,
-          },
+          workspace_id: workspaceId,
+          user_id: userId,
         },
-        select: { role: true },
+        attributes: ['role'],
       });
 
       if (!member) {

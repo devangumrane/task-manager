@@ -1,13 +1,16 @@
-import prisma from "../../core/database/prisma.js";
+import { Attachment, Task, Project } from "../../models/index.js";
 import { activityService } from "../activity/activity.service.js";
 import { getEmitters } from "../../core/realtime/socket.js";
 import ApiError from "../../core/errors/ApiError.js";
 
 export const attachmentService = {
   async create({ taskId, filename, mimetype, size, url, userId }) {
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
-      include: { project: true },
+    const task = await Task.findByPk(taskId, {
+      include: {
+        model: Project,
+        as: 'project',
+        attributes: ['id', 'workspace_id']
+      },
     });
 
     if (!task) {
@@ -16,13 +19,15 @@ export const attachmentService = {
 
     let attachment;
     try {
-      attachment = await prisma.attachment.create({
-        data: { taskId, filename, mimetype, size, url },
+      attachment = await Attachment.create({
+        task_id: taskId,
+        filename,
+        mimetype,
+        size,
+        url,
       });
     } catch (err) {
-      if (err?.code === "P2002") {
-        throw new ApiError("DUPLICATE_ATTACHMENT", "Attachment already exists", 409);
-      }
+      // Unique constraint?
       throw err;
     }
 
@@ -31,10 +36,10 @@ export const attachmentService = {
     // -------------------------
     try {
       await activityService.log({
-        workspaceId: task.project.workspaceId,
+        workspaceId: task.project.workspace_id,
         userId,
         taskId,
-        projectId: task.projectId,
+        projectId: task.project_id,
         type: "attachment.uploaded",
         metadata: {
           id: attachment.id,
@@ -50,7 +55,7 @@ export const attachmentService = {
     // -------------------------
     try {
       const emitters = getEmitters();
-      emitters?.emitToWorkspace(task.project.workspaceId, "attachment.uploaded", {
+      emitters?.emitToWorkspace(task.project.workspace_id, "attachment.uploaded", {
         attachment: {
           id: attachment.id,
           filename: attachment.filename,
@@ -67,16 +72,23 @@ export const attachmentService = {
   },
 
   async list(taskId) {
-    return prisma.attachment.findMany({
-      where: { taskId },
-      orderBy: { createdAt: "desc" },
+    return Attachment.findAll({
+      where: { task_id: taskId },
+      order: [["createdAt", "DESC"]],
     });
   },
 
   async findById(id) {
-    return prisma.attachment.findUnique({
-      where: { id },
-      include: { task: { include: { project: true } } },
+    // Helper to include task and project for authorization checks
+    return Attachment.findByPk(id, {
+      include: {
+        model: Task,
+        as: 'task',
+        include: {
+          model: Project,
+          as: 'project'
+        }
+      }
     });
   },
 
@@ -88,19 +100,17 @@ export const attachmentService = {
     }
 
     // Delete DB record
-    const removed = await prisma.attachment.delete({
-      where: { id: attachmentId },
-    });
+    await Attachment.destroy({ where: { id: attachmentId } });
 
     // -------------------------
     // Activity log (best-effort)
     // -------------------------
     try {
       await activityService.log({
-        workspaceId: record.task.project.workspaceId,
+        workspaceId: record.task.project.workspace_id,
         userId,
-        taskId: record.taskId,
-        projectId: record.task.projectId,
+        taskId: record.task_id,
+        projectId: record.task.project_id,
         type: "attachment.deleted",
         metadata: {
           id: attachmentId,
@@ -116,10 +126,10 @@ export const attachmentService = {
     // -------------------------
     try {
       const emitters = getEmitters();
-      emitters?.emitToWorkspace(record.task.project.workspaceId, "attachment.deleted", {
+      emitters?.emitToWorkspace(record.task.project.workspace_id, "attachment.deleted", {
         attachment: {
           id: attachmentId,
-          taskId: record.taskId,
+          taskId: record.task_id,
         },
         meta: { byUserId: userId },
       });
@@ -127,6 +137,6 @@ export const attachmentService = {
       console.error("emitters.emitToWorkspace (attachment.deleted) failed:", emitErr);
     }
 
-    return removed;
+    return true;
   },
 };

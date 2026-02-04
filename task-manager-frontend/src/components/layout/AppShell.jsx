@@ -1,23 +1,24 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import { Box } from "@mui/material";
 
 export default function AppShell() {
     return (
-        <div className="flex min-h-screen bg-background text-foreground">
+        <Box display="flex" minHeight="100vh" bgcolor="background.default" color="text.primary">
             {/* Sidebar: Handles its own collapse state */}
             <Sidebar />
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0">
+            <Box flex={1} display="flex" flexDirection="column" minWidth={0}>
                 <Navbar />
 
-                <main className="flex-1 p-6 overflow-auto">
-                    <div className="max-w-7xl mx-auto animate-fade-in">
+                <Box component="main" flex={1} p={3} overflow="auto">
+                    <Box maxWidth="lg" mx="auto" sx={{ animation: 'fadeIn 0.5s' }}>
                         <Outlet />
-                    </div>
-                </main>
-            </div>
-        </div>
+                    </Box>
+                </Box>
+            </Box>
+        </Box>
     );
 }
