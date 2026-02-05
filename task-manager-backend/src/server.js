@@ -7,23 +7,23 @@ import http from "http";
 import cookieParser from "cookie-parser";
 import app from "./app.js";
 import sequelize from "./config/database.js";
-// import bree from "./core/jobs/bree.js";
-// import { initSocket } from "./core/realtime/socket.js";
+import bree from "./core/jobs/bree.js";
+import { initSocket } from "./core/realtime/socket.js";
 
 // HTTP + SOCKET SERVER
 const server = http.createServer(app);
-// const io = initSocket(server);
+const io = initSocket(server);
 
 // BACKGROUND JOBS (Bree)
-// bree.start();
+bree.start();
 
-// bree.on("worker created", (name) =>
-//   console.log("bree worker created:", name)
-// );
-// bree.on("start", () => console.log("bree started"));
-// bree.on("error", (jobName, err) =>
-//   console.error("bree job error", jobName, err)
-// );
+bree.on("worker created", (name) =>
+  console.log("bree worker created:", name)
+);
+bree.on("start", () => console.log("bree started"));
+bree.on("error", (jobName, err) =>
+  console.error("bree job error", jobName, err)
+);
 
 // START SERVER
 const PORT = process.env.PORT || 5000;

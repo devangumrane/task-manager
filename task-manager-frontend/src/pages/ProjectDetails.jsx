@@ -13,7 +13,8 @@ import {
 } from "@mui/material";
 
 import { getProjectById } from "../services/projectService";
-import { useProjectTasks, useUpdateTaskStatus } from "../hooks/useTasks";
+import { useProjectTasks, useUpdateTask } from "../hooks/useTasks";
+import { useTaskRealtime } from "../hooks/useTaskRealtime";
 
 import KanbanBoard from "../components/projects/KanbanBoard";
 import CreateTaskDialog from "../components/tasks/CreateTaskDialog";
@@ -38,7 +39,8 @@ export default function ProjectDetails() {
     isLoading: loadingTasks,
   } = useProjectTasks(workspaceId, projectId);
 
-  const updateTaskStatus = useUpdateTaskStatus(workspaceId, projectId);
+  const updateTask = useUpdateTask(workspaceId, projectId);
+  useTaskRealtime(workspaceId, projectId);
 
   // ---------------- NORMALIZE ----------------
   const project = rawProject?.data ?? rawProject ?? null;
@@ -90,7 +92,7 @@ export default function ProjectDetails() {
         <KanbanBoard
           tasks={tasks}
           onTaskUpdate={(taskId, updates) =>
-            updateTaskStatus.mutate({ taskId, status: updates.status })
+            updateTask.mutate({ taskId, payload: { status: updates.status } })
           }
           onTaskClick={(task) => {
             navigate(ROUTES.TASK(workspaceId, projectId, task.id));

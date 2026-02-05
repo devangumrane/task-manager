@@ -126,4 +126,18 @@ export const taskController = {
       data: failedTask,
     });
   }),
+  delete: asyncHandler(async (req, res) => {
+    const taskId = Number(req.params.taskId);
+
+    if (!taskId) {
+      throw new ApiError("INVALID_TASK_ID", "Task ID is invalid", 400);
+    }
+
+    await taskService.deleteTask(taskId, req.user.id);
+
+    res.json({
+      success: true,
+      message: "Task deleted successfully"
+    });
+  }),
 };

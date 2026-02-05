@@ -1,3 +1,15 @@
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  Legend
+} from "recharts";
+import { formatDistanceToNow } from "date-fns";
+import { Users, FileText, CheckCircle, Target, Activity } from "lucide-react"; // Replaced Folder with FileText, etc.
+
+// ... existing imports ...
 import { useAuthStore } from "../store/authStore";
 import { useQuery } from "@tanstack/react-query";
 import { getDashboardStats } from "../services/dashboardService";
@@ -12,28 +24,33 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Button
+  Button,
+  List,
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
+  Divider,
+  Chip
 } from "@mui/material";
-import {
-  LayoutDashboard,
-  Folder,
-  CheckSquare,
-  Group as UsersIcon // Lucide 'Users' conflicts with 'User' model conceptually but fine here
-} from "lucide-react";
+
+// ... icons ...
+
+const COLORS = ["#f97316", "#2563eb", "#10b981"]; // Orange (Pending), Blue (Completed)
 
 export default function Dashboard() {
   const user = useAuthStore((s) => s.user);
 
-  const { data: stats, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: getDashboardStats,
   });
 
-  const statItems = [
-    { label: "Active Workspaces", value: stats?.workspaces ?? "-", icon: UsersIcon, color: "#3b82f6" },
-    { label: "Projects", value: stats?.projects ?? "-", icon: Folder, color: "#10b981" },
-    { label: "Pending Tasks", value: stats?.pendingTasks ?? "-", icon: CheckSquare, color: "#f97316" },
-    { label: "Completed", value: stats?.completedTasks ?? "-", icon: LayoutDashboard, color: "#2563eb" },
+  const stats = data?.data; // Structure is { workspaces, projects, tasks: { total, pending, completed }, activities: [] }
+
+  const chartData = [
+    { name: "Pending", value: stats?.tasks?.pending || 0 },
+    { name: "Completed", value: stats?.tasks?.completed || 0 },
   ];
 
   if (isLoading) {
@@ -45,119 +62,153 @@ export default function Dashboard() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4, animation: 'fadeIn 0.5s' }}>
       {/* Welcome Section */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
           Welcome back, {user?.name || "User"}!
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Here is an overview of your projects and tasks.
+          Here is what's happening in your workspaces.
         </Typography>
       </Box>
 
       {/* Stats Grid */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {statItems.map((stat) => (
-          <Grid xs={12} sm={6} md={3} key={stat.label}>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                height: 140,
-                justifyContent: 'space-between'
-              }}
-            >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography color="text.secondary" variant="subtitle2">
-                  {stat.label}
-                </Typography>
-                <stat.icon size={20} color={stat.color} />
-              </Box>
-              <Typography component="p" variant="h4" fontWeight="bold">
-                {stat.value}
-              </Typography>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* Actions & Status */}
-      <Grid container spacing={3}>
-        {/* Quick Actions */}
-        <Grid xs={12} md={8}>
-          <Paper sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>
-              Quick Access
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid xs={12} sm={6}>
-                <Button
-                  component={RouterLink}
-                  to={ROUTES.WORKSPACES}
-                  variant="outlined"
-                  fullWidth
-                  sx={{
-                    justifyContent: 'flex-start',
-                    p: 2,
-                    borderColor: 'divider',
-                    color: 'text.primary',
-                    '&:hover': { borderColor: 'primary.main', bgcolor: 'primary.lighter' }
-                  }}
-                  startIcon={<UsersIcon size={20} />}
-                >
-                  <Box textAlign="left">
-                    <Typography variant="subtitle1" fontWeight="bold">My Workspaces</Typography>
-                    <Typography variant="caption" color="text.secondary">Manage teams and permissions</Typography>
-                  </Box>
-                </Button>
-              </Grid>
-              <Grid xs={12} sm={6}>
-                <Button
-                  component={RouterLink}
-                  to={ROUTES.PROJECTS}
-                  variant="outlined"
-                  fullWidth
-                  sx={{
-                    justifyContent: 'flex-start',
-                    p: 2,
-                    borderColor: 'divider',
-                    color: 'text.primary',
-                    '&:hover': { borderColor: 'teal', bgcolor: 'teal.lighter' } // teal not in default theme but fine
-                  }}
-                  startIcon={<Folder size={20} />}
-                >
-                  <Box textAlign="left">
-                    <Typography variant="subtitle1" fontWeight="bold">All Projects</Typography>
-                    <Typography variant="caption" color="text.secondary">View progress and timelines</Typography>
-                  </Box>
-                </Button>
-              </Grid>
-            </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Paper elevation={0} variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary">Workspaces</Typography>
+              <Typography variant="h4" fontWeight="bold">{stats?.workspaces || 0}</Typography>
+            </Box>
+            <Avatar sx={{ bgcolor: 'primary.light', color: 'primary.main' }}><Users size={24} /></Avatar>
           </Paper>
         </Grid>
-
-        {/* System Status */}
-        <Grid xs={12} md={4}>
-          <Paper sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>
-              System Status
-            </Typography>
-            <Box sx={{ mt: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">Server</Typography>
-                <Typography variant="body2" color="success.main" fontWeight="medium">
-                  ● Online
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2" color="text.secondary">Version</Typography>
-                <Typography variant="body2">v1.2.0 (Pro)</Typography>
-              </Box>
+        <Grid item xs={12} sm={6} md={3}>
+          <Paper elevation={0} variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary">Projects</Typography>
+              <Typography variant="h4" fontWeight="bold">{stats?.projects || 0}</Typography>
             </Box>
+            <Avatar sx={{ bgcolor: 'success.light', color: 'success.main' }}><FileText size={24} /></Avatar>
           </Paper>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Paper elevation={0} variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary">Pending Tasks</Typography>
+              <Typography variant="h4" fontWeight="bold">{stats?.tasks?.pending || 0}</Typography>
+            </Box>
+            <Avatar sx={{ bgcolor: 'warning.light', color: 'warning.main' }}><Target size={24} /></Avatar>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Paper elevation={0} variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary">Completed</Typography>
+              <Typography variant="h4" fontWeight="bold">{stats?.tasks?.completed || 0}</Typography>
+            </Box>
+            <Avatar sx={{ bgcolor: 'info.light', color: 'info.main' }}><CheckCircle size={24} /></Avatar>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3}>
+        {/* Charts Section */}
+        <Grid item xs={12} md={7}>
+          <Card variant="outlined" sx={{ height: '100%' }}>
+            <CardHeader title="Task Status Overview" />
+            <Divider />
+            <CardContent sx={{ height: 300, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              {stats?.tasks?.total > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip />
+                    <Legend verticalAlign="bottom" height={36} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <Box textAlign="center" color="text.secondary">
+                  <Typography>No task data available</Typography>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Recent Activity Feed */}
+        <Grid item xs={12} md={5}>
+          <Card variant="outlined" sx={{ height: '100%', maxHeight: 400, overflow: 'auto' }}>
+            <CardHeader
+              title={
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Activity size={20} />
+                  <Typography variant="h6">Recent Activity</Typography>
+                </Box>
+              }
+            />
+            <Divider />
+            <List dense>
+              {stats?.activities?.length > 0 ? (
+                stats.activities.map((activity, index) => (
+                  <div key={activity.id}>
+                    <ListItem alignItems="flex-start">
+                      <ListItemAvatar>
+                        <Avatar
+                          src={activity.user?.profile_image ? `${import.meta.env.VITE_API_URL}${activity.user.profile_image}` : null}
+                          alt={activity.user?.name}
+                          sx={{ width: 32, height: 32, fontSize: 12 }}
+                        >
+                          {activity.user?.name?.charAt(0)}
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" component="span" fontWeight="medium">
+                            {activity.user?.name}
+                          </Typography>
+                        }
+                        secondary={
+                          <>
+                            <Typography variant="caption" color="text.secondary" component="span" display="block">
+                              {/* Basic parser for activity types */}
+                              {activity.type === 'task.created' && `created task "${activity.task?.title || 'Unknown'}"`}
+                              {activity.type === 'task.updated' && `updated task "${activity.task?.title || 'Unknown'}"`}
+                              {activity.type === 'task.completed' && `completed task "${activity.task?.title || 'Unknown'}"`}
+                              {activity.type === 'comment.created' && `commented on "${activity.task?.title || 'Unknown'}"`}
+                              {!activity.task && activity.type}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })} in {activity.project?.name}
+                            </Typography>
+                          </>
+                        }
+                      />
+                    </ListItem>
+                    {index < stats.activities.length - 1 && <Divider component="li" />}
+                  </div>
+                ))
+              ) : (
+                <Box p={3} textAlign="center">
+                  <Typography variant="body2" color="text.secondary">No recent activity.</Typography>
+                </Box>
+              )}
+            </List>
+          </Card>
         </Grid>
       </Grid>
     </Container>

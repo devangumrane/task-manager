@@ -59,6 +59,10 @@ const Task = sequelize.define('Task', {
         type: DataTypes.DATE,
         allowNull: true,
     },
+    order: {
+        type: DataTypes.DOUBLE,
+        defaultValue: 0,
+    },
     archived: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

@@ -30,7 +30,7 @@ export const createTask = async (workspaceId, projectId, payload) => {
   return res.data.data;
 };
 
-export const updateTaskStatus = async (
+export const updateTask = async (
   workspaceId,
   projectId,
   taskId,
@@ -41,4 +41,15 @@ export const updateTaskStatus = async (
     payload
   );
   return res.data.data;
+};
+
+export const deleteTask = async (
+  workspaceId,
+  projectId,
+  taskId
+) => {
+  const res = await api.delete(
+    `/workspaces/${workspaceId}/projects/${projectId}/tasks/${taskId}`
+  );
+  return res.data;
 };

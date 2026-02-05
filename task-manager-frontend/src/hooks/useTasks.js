@@ -4,7 +4,8 @@ import {
   getTasksByProject,
   getTaskById,
   createTask,
-  updateTaskStatus,
+  updateTask,
+  deleteTask,
 } from "../services/taskService";
 
 export const useProjectTasks = (workspaceId, projectId) => {
@@ -37,21 +38,20 @@ export const useCreateTask = (workspaceId, projectId) => {
   });
 };
 
-export const useUpdateTaskStatus = (workspaceId, projectId) => {
+export const useUpdateTask = (workspaceId, projectId) => {
   const qc = useQueryClient();
 
   return useMutation({
-    // HARD CONTRACT: ONLY status allowed
-    mutationFn: ({ taskId, status }) =>
-      updateTaskStatus(
+    mutationFn: ({ taskId, payload }) =>
+      updateTask(
         workspaceId,
         projectId,
         taskId,
-        { status } // <-- EXACT backend schema
+        payload
       ),
 
     // OPTIMISTIC UPDATE
-    onMutate: async ({ taskId, status }) => {
+    onMutate: async ({ taskId, payload }) => {
       await qc.cancelQueries(["projectTasks", workspaceId, projectId]);
 
       const previousTasks = qc.getQueryData([
@@ -64,7 +64,7 @@ export const useUpdateTaskStatus = (workspaceId, projectId) => {
         ["projectTasks", workspaceId, projectId],
         (old = []) =>
           old.map((task) =>
-            task.id === taskId ? { ...task, status } : task
+            task.id === taskId ? { ...task, ...payload } : task
           )
       );
 
@@ -81,6 +81,17 @@ export const useUpdateTaskStatus = (workspaceId, projectId) => {
 
     // FINAL SYNC
     onSettled: () => {
+      qc.invalidateQueries(["projectTasks", workspaceId, projectId]);
+    },
+  });
+};
+
+export const useDeleteTask = (workspaceId, projectId) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (taskId) => deleteTask(workspaceId, projectId, taskId),
+    onSuccess: () => {
       qc.invalidateQueries(["projectTasks", workspaceId, projectId]);
     },
   });

@@ -8,7 +8,7 @@ import { assertTaskWorkspaceAccess } from "../../core/authorization/task.guard.j
 import { createTaskCore } from "./task.logic.js";
 import { buildTaskUpdatePayload } from "./task.update.logic.js"; // This returns camelCase. Need mapping in updateTask.
 
-import { onTaskCreated } from "./task.effects.js";
+import { onTaskCreated, onTaskDeleted } from "./task.effects.js";
 import { onTaskUpdated } from "./task.update.effects.js";
 
 export const taskService = {
@@ -113,7 +113,7 @@ export const taskService = {
         { model: User, as: 'assignee' },
         { model: User, as: 'creator' },
       ],
-      order: [["createdAt", "DESC"]],
+      order: [["order", "ASC"], ["createdAt", "DESC"]],
     });
   },
 
@@ -165,6 +165,7 @@ export const taskService = {
       if (updatePayloadCore.status) updatePayload.status = updatePayloadCore.status === 'todo' ? 'pending' : updatePayloadCore.status;
       if (updatePayloadCore.dueDate !== undefined) updatePayload.deadline = updatePayloadCore.dueDate;
       if (updatePayloadCore.assignedTo !== undefined) updatePayload.assigned_to = updatePayloadCore.assignedTo;
+      if (updatePayloadCore.order !== undefined) updatePayload.order = updatePayloadCore.order;
 
       // 3️⃣ Assigned user invariant (UPDATE)
       if (updatePayload.assigned_to) {
@@ -272,6 +273,13 @@ export const taskService = {
     await assertWorkspaceMember(null, userId, task.project.workspace_id);
 
     await Task.destroy({ where: { id: taskId } });
+
+    // Side effect: emit deleted event
+    try {
+      await onTaskDeleted(task, userId, task.project.workspace_id);
+    } catch (err) {
+      console.error("onTaskDeleted failed:", err);
+    }
 
     return true;
   },

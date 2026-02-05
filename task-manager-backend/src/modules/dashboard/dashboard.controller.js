@@ -61,13 +61,40 @@ export const dashboardController = {
                 where: { assigned_to: userId }
             });
 
-            // 4. Tasks pending/completed
-            const tasksPendingCount = await Task.count({
-                where: { assigned_to: userId, status: 'pending' }
-            });
+            // 5. Recent Activity (across user's workspaces)
+            // We already have `wsIds` from step 2 (list of workspaces user is in)
 
-            const tasksCompletedCount = await Task.count({
-                where: { assigned_to: userId, status: 'completed' }
+            // We need to import ActivityLog and User models at the top (User is likely already imported or needed)
+            const { ActivityLog, User, Project, Task, Workspace } = await import("../../models/index.js");
+            // Better to import at top level, but for now I will fix imports in a separate edit or use what is available.
+            // Wait, models are imported at line 1. Let's ensure ActivityLog is there.
+
+            const recentActivity = await ActivityLog.findAll({
+                where: { workspace_id: wsIds },
+                limit: 10,
+                order: [["createdAt", "DESC"]],
+                include: [
+                    {
+                        model: User,
+                        as: 'user',
+                        attributes: ['id', 'name', 'email', 'profile_image'] // Confirm profile_image/profileImage field.
+                    },
+                    {
+                        model: Project,
+                        as: 'project',
+                        attributes: ['id', 'name']
+                    },
+                    {
+                        model: Task,
+                        as: 'task',
+                        attributes: ['id', 'title']
+                    },
+                    {
+                        model: Workspace,
+                        as: 'workspace',
+                        attributes: ['id', 'name']
+                    }
+                ]
             });
 
             res.json({
@@ -79,7 +106,8 @@ export const dashboardController = {
                         total: tasksAssignedCount,
                         pending: tasksPendingCount,
                         completed: tasksCompletedCount
-                    }
+                    },
+                    activities: recentActivity
                 },
             });
         } catch (err) {

@@ -1,5 +1,4 @@
-import sequelize from "../../database/sequelizes.js"; // Wait, I use src/config/database.js. 
-// Standardize import
+import sequelize from "../../../config/database.js";
 import { Task, ActivityLog, TaskReminder, Workspace } from "../../../models/index.js";
 import { notificationService } from "../../../modules/notifications/notification.service.js";
 import { Op } from "sequelize";

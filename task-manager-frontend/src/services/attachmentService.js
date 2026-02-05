@@ -1,5 +1,12 @@
 import api from "./api";
 
+export const getTaskAttachments = async (workspaceId, projectId, taskId) => {
+  const res = await api.get(
+    `/workspaces/${workspaceId}/projects/${projectId}/tasks/${taskId}/attachments`
+  );
+  return res.data;
+};
+
 export const uploadAttachment = async (workspaceId, projectId, taskId, file) => {
   const formData = new FormData();
   formData.append("file", file);

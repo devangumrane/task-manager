@@ -50,9 +50,9 @@ const taskStorage = multer.diskStorage({
     const dir = path.join(
       uploadsRoot,
       "tasks",
-      req.params.id,          // workspace ID
-      req.params.projectId,   // project ID
-      req.params.taskId       // task ID
+      req.params.workspaceId || "unknown-ws",
+      req.params.projectId || "unknown-proj",
+      req.params.taskId || "unknown-task"
     );
 
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });

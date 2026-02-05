@@ -10,6 +10,7 @@ import Comment from './Comment.js';
 import Attachment from './Attachment.js';
 import TaskReminder from './TaskReminder.js';
 import Notification from './Notification.js';
+import SubTask from './SubTask.js';
 
 // --- User Associations ---
 User.hasMany(Task, { foreignKey: 'assigned_to', as: 'assignedTasks' });
@@ -69,4 +70,8 @@ Task.hasMany(TaskReminder, { foreignKey: 'task_id', as: 'reminders' });
 // --- Notification Associations ---
 Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
-export { User, Task, RefreshToken, Workspace, WorkspaceMember, Project, ActivityLog, FailedTask, Comment, Attachment, TaskReminder, Notification };
+// --- SubTask Associations ---
+SubTask.belongsTo(Task, { foreignKey: 'task_id', as: 'task' });
+Task.hasMany(SubTask, { foreignKey: 'task_id', as: 'subtasks' });
+
+export { User, Task, RefreshToken, Workspace, WorkspaceMember, Project, ActivityLog, FailedTask, Comment, Attachment, TaskReminder, Notification, SubTask };

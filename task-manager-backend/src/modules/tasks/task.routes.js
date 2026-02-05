@@ -6,6 +6,7 @@ import attachmentRoutes from "../attachments/attachment.routes.js";
 import reminderRoutes from "../reminders/reminder.routes.js";
 import { workspaceRoleGuard } from "../../core/middlewares/workspace-role.middleware.js";
 import commentRoutes from "../comments/comment.routes.js";
+import subtaskRoutes from "../subtasks/subtask.routes.js";
 
 const router = express.Router({ mergeParams: true });
 
@@ -44,8 +45,17 @@ router.post(
   taskController.fail
 );
 
+router.delete(
+  "/:taskId",
+  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
+  taskController.delete
+);
+
 // Mount attachments & reminders under /:taskId/*
 router.use("/:taskId/attachments", attachmentRoutes);
 router.use("/:taskId/reminders", reminderRoutes);
+router.use("/:taskId/comments", commentRoutes);
+router.use("/:taskId/subtasks", subtaskRoutes);
 
 export default router;
