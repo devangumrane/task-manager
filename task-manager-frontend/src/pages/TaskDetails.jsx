@@ -31,6 +31,7 @@ import ReminderList from "../components/reminders/ReminderList";
 import CreateReminderDialog from "../components/reminders/CreateReminderDialog";
 import ConfirmDialog from "../components/shared/ConfirmDialog";
 import AttachmentUploader from "../components/attachments/AttachmentUploader";
+import SkillSelector from "../components/tasks/SkillSelector";
 
 export default function TaskDetails() {
   const { workspaceId, projectId, taskId } = useParams();
@@ -53,9 +54,15 @@ export default function TaskDetails() {
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [descriptionContent, setDescriptionContent] = useState("");
 
+  const [isEditingSkills, setIsEditingSkills] = useState(false);
+  const [skillSelection, setSkillSelection] = useState([]);
+
   // Sync state
   useEffect(() => {
-    if (task) setDescriptionContent(task.description || "");
+    if (task) {
+      setDescriptionContent(task.description || "");
+      setSkillSelection(task.skills || []);
+    }
   }, [task]);
 
   const handleSaveDescription = () => {
@@ -64,6 +71,15 @@ export default function TaskDetails() {
       payload: { description: descriptionContent }
     }, {
       onSuccess: () => setIsEditingDescription(false)
+    });
+  };
+
+  const handleSaveSkills = () => {
+    updateTaskMutation.mutate({
+      taskId: Number(taskId),
+      payload: { skills: skillSelection.map(s => s.id) }
+    }, {
+      onSuccess: () => setIsEditingSkills(false)
     });
   };
 
@@ -223,6 +239,36 @@ export default function TaskDetails() {
                     </Box>
                   ) : (
                     <Typography variant="body2" color="text.secondary" fontStyle="italic">Unassigned</Typography>
+                  )}
+                </Box>
+
+                <Box gridColumn="span 2">
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                    <Typography variant="caption" color="text.secondary">Required Skills</Typography>
+                    {!isEditingSkills ? (
+                      <Button size="small" variant="text" onClick={() => setIsEditingSkills(true)} startIcon={<Edit2 size={12} />} sx={{ fontSize: '0.7rem', py: 0 }}>
+                        Edit
+                      </Button>
+                    ) : (
+                      <Box display="flex" gap={1}>
+                        <Button size="small" variant="text" onClick={() => setIsEditingSkills(false)} sx={{ fontSize: '0.7rem', py: 0 }}>Cancel</Button>
+                        <Button size="small" variant="contained" onClick={handleSaveSkills} sx={{ fontSize: '0.7rem', py: 0 }}>Save</Button>
+                      </Box>
+                    )}
+                  </Box>
+
+                  {isEditingSkills ? (
+                    <SkillSelector value={skillSelection} onChange={setSkillSelection} />
+                  ) : (
+                    <Box display="flex" flexWrap="wrap" gap={0.5}>
+                      {task.skills && task.skills.length > 0 ? (
+                        task.skills.map(skill => (
+                          <Chip key={skill.id} label={skill.name} size="small" variant="outlined" />
+                        ))
+                      ) : (
+                        <Typography variant="body2" color="text.secondary" fontStyle="italic">No skills tagged.</Typography>
+                      )}
+                    </Box>
                   )}
                 </Box>
               </Box>

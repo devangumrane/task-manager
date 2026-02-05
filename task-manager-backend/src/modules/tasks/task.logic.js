@@ -5,7 +5,7 @@ export async function createTaskCore(tx, payload) {
   if (tx) options.transaction = tx;
 
   // Map payload fields to Sequelize model fields
-  return Task.create({
+  const task = await Task.create({
     project_id: payload.projectId,
     created_by: payload.createdBy,
     title: payload.title,
@@ -25,4 +25,10 @@ export async function createTaskCore(tx, payload) {
     // I should add workspaceId to payload in service or here.
     workspace_id: payload.workspaceId,
   }, options);
+
+  if (payload.skills && Array.isArray(payload.skills)) {
+    await task.setSkills(payload.skills, { transaction: tx });
+  }
+
+  return task;
 }

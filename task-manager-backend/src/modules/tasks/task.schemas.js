@@ -9,6 +9,7 @@ export const createTaskSchema = z.object({
   assignedTo: z.number().optional(),
   parentId: z.number().optional(),
   order: z.number().optional(),
+  skills: z.array(z.number()).optional(),
 });
 
 export const updateTaskSchema = z.object({
@@ -21,4 +22,5 @@ export const updateTaskSchema = z.object({
   assignedTo: z.number().optional().nullable(),
   parentId: z.number().optional().nullable(),
   order: z.number().optional(),
+  skills: z.array(z.number()).optional(),
 }).strict();

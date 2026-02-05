@@ -12,9 +12,11 @@ import {
   FormControl,
   Box,
   Typography,
-  Chip
+  Chip,
+  Paper
 } from "@mui/material";
 import RichTextEditor from "../ui/RichTextEditor";
+import SkillSelector from "./SkillSelector";
 
 import { useCreateTask } from "../../hooks/useTasks";
 import { searchUsers } from "../../services/userService";
@@ -33,6 +35,9 @@ export default function CreateTaskDialog({
   const [assigneeQuery, setAssigneeQuery] = useState("");
   const [assigneeResults, setAssigneeResults] = useState([]);
   const [assignedUser, setAssignedUser] = useState(null);
+
+  // skills state
+  const [skills, setSkills] = useState([]);
 
   const createTask = useCreateTask(workspaceId, projectId);
 
@@ -67,6 +72,7 @@ export default function CreateTaskDialog({
         title,
         description,
         priority, // New Field
+        skills: skills.map(s => s.id),
         ...(assignedUser?.id ? { assignedTo: assignedUser.id } : {}),
       },
       {
@@ -77,6 +83,7 @@ export default function CreateTaskDialog({
           setAssigneeQuery("");
           setAssigneeResults([]);
           setAssignedUser(null);
+          setSkills([]);
           onClose();
         },
         onError: (err) => {
@@ -182,6 +189,10 @@ export default function CreateTaskDialog({
                   </div>
                 )}
               </Box>
+            </Box>
+
+            <Box>
+              <SkillSelector value={skills} onChange={setSkills} />
             </Box>
           </Box>
         </DialogContent>

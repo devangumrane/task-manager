@@ -10,6 +10,7 @@ import { buildTaskUpdatePayload } from "./task.update.logic.js"; // This returns
 
 import { onTaskCreated, onTaskDeleted } from "./task.effects.js";
 import { onTaskUpdated } from "./task.update.effects.js";
+import { analyticsService } from "../analytics/analytics.service.js";
 
 export const taskService = {
   // --------------------------------------------------------
@@ -192,6 +193,11 @@ export const taskService = {
         transaction: t
       });
 
+      if (data.skills && Array.isArray(data.skills)) {
+        // Use the fetched task instance to set association
+        await task.setSkills(data.skills, { transaction: t });
+      }
+
       const updated = await Task.findByPk(taskId, { transaction: t });
 
       await t.commit();
@@ -204,8 +210,13 @@ export const taskService = {
           updatedBy,
           task.project.workspace_id
         );
+
+        // Check for completion
+        if (task.status !== 'completed' && updated.status === 'completed') {
+          await analyticsService.recordTaskCompletion(updated.assignee?.id || updated.assigned_to, taskId);
+        }
       } catch (err) {
-        console.error("onTaskUpdated failed:", err);
+        console.error("onTaskUpdated effects failed:", err);
       }
 
       return updated;

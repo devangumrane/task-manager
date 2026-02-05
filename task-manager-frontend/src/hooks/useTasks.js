@@ -80,8 +80,11 @@ export const useUpdateTask = (workspaceId, projectId) => {
     },
 
     // FINAL SYNC
-    onSettled: () => {
+    onSettled: (data, error, variables) => {
       qc.invalidateQueries(["projectTasks", workspaceId, projectId]);
+      if (variables?.taskId) {
+        qc.invalidateQueries(["task", workspaceId, projectId, String(variables.taskId)]);
+      }
     },
   });
 };

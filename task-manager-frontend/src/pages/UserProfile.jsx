@@ -7,6 +7,7 @@ import { Camera, Save, X, Edit2 } from "lucide-react";
 
 import { getUserProfile, getMyProfile, updateMyProfile, uploadMyAvatar } from "../services/userService";
 import { useAuthStore } from "../store/authStore";
+import SkillMatrix from "../components/analytics/SkillMatrix";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
 
@@ -207,6 +208,11 @@ export default function UserProfile() {
                   <span className="text-gray-500 block">Joined</span>
                   <span className="font-medium">{new Date(user.createdAt).toLocaleDateString()}</span>
                 </div>
+              </div>
+
+              {/* Professional Compentencies */}
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <SkillMatrix />
               </div>
             </div>
           )}

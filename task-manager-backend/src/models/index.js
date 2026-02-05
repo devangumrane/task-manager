@@ -11,6 +11,9 @@ import Attachment from './Attachment.js';
 import TaskReminder from './TaskReminder.js';
 import Notification from './Notification.js';
 import SubTask from './SubTask.js';
+import Skill from './Skill.js';
+import TaskSkill from './TaskSkill.js';
+import UserSkill from './UserSkill.js';
 
 // --- User Associations ---
 User.hasMany(Task, { foreignKey: 'assigned_to', as: 'assignedTasks' });
@@ -74,4 +77,17 @@ Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 SubTask.belongsTo(Task, { foreignKey: 'task_id', as: 'task' });
 Task.hasMany(SubTask, { foreignKey: 'task_id', as: 'subtasks' });
 
-export { User, Task, RefreshToken, Workspace, WorkspaceMember, Project, ActivityLog, FailedTask, Comment, Attachment, TaskReminder, Notification, SubTask };
+// --- Skill Associations ---
+// Task <-> Skill
+Task.belongsToMany(Skill, { through: TaskSkill, foreignKey: 'task_id', as: 'skills' });
+Skill.belongsToMany(Task, { through: TaskSkill, foreignKey: 'skill_id', as: 'tasks' });
+
+// User <-> Skill (Proficiency)
+User.belongsToMany(Skill, { through: UserSkill, foreignKey: 'user_id', as: 'skills' });
+Skill.belongsToMany(User, { through: UserSkill, foreignKey: 'skill_id', as: 'users' });
+// Also direct association for UserSkill to access meta fields
+User.hasMany(UserSkill, { foreignKey: 'user_id', as: 'skillProgress' });
+UserSkill.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+UserSkill.belongsTo(Skill, { foreignKey: 'skill_id', as: 'skill' });
+
+export { User, Task, RefreshToken, Workspace, WorkspaceMember, Project, ActivityLog, FailedTask, Comment, Attachment, TaskReminder, Notification, SubTask, Skill, TaskSkill, UserSkill };
