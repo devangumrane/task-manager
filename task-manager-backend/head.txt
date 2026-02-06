@@ -1,0 +1,40 @@
+﻿[dotenv@17.2.3] injecting env (8) from .env -- tip: ≡ƒôí add observability to secrets: https://dotenvx.com/ops
+node : file:///D:/My%20p
+rojects/task-manager/tas
+k-manager-backend/src/mo
+dules/tasks/task.routes.
+js:101
+At line:1 char:1
++ node src/server.js > 
+server_debug.log 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo      
+        : NotSpecified  
+  : (file:///D:/My%2.   
+ ..k.routes.js:101:S    
+tring) [], RemoteEx    
+ception
+    + FullyQualifiedErr 
+   orId : NativeComman  
+  dError
+ 
+  tagsController.attach
+  ^
+
+ReferenceError: 
+tagsController is not 
+defined
+    at file:///D:/My%20p
+rojects/task-manager/tas
+k-manager-backend/src/mo
+dules/tasks/task.routes.
+js:101:3
+    at ModuleJob.run (no
+de:internal/modules/esm/
+module_job:377:25)
+    at async onImport.tr
+acePromise.__proto__ (no
+de:internal/modules/esm/
+loader:671:26)
+    at async asyncRunEnt

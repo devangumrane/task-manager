@@ -14,6 +14,11 @@ import SubTask from './SubTask.js';
 import Skill from './Skill.js';
 import TaskSkill from './TaskSkill.js';
 import UserSkill from './UserSkill.js';
+import Tag from './Tag.js';
+import TaskTag from './TaskTag.js';
+import TimeEntry from './TimeEntry.js';
+import TaskDependency from './TaskDependency.js';
+import RecurringTask from './RecurringTask.js';
 
 // --- User Associations ---
 User.hasMany(Task, { foreignKey: 'assigned_to', as: 'assignedTasks' });
@@ -90,4 +95,47 @@ User.hasMany(UserSkill, { foreignKey: 'user_id', as: 'skillProgress' });
 UserSkill.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 UserSkill.belongsTo(Skill, { foreignKey: 'skill_id', as: 'skill' });
 
-export { User, Task, RefreshToken, Workspace, WorkspaceMember, Project, ActivityLog, FailedTask, Comment, Attachment, TaskReminder, Notification, SubTask, Skill, TaskSkill, UserSkill };
+// --- Tag Associations ---
+Tag.belongsTo(Workspace, { foreignKey: 'workspace_id', as: 'workspace' });
+Workspace.hasMany(Tag, { foreignKey: 'workspace_id', as: 'tags' });
+
+Task.belongsToMany(Tag, { through: TaskTag, foreignKey: 'task_id', as: 'tags' });
+Tag.belongsToMany(Task, { through: TaskTag, foreignKey: 'tag_id', as: 'tasks' });
+
+// --- TimeEntry Associations ---
+TimeEntry.belongsTo(Task, { foreignKey: 'task_id', as: 'task' });
+Task.hasMany(TimeEntry, { foreignKey: 'task_id', as: 'timeEntries' });
+TimeEntry.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+User.hasMany(TimeEntry, { foreignKey: 'user_id', as: 'timeEntries' });
+
+// --- Task Dependency Associations ---
+// Blocked By: Task.belongsToMany(Task, as: 'blockers')
+Task.belongsToMany(Task, {
+    through: TaskDependency,
+    as: 'blockers',
+    foreignKey: 'blocked_task_id',
+    otherKey: 'blocker_task_id'
+});
+
+// Blocking: Task.belongsToMany(Task, as: 'blocking')
+Task.belongsToMany(Task, {
+    through: TaskDependency,
+    as: 'blocking',
+    foreignKey: 'blocker_task_id',
+    otherKey: 'blocked_task_id'
+});
+
+// Explicit associations for TaskDependency model itself (for direct queries)
+TaskDependency.belongsTo(Task, { foreignKey: 'blocker_task_id', as: 'blocker' });
+TaskDependency.belongsTo(Task, { foreignKey: 'blocked_task_id', as: 'blocked' });
+
+// --- Recurring Task Associations ---
+RecurringTask.belongsTo(Task, { foreignKey: 'original_task_id', as: 'templateTask' });
+Task.hasOne(RecurringTask, { foreignKey: 'original_task_id', as: 'recurringRule' });
+
+export {
+    User, Task, RefreshToken, Workspace, WorkspaceMember, Project,
+    ActivityLog, FailedTask, Comment, Attachment, TaskReminder,
+    Notification, SubTask, Skill, TaskSkill, UserSkill,
+    Tag, TaskTag, TimeEntry, TaskDependency, RecurringTask
+};

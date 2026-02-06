@@ -11,6 +11,7 @@ import { buildTaskUpdatePayload } from "./task.update.logic.js"; // This returns
 import { onTaskCreated, onTaskDeleted } from "./task.effects.js";
 import { onTaskUpdated } from "./task.update.effects.js";
 import { analyticsService } from "../analytics/analytics.service.js";
+import { TaskDependency } from "../../models/index.js"; // Import Dependency model
 
 export const taskService = {
   // --------------------------------------------------------
@@ -163,7 +164,49 @@ export const taskService = {
       if (updatePayloadCore.title) updatePayload.title = updatePayloadCore.title;
       if (updatePayloadCore.description !== undefined) updatePayload.description = updatePayloadCore.description;
       if (updatePayloadCore.priority) updatePayload.priority = updatePayloadCore.priority.toLowerCase();
-      if (updatePayloadCore.status) updatePayload.status = updatePayloadCore.status === 'todo' ? 'pending' : updatePayloadCore.status;
+      if (updatePayloadCore.status) {
+        const newStatus = updatePayloadCore.status === 'todo' ? 'pending' : updatePayloadCore.status;
+
+        // 🚨 BLOCKER CHECK
+        if (newStatus === 'completed' && task.status !== 'completed') {
+          const pendingBlockers = await TaskDependency.count({
+            where: { blocked_task_id: taskId },
+            include: [{
+              model: Task,
+              as: 'blocker', // Must align with association alias in index.js (Task.belongsToMany(..., as: 'blocking'/'blockers')) 
+              // Wait, in index.js:
+              // Task.belongsToMany(Task, { as: 'blockers', foreignKey: 'blocked_task_id' ... })
+              // But TaskDependency itself does not have 'blocker' alias unless we define it or use manual query.
+              // Better approach: Query TaskDependency to get blocker IDs, then count Tasks.
+              required: true,
+              where: { status: ['pending', 'in_progress'] } // Any non-completed status
+            }]
+          });
+
+          // Actually, simpler query on TaskDependency directly if we associate:
+          // We need to check if ANY blocker is not completed.
+          // Let's do raw query or two-step for safety if associations are tricky.
+
+          const blockers = await Task.findAll({
+            include: [{
+              model: Task,
+              as: 'blocking', // Tasks that THIS task is blocking? No.
+              // We want tasks that are blocking THIS task.
+              // In index.js: Task.belongsToMany(Task, { as: 'blockers', ... }) -> "This task has blockers"
+              where: { id: taskId }
+            }],
+            where: {
+              status: ['pending', 'in_progress']
+            }
+          });
+
+          if (blockers.length > 0) {
+            throw new ApiError("TASK_BLOCKED", `Cannot complete task. It is blocked by ${blockers.length} incomplete task(s).`, 400);
+          }
+        }
+
+        updatePayload.status = newStatus;
+      }
       if (updatePayloadCore.dueDate !== undefined) updatePayload.deadline = updatePayloadCore.dueDate;
       if (updatePayloadCore.assignedTo !== undefined) updatePayload.assigned_to = updatePayloadCore.assignedTo;
       if (updatePayloadCore.order !== undefined) updatePayload.order = updatePayloadCore.order;

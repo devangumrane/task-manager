@@ -7,7 +7,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const bree = new Bree({
   root: path.join(__dirname, "workers"),
   jobs: [
-    { name: "taskReminderWorker", interval: "1m" }
+    { name: "taskReminderWorker", interval: "1m" },
+    { name: "recurringTaskWorker", interval: "1m" }
   ]
 });
 

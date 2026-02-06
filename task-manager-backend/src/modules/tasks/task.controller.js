@@ -7,6 +7,8 @@ import {
 } from "./task.schemas.js";
 
 import { taskService } from "./task.service.js";
+import { dependencyService } from "./task.dependency.service.js";
+import { timeTrackingService } from "./time.entry.service.js";
 
 export const taskController = {
   // --------------------------------------------------------
@@ -139,5 +141,48 @@ export const taskController = {
       success: true,
       message: "Task deleted successfully"
     });
+  }),
+
+  // --------------------------------------------------------
+  // Dependencies
+  // --------------------------------------------------------
+  addDependency: asyncHandler(async (req, res) => {
+    const blockedId = Number(req.params.taskId);
+    const { blockerId } = req.body; // Expect JSON { blockerId: 123 }
+
+    if (!blockedId || !blockerId) {
+      throw new ApiError("INVALID_INPUT", "Blocked ID and Blocker ID required", 400);
+    }
+
+    await dependencyService.addDependency(req.user.id, { blockerId, blockedId });
+
+    res.status(201).json({ success: true, message: "Dependency added" });
+  }),
+
+  removeDependency: asyncHandler(async (req, res) => {
+    const blockedId = Number(req.params.taskId);
+    const blockerId = Number(req.params.blockerId);
+
+    if (!blockedId || !blockerId) {
+      throw new ApiError("INVALID_INPUT", "IDs required", 400);
+    }
+
+    await dependencyService.removeDependency(req.user.id, { blockerId, blockedId });
+    res.json({ success: true, message: "Dependency removed" });
+  }),
+
+  // --------------------------------------------------------
+  // Time Tracking
+  // --------------------------------------------------------
+  startTimer: asyncHandler(async (req, res) => {
+    const taskId = Number(req.params.taskId);
+    const entry = await timeTrackingService.startTimer(req.user.id, taskId);
+    res.status(201).json({ success: true, data: entry });
+  }),
+
+  stopTimer: asyncHandler(async (req, res) => {
+    // Stop whatever is running for this user
+    const entry = await timeTrackingService.stopTimer(req.user.id);
+    res.json({ success: true, data: entry });
   }),
 };
