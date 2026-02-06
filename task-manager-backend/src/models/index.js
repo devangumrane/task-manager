@@ -131,7 +131,7 @@ TaskDependency.belongsTo(Task, { foreignKey: 'blocked_task_id', as: 'blocked' })
 
 // --- Recurring Task Associations ---
 RecurringTask.belongsTo(Task, { foreignKey: 'original_task_id', as: 'templateTask' });
-Task.hasOne(RecurringTask, { foreignKey: 'original_task_id', as: 'recurringRule' });
+Task.hasOne(RecurringTask, { foreignKey: 'original_task_id', as: 'recurring' });
 
 export {
     User, Task, RefreshToken, Workspace, WorkspaceMember, Project,

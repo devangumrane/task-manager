@@ -127,7 +127,7 @@ export default function Dashboard() {
               <Activity className="text-primary w-5 h-5" />
               Task Volume Trend
             </h3>
-            <div className="flex-1 w-full min-h-0">
+            <div className="flex-1 w-full min-h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={trendData}>
                   <defs>
@@ -231,7 +231,7 @@ export default function Dashboard() {
           </GlassCard>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 

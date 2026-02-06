@@ -185,4 +185,26 @@ export const taskController = {
     const entry = await timeTrackingService.stopTimer(req.user.id);
     res.json({ success: true, data: entry });
   }),
+
+  // --------------------------------------------------------
+  // Recurring Tasks
+  // --------------------------------------------------------
+  createRecurring: asyncHandler(async (req, res) => {
+    const taskId = Number(req.params.taskId);
+    const { cronExpression } = req.body;
+    // We need a service method for this.
+    // Let's assume taskService or recurringService.
+    // We haven't created recurringService yet. 
+    // We can put it in taskService or create new one.
+    // Let's use taskService for now or inline if simple (Model.create).
+    // Better: taskService.setRecurring(taskId, cronExpression, userId)
+    await taskService.setRecurring(taskId, cronExpression, req.user.id);
+    res.json({ success: true, message: "Recurring rule set" });
+  }),
+
+  deleteRecurring: asyncHandler(async (req, res) => {
+    const taskId = Number(req.params.taskId);
+    await taskService.removeRecurring(taskId, req.user.id);
+    res.json({ success: true, message: "Recurring rule removed" });
+  }),
 };

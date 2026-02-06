@@ -1,4 +1,4 @@
-import { Workspace, Project, Task } from "../../models/index.js";
+import { Workspace, Project, Task, ActivityLog, User } from "../../models/index.js";
 import { assertWorkspaceMember } from "../../core/authorization/workspace.guard.js";
 
 export const dashboardController = {
@@ -61,11 +61,25 @@ export const dashboardController = {
                 where: { assigned_to: userId }
             });
 
+            const tasksPendingCount = await Task.count({
+                where: {
+                    assigned_to: userId,
+                    status: ['pending', 'in_progress']
+                }
+            });
+
+            const tasksCompletedCount = await Task.count({
+                where: {
+                    assigned_to: userId,
+                    status: 'completed'
+                }
+            });
+
             // 5. Recent Activity (across user's workspaces)
             // We already have `wsIds` from step 2 (list of workspaces user is in)
 
-            // We need to import ActivityLog and User models at the top (User is likely already imported or needed)
-            const { ActivityLog, User, Project, Task, Workspace } = await import("../../models/index.js");
+            // 5. Recent Activity (across user's workspaces)
+            // We already have `wsIds` from step 2 (list of workspaces user is in)
             // Better to import at top level, but for now I will fix imports in a separate edit or use what is available.
             // Wait, models are imported at line 1. Let's ensure ActivityLog is there.
 

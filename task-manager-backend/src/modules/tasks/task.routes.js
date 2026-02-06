@@ -142,4 +142,17 @@ router.post(
   tagsController.create
 );
 
+// Recurring Tasks
+router.post(
+  "/:taskId/recurring",
+  workspaceAccessGuard,
+  taskController.createRecurring
+);
+
+router.delete(
+  "/:taskId/recurring",
+  workspaceAccessGuard,
+  taskController.deleteRecurring
+);
+
 export default router;

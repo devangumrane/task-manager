@@ -17,6 +17,10 @@ import CreateReminderDialog from "../components/reminders/CreateReminderDialog";
 import ConfirmDialog from "../components/shared/ConfirmDialog";
 import AttachmentUploader from "../components/attachments/AttachmentUploader";
 import SkillSelector from "../components/tasks/SkillSelector";
+import TagSelector from "../components/tasks/TagSelector";
+import DependencyList from "../components/tasks/DependencyList";
+import TimeTracker from "../components/tasks/TimeTracker";
+import RecurrenceDialog from "../components/reminders/RecurrenceDialog";
 import GlassCard from "../components/shared/GlassCard";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -28,6 +32,7 @@ export default function TaskDetails() {
   useTaskRealtime(workspaceId, projectId, Number(taskId));
 
   const [isReminderDialogOpen, setIsReminderDialogOpen] = useState(false);
+  const [isRecurrenceDialogOpen, setIsRecurrenceDialogOpen] = useState(false);
   const [deleteReminderId, setDeleteReminderId] = useState(null);
   const [showDeleteTaskConfirm, setShowDeleteTaskConfirm] = useState(false);
 
@@ -127,7 +132,7 @@ export default function TaskDetails() {
           <GlassCard className="relative overflow-hidden group">
             {/* Status Stripe */}
             <div className={`absolute top-0 left-0 bottom-0 w-1 ${task.status === 'COMPLETED' ? 'bg-emerald-500' :
-                task.status === 'IN_PROGRESS' ? 'bg-blue-500' : 'bg-orange-500'
+              task.status === 'IN_PROGRESS' ? 'bg-blue-500' : 'bg-orange-500'
               }`} />
 
             <div className="flex justify-between items-start mb-6 pl-4">
@@ -135,7 +140,7 @@ export default function TaskDetails() {
                 <h1 className="text-3xl font-bold text-white mb-2">{task.title}</h1>
                 <div className="flex items-center gap-3">
                   <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${task.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400' :
-                      task.status === 'IN_PROGRESS' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'
+                    task.status === 'IN_PROGRESS' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'
                     }`}>
                     {task.status.replace('_', ' ')}
                   </span>
@@ -221,6 +226,9 @@ export default function TaskDetails() {
         {/* Right Column: Meta & Sidebar */}
         <div className="space-y-6">
 
+          {/* Time Tracker */}
+          <TimeTracker workspaceId={workspaceId} projectId={projectId} taskId={taskId} timeEntries={task.timeEntries || []} />
+
           {/* Meta Card */}
           <GlassCard>
             <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Details</h3>
@@ -244,13 +252,28 @@ export default function TaskDetails() {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Due Date</p>
-                    <p className="font-medium">{task.deadline ? new Date(task.deadline).toLocaleDateString() : "-"}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{task.deadline ? new Date(task.deadline).toLocaleDateString() : "-"}</p>
+                      <button
+                        onClick={() => setIsRecurrenceDialogOpen(true)}
+                        className={`p-1 rounded hover:bg-white/10 ${task.recurring ? 'text-blue-400' : 'text-muted-foreground'}`}
+                        title="Set Recurring Schedule"
+                      >
+                        <RotateCcw size={12} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="my-6 h-px bg-white/10" />
+
+            {/* Tags */}
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Tags</p>
+              <TagSelector workspaceId={workspaceId} projectId={projectId} taskId={taskId} currentTags={task.tags || []} />
+            </div>
 
             <div>
               <div className="flex items-center justify-between mb-3">
@@ -278,6 +301,12 @@ export default function TaskDetails() {
                 </div>
               )}
             </div>
+          </GlassCard>
+
+          {/* Dependencies */}
+          <GlassCard>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Dependencies</h3>
+            <DependencyList workspaceId={workspaceId} projectId={projectId} task={task} />
           </GlassCard>
 
           {/* Reminders */}
@@ -338,6 +367,13 @@ export default function TaskDetails() {
       </div>
 
       {/* Dialogs */}
+      <RecurrenceDialog
+        open={isRecurrenceDialogOpen}
+        onOpenChange={setIsRecurrenceDialogOpen}
+        workspaceId={workspaceId}
+        projectId={projectId}
+        task={task}
+      />
       <CreateReminderDialog
         open={isReminderDialogOpen}
         onOpenChange={setIsReminderDialogOpen}
