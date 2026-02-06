@@ -1,6 +1,5 @@
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Paper, Box, Typography, Chip } from "@mui/material";
 import KanbanCard from "./KanbanCard";
 
 const titleMap = {
@@ -15,34 +14,23 @@ export default function KanbanColumn({ status, tasks, onTaskClick }) {
   });
 
   return (
-    <Box display="flex" flexDirection="column" width={320} flexShrink={0}>
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} px={1}>
-        <Typography variant="subtitle1" fontWeight="bold" color="text.secondary">
+    <div className="flex flex-col w-[320px] flex-shrink-0 h-full">
+      <div className="flex items-center justify-between mb-3 px-2">
+        <h3 className="font-bold text-muted-foreground text-sm uppercase tracking-wider">
           {titleMap[status]}
-        </Typography>
-        <Chip
-          label={tasks.length}
-          size="small"
-          sx={{ height: 20, bgcolor: 'action.hover', fontWeight: 'bold' }}
-        />
-      </Box>
+        </h3>
+        <span className="bg-white/5 text-xs font-mono py-0.5 px-2 rounded-md text-muted-foreground">
+          {tasks.length}
+        </span>
+      </div>
 
-      <Paper
+      <div
         ref={setNodeRef}
-        elevation={0}
-        variant="outlined"
-        sx={{
-          flex: 1,
-          bgcolor: 'background.default',
-          p: 1,
-          borderRadius: 2,
-          minHeight: 500,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1.5,
-          transition: 'border-color 0.2s',
-          '&:hover': { borderColor: 'primary.main' }
-        }}
+        className="
+            flex-1 p-2 rounded-xl bg-white/[0.02] border border-white/5
+            flex flex-col gap-3 min-h-[200px]
+            transition-colors
+        "
       >
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
@@ -51,13 +39,13 @@ export default function KanbanColumn({ status, tasks, onTaskClick }) {
         </SortableContext>
 
         {tasks.length === 0 && (
-          <Box height="100%" display="flex" alignItems="center" justifyContent="center">
-            <Typography variant="body2" color="text.disabled" fontStyle="italic">
-              No tasks
-            </Typography>
-          </Box>
+          <div className="h-24 flex items-center justify-center border-2 border-dashed border-white/5 rounded-lg">
+            <span className="text-xs text-muted-foreground/50 italic">
+              Drop items here
+            </span>
+          </div>
         )}
-      </Paper>
-    </Box>
+      </div>
+    </div>
   );
 }

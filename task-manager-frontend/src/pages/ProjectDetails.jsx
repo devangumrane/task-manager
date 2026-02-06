@@ -1,94 +1,76 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Plus } from "lucide-react";
-import {
-  Button,
-  Box,
-  Typography,
-  Container,
-  Paper,
-  CircularProgress,
-  IconButton
-} from "@mui/material";
-
+import { ArrowLeft, Plus, Settings } from "lucide-react";
 import { getProjectById } from "../services/projectService";
 import { useProjectTasks, useUpdateTask } from "../hooks/useTasks";
 import { useTaskRealtime } from "../hooks/useTaskRealtime";
-
 import KanbanBoard from "../components/projects/KanbanBoard";
 import CreateTaskDialog from "../components/tasks/CreateTaskDialog";
 import { ROUTES } from "../router/paths";
+import { motion } from "framer-motion";
+import GlassCard from "../components/shared/GlassCard";
 
 export default function ProjectDetails() {
   const { workspaceId, projectId } = useParams();
   const navigate = useNavigate();
 
-  // ---------------- STATE ----------------
   const [openTaskDialog, setOpenTaskDialog] = useState(false);
 
-  // ---------------- DATA ----------------
   const { data: rawProject, isLoading: loadingProject } = useQuery({
     queryKey: ["project", workspaceId, projectId],
     queryFn: () => getProjectById(workspaceId, projectId),
     enabled: !!workspaceId && !!projectId,
   });
 
-  const {
-    data: tasks = [],
-    isLoading: loadingTasks,
-  } = useProjectTasks(workspaceId, projectId);
-
+  const { data: tasks = [], isLoading: loadingTasks } = useProjectTasks(workspaceId, projectId);
   const updateTask = useUpdateTask(workspaceId, projectId);
   useTaskRealtime(workspaceId, projectId);
 
-  // ---------------- NORMALIZE ----------------
   const project = rawProject?.data ?? rawProject ?? null;
 
-  // ---------------- GUARDS ----------------
   if (loadingProject || loadingTasks) return (
-    <Box display="flex" justifyContent="center" p={4}>
-      <CircularProgress />
-    </Box>
+    <div className="flex h-full items-center justify-center p-8">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>
   );
 
-  if (!project) return <Typography p={4}>Project not found</Typography>;
+  if (!project) return <div className="p-8 text-center">Project not found</div>;
 
-  // ---------------- UI ----------------
   return (
-    <Container maxWidth="xl" sx={{ py: 4, height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Back */}
-      <Box mb={2}>
-        <Button
-          startIcon={<ArrowLeft size={18} />}
-          onClick={() => navigate(ROUTES.WORKSPACE(workspaceId))}
-          color="inherit"
-        >
-          Back to Workspace
-        </Button>
-      </Box>
-
+    <div className="flex flex-col h-full space-y-6">
       {/* Header */}
-      <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-        <Typography variant="h4" component="h1" fontWeight="bold">
-          {project.title || project.name}
-        </Typography>
-      </Paper>
+      <div className="flex flex-col gap-4">
+        <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-4">
+          <button
+            onClick={() => navigate(ROUTES.WORKSPACE(workspaceId))}
+            className="p-2 rounded-xl hover:bg-white/5 text-muted-foreground hover:text-white transition-colors"
+            title="Back to Projects"
+          >
+            <ArrowLeft size={20} />
+          </button>
 
-      {/* Tasks header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5" fontWeight="600">Tasks</Typography>
-        <Button
-          variant="contained"
-          startIcon={<Plus size={18} />}
-          onClick={() => setOpenTaskDialog(true)}
-        >
-          Task
-        </Button>
-      </Box>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-white mb-1">{project.title || project.name}</h1>
+            <p className="text-muted-foreground text-sm">{project.description || "Manage your project tasks"}</p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button className="p-2 text-muted-foreground hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+              <Settings size={20} />
+            </button>
+            <button
+              onClick={() => setOpenTaskDialog(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium shadow-lg shadow-primary/25 transition-all"
+            >
+              <Plus size={20} /> New Task
+            </button>
+          </div>
+        </motion.div>
+      </div>
 
       {/* Kanban Board */}
-      <Box flexGrow={1} overflow="hidden">
+      <div className="flex-1 min-h-0 overflow-hidden rounded-2xl border border-white/5 bg-black/20">
         <KanbanBoard
           tasks={tasks}
           onTaskUpdate={(taskId, updates) =>
@@ -98,15 +80,14 @@ export default function ProjectDetails() {
             navigate(ROUTES.TASK(workspaceId, projectId, task.id));
           }}
         />
-      </Box>
+      </div>
 
-      {/* Create Task Dialog */}
       <CreateTaskDialog
         open={openTaskDialog}
         onClose={() => setOpenTaskDialog(false)}
         workspaceId={workspaceId}
         projectId={projectId}
       />
-    </Container>
+    </div>
   );
 }

@@ -1,10 +1,10 @@
 import express from "express";
 import { analyticsController } from "./analytics.controller.js";
-import { authenticate } from "../../core/middlewares/auth.middleware.js";
+import { requireAuth } from "../../core/middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.use(authenticate);
+router.use(requireAuth);
 
 router.get("/my-skills", analyticsController.getMySkills);
 router.get("/skills", analyticsController.listAllSkills);

@@ -4,73 +4,83 @@
 
 @layer base {
   :root {
-    /* Professional Light Mode (Custom Palette) */
-    /* Background: #F3F5F9 -> 220 33% 96% */
-    --background: 220 33% 96%;
-    --foreground: 240 10% 3.9%;
+    /* 
+      Theme: Cyber-Minimalist / Deep Void
+      Primary Background: #0B0E14 (Deep Void)
+      Surface: #151A23 (Obsidian)
+      Accents: Electric Violet (#7C3AED) & Neon Blue (#3B82F6)
+    */
 
-    /* Card: White to stand out on the light blue/gray background */
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --background: 222 47% 6%;
+    /* #0B0E14 */
+    --foreground: 210 40% 98%;
+    /* #F8FAFC */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --card: 220 25% 11%;
+    /* #151A23 */
+    --card-foreground: 210 40% 98%;
 
-    /* Primary: #96AAE9 -> 226 66% 75% */
-    --primary: 226 66% 75%;
-    /* Primary Foreground: Dark text for contrast on light blue */
-    --primary-foreground: 240 5.9% 10%;
+    --popover: 220 25% 11%;
+    --popover-foreground: 210 40% 98%;
 
-    /* Secondary: #E4EEF9 -> 211 64% 94% */
-    --secondary: 211 64% 94%;
-    --secondary-foreground: 240 5.9% 10%;
+    --primary: 262 83% 58%;
+    /* #7C3AED (Electric Violet) */
+    --primary-foreground: 210 40% 98%;
 
-    /* Muted: #CFD9FB -> 226 81% 90% */
-    --muted: 226 81% 90%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --secondary: 217 33% 17%;
+    /* #1E293B */
+    --secondary-foreground: 210 40% 98%;
 
-    /* Accent: #D5E8F6 -> 205 68% 90% */
-    --accent: 205 68% 90%;
-    --accent-foreground: 240 5.9% 10%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 226 66% 75%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
 
-    --radius: 0.5rem;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 262 83% 58%;
+
+    --radius: 0.75rem;
   }
 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+  .light {
+    --background: 210 40% 98%;
+    /* #F8FAFC (Slate 50) */
+    --foreground: 222 47% 11%;
+    /* #0F172A (Slate 900) */
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    /* White */
+    --card-foreground: 222 47% 11%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    --primary: 262 83% 58%;
+    /* #7C3AED (Electric Violet) */
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 210 40% 96.1%;
+    /* Slate 100 */
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --border: 214.3 31.8% 91.4%;
+    /* Slate 200 */
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262 83% 58%;
   }
 }
 
@@ -78,26 +88,50 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
+@layer utilities {
+  .glass-panel {
+    @apply bg-card/60 backdrop-blur-xl border border-white/5 shadow-xl;
+  }
+
+  .glass-card {
+    @apply bg-card/40 backdrop-blur-md border border-white/5 shadow-lg hover:bg-card/60 transition-colors duration-300;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-blue-400;
+  }
+}
+
 /* Custom Animations */
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-  animation: fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px hsla(262, 83%, 58%, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 25px hsla(262, 83%, 58%, 0.6);
+  }
 }
 
-@keyframes pulse-neon {
-  0%, 100% { box-shadow: 0 0 5px hsl(var(--primary) / 0.5); }
-  50% { box-shadow: 0 0 20px hsl(var(--primary) / 0.8); }
-}
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
 
-.neon-border {
-  @apply border border-primary/50 shadow-[0_0_10px_rgba(124,58,237,0.3)];
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }

@@ -1,12 +1,12 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Card, CardContent, Typography, Chip, Box, Avatar } from "@mui/material";
+import { User } from "lucide-react";
 
 const priorityColors = {
-  LOW: { bg: "#f3f4f6", text: "#4b5563" }, // gray
-  MEDIUM: { bg: "#dbeafe", text: "#1d4ed8" }, // blue
-  HIGH: { bg: "#ffedd5", text: "#c2410c" }, // orange
-  URGENT: { bg: "#fee2e2", text: "#b91c1c" }, // red
+  LOW: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+  MEDIUM: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  HIGH: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  URGENT: "bg-red-500/10 text-red-400 border-red-500/20",
 };
 
 export default function KanbanCard({ task, isOverlay, onClick }) {
@@ -34,52 +34,48 @@ export default function KanbanCard({ task, isOverlay, onClick }) {
 
   if (!task) return null;
 
-  const prioColor = priorityColors[task.priority] || priorityColors.MEDIUM;
+  const prioClass = priorityColors[task.priority] || priorityColors.MEDIUM;
 
   return (
-    <Card
+    <div
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
       onClick={onClick}
-      sx={{
-        cursor: 'grab',
-        '&:active': { cursor: 'grabbing' },
-        position: 'relative',
-        boxShadow: isOverlay ? 4 : 1,
-        // Using sx for conditional styles is tricky with styled-engine, keeping raw style for dnd
-        '&:hover': { boxShadow: 3 }
-      }}
+      className={`
+        relative p-4 rounded-xl border bg-[#151A23]
+        cursor-grab active:cursor-grabbing group
+        transition-all duration-200
+        ${isOverlay
+          ? 'shadow-[0_0_30px_rgba(124,58,237,0.3)] border-primary/50 scale-105'
+          : 'border-white/5 shadow-lg hover:border-white/10 hover:bg-white/5'
+        }
+      `}
     >
-      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-        <Typography variant="subtitle2" fontWeight="600" gutterBottom noWrap>
-          {task.title}
-        </Typography>
+      {/* Priority Indicator Line */}
+      <div className={`absolute top-3 left-0 w-0.5 h-6 rounded-r-full ${task.priority === 'URGENT' ? 'bg-red-500' :
+          task.priority === 'HIGH' ? 'bg-orange-500' :
+            task.priority === 'MEDIUM' ? 'bg-blue-500' : 'bg-gray-500'
+        }`} />
 
-        <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
-          <Chip
-            label={task.priority || "MEDIUM"}
-            size="small"
-            sx={{
-              height: 20,
-              fontSize: '0.65rem',
-              bgcolor: prioColor.bg,
-              color: prioColor.text,
-              fontWeight: 'bold'
-            }}
-          />
+      <h4 className="font-semibold text-sm text-gray-200 mb-3 truncate pl-2">{task.title}</h4>
 
-          {task.assigned && (
-            <Avatar
-              src={task.assigned.profileImage}
-              sx={{ width: 24, height: 24, fontSize: 10, bgcolor: 'secondary.main' }}
-            >
-              {task.assigned.name?.substring(0, 2)?.toUpperCase() || "U"}
-            </Avatar>
-          )}
-        </Box>
-      </CardContent>
-    </Card>
+      <div className="flex items-center justify-between">
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${prioClass} uppercase tracking-wider`}>
+          {task.priority || "MEDIUM"}
+        </span>
+
+        {task.assigned ? (
+          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20">
+            {task.assigned.name?.substring(0, 2)?.toUpperCase() || "U"}
+          </div>
+        ) : (
+          <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-muted-foreground border border-white/5">
+            <User size={12} />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 import { analyticsService } from "./analytics.service.js";
-import { successResponse } from "../../core/utils/response.js";
+import { success as successResponse } from "../../core/utils/response.js";
 import { Skill } from "../../models/index.js"; // Direct access for simple CRUD
 import { Op } from "sequelize";
 

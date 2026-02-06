@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardContent, Typography, Box, LinearProgress, Chip } from '@mui/material';
-import { api } from '../../api/axios';
+import api from '../../api/axios';
 
 export default function SkillMatrix() {
     const [skills, setSkills] = useState([]);

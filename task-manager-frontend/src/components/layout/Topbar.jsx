@@ -1,104 +1,53 @@
-import { useRef, useState, useEffect } from "react";
-import { Search, Bell, Sun, Moon } from "lucide-react";
-import { useTheme } from "../ThemeProvider";
-
-import SearchInput from "../topbar/SearchInput";
-import NotificationsMenu from "../topbar/NotificationsMenu";
-import ProfileMenu from "../topbar/ProfileMenu";
-import CommandPalette from "../topbar/CommandPalette";
-
-import { useLocation } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore";
+import ThemeToggle from "../ThemeToggle";
+import { User, Bell, Search } from "lucide-react";
+import { Link } from "react-router-dom";
 import { ROUTES } from "../../router/paths";
+import { motion } from "framer-motion";
 
-export default function Topbar() {
-  const { theme, toggle } = useTheme();
-
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [commandOpen, setCommandOpen] = useState(false);
-
-  const { pathname } = useLocation();
-  const title = getPageTitle(pathname);
-
-  const searchRef = useRef(null);
-
-  // "/" → focus search
-  // Ctrl/Cmd + K → open command palette
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.key === "/" && !e.target.closest("input")) {
-        e.preventDefault();
-        searchRef.current?.focus();
-      }
-
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-        e.preventDefault();
-        setCommandOpen(true);
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
-
-  function getPageTitle(pathname) {
-    if (pathname === ROUTES.DASHBOARD) return "Dashboard";
-
-    if (pathname.startsWith(ROUTES.WORKSPACES)) {
-      return pathname === ROUTES.WORKSPACES
-        ? "Workspaces"
-        : "Workspace Details";
-    }
-
-    if (pathname.startsWith(ROUTES.PROJECTS)) {
-      return pathname === ROUTES.PROJECTS ? "Projects" : "Project Details";
-    }
-
-    if (pathname.startsWith(ROUTES.ACTIVITY)) return "Activity";
-
-    return "Task Manager";
-  }
+export default function TopBar() {
+  const user = useAuthStore((s) => s.user);
 
   return (
-    <>
-      <header className="h-16 flex items-center justify-between px-6 border-b bg-card shadow-sm relative z-30">
-        {/* LEFT */}
-        <div className="flex items-center gap-6">
-          <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
+    <motion.header
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      className="sticky top-4 z-30 mx-6 mb-6 rounded-2xl glass-panel px-6 h-20 flex items-center justify-between"
+    >
+      {/* Left: Search / Breadcrumbs */}
+      <div className="flex items-center gap-6 flex-1">
+        <div className="relative group w-full max-w-md hidden md:block">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4 group-focus-within:text-primary transition-colors" />
+          <input
+            type="text"
+            placeholder="Search tasks, projects, or people..."
+            className="w-full bg-secondary/50 border border-white/5 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all placeholder:text-muted-foreground/50"
+          />
+        </div>
+      </div>
 
-          {/* Animated Search Input */}
-          <div className="hidden lg:block">
-            <SearchInput searchRef={searchRef} />
+      {/* Right: Actions & Profile */}
+      <div className="flex items-center gap-4">
+        <ThemeToggle />
+
+        <button className="relative p-2.5 rounded-xl hover:bg-secondary/50 text-muted-foreground hover:text-white transition-colors">
+          <Bell size={20} />
+          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full animate-pulse" />
+        </button>
+
+        <div className="h-8 w-[1px] bg-white/10 mx-2" />
+
+        <Link to={ROUTES.PROFILE} className="flex items-center gap-3 pl-2 group">
+          <div className="text-right hidden sm:block">
+            <p className="text-sm font-medium leading-none group-hover:text-primary transition-colors">{user?.name || "User"}</p>
+            <p className="text-xs text-muted-foreground">Pro Member</p>
           </div>
-        </div>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-3">
-          {/* Theme toggle */}
-          <button
-            onClick={toggle}
-            className="p-2 rounded hover:bg-muted transition"
-          >
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-
-          {/* Notifications */}
-          <NotificationsMenu
-            open={notificationsOpen}
-            setOpen={setNotificationsOpen}
-            closeProfile={() => setProfileOpen(false)}
-          />
-
-          {/* Profile */}
-          <ProfileMenu
-            open={profileOpen}
-            setOpen={setProfileOpen}
-            closeNotifications={() => setNotificationsOpen(false)}
-          />
-        </div>
-      </header>
-
-      {/* Command Palette */}
-      <CommandPalette open={commandOpen} onClose={setCommandOpen} />
-    </>
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-blue-500/20 border border-white/10 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-violet-500/20 transition-all duration-300">
+            <User className="h-5 w-5 text-primary" />
+          </div>
+        </Link>
+      </div>
+    </motion.header>
   );
 }
