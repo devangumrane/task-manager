@@ -128,7 +128,7 @@ export default function Dashboard() {
               Task Volume Trend
             </h3>
             <div className="flex-1 w-full min-h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={trendData}>
                   <defs>
                     <linearGradient id="colorTasks" x1="0" y1="0" x2="0" y2="1">
@@ -152,7 +152,7 @@ export default function Dashboard() {
           <GlassCard className="h-[350px] flex flex-col">
             <h3 className="font-semibold text-lg mb-4">Completion Status</h3>
             <div className="flex-1 relative">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie
                     data={chartData}

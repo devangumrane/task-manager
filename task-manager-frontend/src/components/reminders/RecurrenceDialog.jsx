@@ -32,7 +32,7 @@ export default function RecurrenceDialog({ open, onOpenChange, workspaceId, proj
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md bg-zinc-900/95 border border-white/10 backdrop-blur-xl text-white">
+            <DialogContent className="max-w-md bg-card/95 border border-white/10 backdrop-blur-xl text-foreground">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <RotateCcw size={18} className="text-primary" /> recurring Schedule
@@ -48,16 +48,16 @@ export default function RecurrenceDialog({ open, onOpenChange, workspaceId, proj
                         type="text"
                         value={cron}
                         onChange={(e) => setCron(e.target.value)}
-                        className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-sm font-mono text-white focus:border-primary focus:outline-none"
+                        className="w-full bg-secondary/50 border border-border/50 rounded-lg p-3 text-sm font-mono text-foreground focus:border-primary focus:outline-none"
                         placeholder="* * * * *"
                     />
 
-                    <div className="bg-white/5 rounded-lg p-3 space-y-2">
+                    <div className="bg-secondary/30 rounded-lg p-3 space-y-2">
                         <p className="text-xs font-semibold text-muted-foreground uppercase">Examples</p>
-                        <div className="grid grid-cols-1 gap-2 text-xs text-gray-400 font-mono">
-                            <button onClick={() => setCron("0 9 * * 1")} className="text-left hover:text-white transition-colors">0 9 * * 1 (Every Monday @ 9am)</button>
-                            <button onClick={() => setCron("0 9 * * *")} className="text-left hover:text-white transition-colors">0 9 * * * (Daily @ 9am)</button>
-                            <button onClick={() => setCron("0 0 1 * *")} className="text-left hover:text-white transition-colors">0 0 1 * * (1st of every month)</button>
+                        <div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground font-mono">
+                            <button onClick={() => setCron("0 9 * * 1")} className="text-left hover:text-foreground transition-colors">0 9 * * 1 (Every Monday @ 9am)</button>
+                            <button onClick={() => setCron("0 9 * * *")} className="text-left hover:text-foreground transition-colors">0 9 * * * (Daily @ 9am)</button>
+                            <button onClick={() => setCron("0 0 1 * *")} className="text-left hover:text-foreground transition-colors">0 0 1 * * (1st of every month)</button>
                         </div>
                     </div>
                 </div>

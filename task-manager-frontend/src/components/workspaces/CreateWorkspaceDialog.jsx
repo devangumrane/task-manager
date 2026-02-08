@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useCreateWorkspace } from "../../hooks/useWorkspaces";
 import {
   Dialog,
@@ -15,16 +16,25 @@ export default function CreateWorkspaceDialog({ open, onClose, onSuccess }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      toast.error("Workspace name is required");
+      return;
+    }
 
     createWorkspace.mutate(
       { name },
       {
         onSuccess: () => {
+          toast.success("Workspace created successfully");
           setName("");
           if (onSuccess) onSuccess();
           else onClose();
         },
+        onError: (error) => {
+          console.error("Create workspace failed:", error);
+          const msg = error?.response?.data?.message || "Failed to create workspace";
+          toast.error(msg);
+        }
       }
     );
   };

@@ -3,8 +3,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeContext = createContext({
   theme: "light",
-  setTheme: (t) => {},
-  toggle: () => {},
+  setTheme: (t) => { },
+  toggle: () => { },
 });
 
 export const useTheme = () => useContext(ThemeContext);
@@ -12,7 +12,7 @@ export const useTheme = () => useContext(ThemeContext);
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     try {
-      return localStorage.getItem("theme") || "light";
+      return localStorage.getItem("theme_v2") || "light";
     } catch {
       return "light";
     }
@@ -20,8 +20,8 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem("theme", theme);
-    } catch {}
+      localStorage.setItem("theme_v2", theme);
+    } catch { }
     const root = document.documentElement;
     if (theme === "dark") {
       root.classList.add("dark");

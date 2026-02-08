@@ -4,50 +4,7 @@
 
 @layer base {
   :root {
-    /* 
-      Theme: Cyber-Minimalist / Deep Void
-      Primary Background: #0B0E14 (Deep Void)
-      Surface: #151A23 (Obsidian)
-      Accents: Electric Violet (#7C3AED) & Neon Blue (#3B82F6)
-    */
-
-    --background: 222 47% 6%;
-    /* #0B0E14 */
-    --foreground: 210 40% 98%;
-    /* #F8FAFC */
-
-    --card: 220 25% 11%;
-    /* #151A23 */
-    --card-foreground: 210 40% 98%;
-
-    --popover: 220 25% 11%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 262 83% 58%;
-    /* #7C3AED (Electric Violet) */
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 217 33% 17%;
-    /* #1E293B */
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 262 83% 58%;
-
-    --radius: 0.75rem;
-  }
-
-  .light {
+    /* Theme: Cyber Light (Default) */
     --background: 210 40% 98%;
     /* #F8FAFC (Slate 50) */
     --foreground: 222 47% 11%;
@@ -81,6 +38,43 @@
     /* Slate 200 */
     --input: 214.3 31.8% 91.4%;
     --ring: 262 83% 58%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Theme: Deep Void */
+    --background: 222 47% 6%;
+    /* #0B0E14 */
+    --foreground: 210 40% 98%;
+    /* #F8FAFC */
+
+    --card: 220 25% 11%;
+    /* #151A23 */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 25% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217 33% 17%;
+    /* #1E293B */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 262 83% 58%;
   }
 }
 
@@ -97,11 +91,11 @@
 
 @layer utilities {
   .glass-panel {
-    @apply bg-card/60 backdrop-blur-xl border border-white/5 shadow-xl;
+    @apply bg-card/60 backdrop-blur-xl border border-border/50 shadow-xl;
   }
 
   .glass-card {
-    @apply bg-card/40 backdrop-blur-md border border-white/5 shadow-lg hover:bg-card/60 transition-colors duration-300;
+    @apply bg-card/40 backdrop-blur-md border border-border/50 shadow-lg hover:bg-card/60 transition-colors duration-300;
   }
 
   .text-gradient {

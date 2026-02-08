@@ -11,6 +11,13 @@ export const getWorkspace = async (workspaceId) => {
 };
 
 export const createWorkspace = async (payload) => {
-  const res = await api.post(`/workspaces`, payload);
-  return res.data;
+  console.log("Creating workspace with payload:", payload);
+  try {
+    const res = await api.post(`/workspaces`, payload);
+    console.log("Create workspace response:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error("Create workspace service error:", error);
+    throw error;
+  }
 };

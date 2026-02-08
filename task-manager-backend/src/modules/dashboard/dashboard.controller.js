@@ -2,61 +2,30 @@ import { Workspace, Project, Task, ActivityLog, User } from "../../models/index.
 import { assertWorkspaceMember } from "../../core/authorization/workspace.guard.js";
 
 export const dashboardController = {
-    // -------------------------------------------------------------
-    // GET /dashboard/stats?workspaceId=...
-    // -------------------------------------------------------------
     async getStats(req, res, next) {
         try {
             const userId = req.user.id;
-            // Default to first workspace if not provided? 
-            // Actually usually dashboard is workspace specific or global. 
-            // The current implementation seems to require workspaceId or maybe it aggregates?
-            // Let's check previous implementation logic from grep: "workspace.count", "project.count".
-            // It seems to return counts.
 
-            // If workspaceId is provided, scoped to that.
-            // If not, maybe global? 
-            // Let's assume global for the user for now if workspaceId is missing, OR restrict it.
-
-            // But wait, the previous code was:
-            // const workspaceCount = await prisma.workspace.count(...)
-
-            // Let's rebuild it.
-
-            // Global stats for user:
-            // 1. Workspaces count (owned or member)
-            // 2. Projects count (in those workspaces? or created by user?)
-            // 3. Tasks assigned to user
-
-            const workspaceCount = await Workspace.count({
+            // 1. Get workspaces user is a member of
+            // Use the User model association to fetch workspaces
+            const user = await User.findByPk(userId, {
                 include: [{
-                    model: Workspace, // helper to join? No.
-                    association: 'members', // uses alias defined in index.js? index.js says Workspace.hasMany(WorkspaceMember, as: 'members')
-                }],
-                // This count is tricky with associations in Sequelize.
-                // Simpler: Count User's workspaces via User accessor or WorkspaceMember.
-            });
-
-            // Let's use simpler queries.
-
-            // 1. Workspaces user is member of
-            // See workspace.service listUserWorkspaces logic.
-            const workspaces = await Workspace.findAll({
-                include: [{
-                    association: 'members',
-                    where: { user_id: userId },
-                    required: true
+                    model: Workspace,
+                    as: 'workspaces',
+                    through: { attributes: [] } // explicit through table attributes if needed
                 }]
             });
+
+            const workspaces = user ? user.workspaces : [];
             const wsCount = workspaces.length;
-
-            // 2. Projects in those workspaces
             const wsIds = workspaces.map(w => w.id);
-            const projectCount = await Project.count({
-                where: { workspace_id: wsIds }
-            });
 
-            // 3. Tasks assigned to user (across all workspaces)
+            // 2. Count projects in those workspaces
+            const projectCount = wsIds.length > 0 ? await Project.count({
+                where: { workspace_id: wsIds }
+            }) : 0;
+
+            // 3. Task counts (assigned to user)
             const tasksAssignedCount = await Task.count({
                 where: { assigned_to: userId }
             });
@@ -64,52 +33,49 @@ export const dashboardController = {
             const tasksPendingCount = await Task.count({
                 where: {
                     assigned_to: userId,
-                    status: ['pending', 'in_progress']
+                    status: ['todo', 'in_progress'] // Corrected status enums
                 }
             });
 
             const tasksCompletedCount = await Task.count({
                 where: {
                     assigned_to: userId,
-                    status: 'completed'
+                    status: 'done' // Corrected status enums
                 }
             });
 
-            // 5. Recent Activity (across user's workspaces)
-            // We already have `wsIds` from step 2 (list of workspaces user is in)
-
-            // 5. Recent Activity (across user's workspaces)
-            // We already have `wsIds` from step 2 (list of workspaces user is in)
-            // Better to import at top level, but for now I will fix imports in a separate edit or use what is available.
-            // Wait, models are imported at line 1. Let's ensure ActivityLog is there.
-
-            const recentActivity = await ActivityLog.findAll({
-                where: { workspace_id: wsIds },
-                limit: 10,
-                order: [["createdAt", "DESC"]],
-                include: [
-                    {
-                        model: User,
-                        as: 'user',
-                        attributes: ['id', 'name', 'email', 'profile_image'] // Confirm profile_image/profileImage field.
-                    },
-                    {
-                        model: Project,
-                        as: 'project',
-                        attributes: ['id', 'name']
-                    },
-                    {
-                        model: Task,
-                        as: 'task',
-                        attributes: ['id', 'title']
-                    },
-                    {
-                        model: Workspace,
-                        as: 'workspace',
-                        attributes: ['id', 'name']
-                    }
-                ]
-            });
+            // 4. Recent Activity
+            // Ensure we have correct aliases and fields
+            let recentActivity = [];
+            if (wsIds.length > 0) {
+                recentActivity = await ActivityLog.findAll({
+                    where: { workspace_id: wsIds },
+                    limit: 10,
+                    order: [["createdAt", "DESC"]],
+                    include: [
+                        {
+                            model: User,
+                            as: 'user',
+                            attributes: ['id', 'username', 'email', 'profile_image'] // Changed 'name' to 'username'
+                        },
+                        {
+                            model: Project,
+                            as: 'project',
+                            attributes: ['id', 'name']
+                        },
+                        {
+                            model: Task,
+                            as: 'task',
+                            attributes: ['id', 'title']
+                        },
+                        {
+                            model: Workspace,
+                            as: 'workspace',
+                            attributes: ['id', 'name']
+                        }
+                    ]
+                });
+            }
 
             res.json({
                 success: true,
@@ -125,6 +91,7 @@ export const dashboardController = {
                 },
             });
         } catch (err) {
+            console.error("Dashboard Stats Error:", err); // Added logging
             next(err);
         }
     },

@@ -114,6 +114,14 @@ export const taskService = {
       include: [
         { model: User, as: 'assignee' },
         { model: User, as: 'creator' },
+        { model: Tag, as: 'tags', through: { attributes: [] } },
+        { model: RecurringTask, as: 'recurring' },
+        {
+          model: Task,
+          as: 'blockers',
+          through: { attributes: [] },
+          attributes: ['id', 'title', 'status']
+        },
       ],
       order: [["order", "ASC"], ["createdAt", "DESC"]],
     });

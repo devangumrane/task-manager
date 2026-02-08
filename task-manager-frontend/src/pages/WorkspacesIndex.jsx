@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { listWorkspaces } from "../services/workspaceService";
+import { useWorkspaces } from "../hooks/useWorkspaces";
 import {
   Button,
   Typography,
@@ -16,13 +16,8 @@ import CreateWorkspaceDialog from "../components/workspaces/CreateWorkspaceDialo
 export default function WorkspacesIndex() {
   const [openCreate, setOpenCreate] = useState(false);
 
-  const { data: workspaces = [], isLoading, refetch } = useQuery({
-    queryKey: ["workspaces"],
-    queryFn: async () => {
-      const res = await listWorkspaces();
-      return res.data || [];
-    }
-  });
+  const { data: workspaces = [], isLoading } = useWorkspaces();
+
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -68,7 +63,6 @@ export default function WorkspacesIndex() {
         open={openCreate}
         onClose={() => setOpenCreate(false)}
         onSuccess={() => {
-          refetch();
           setOpenCreate(false);
         }}
       />

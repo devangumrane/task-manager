@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { User } from "lucide-react";
+import { User, RotateCcw, Lock } from "lucide-react";
 
 const priorityColors = {
   LOW: "bg-gray-500/10 text-gray-400 border-gray-500/20",
@@ -44,7 +44,7 @@ export default function KanbanCard({ task, isOverlay, onClick }) {
       {...listeners}
       onClick={onClick}
       className={`
-        relative p-4 rounded-xl border bg-[#151A23]
+        relative p-4 rounded-xl border bg-card text-card-foreground
         cursor-grab active:cursor-grabbing group
         transition-all duration-200
         ${isOverlay
@@ -55,19 +55,53 @@ export default function KanbanCard({ task, isOverlay, onClick }) {
     >
       {/* Priority Indicator Line */}
       <div className={`absolute top-3 left-0 w-0.5 h-6 rounded-r-full ${task.priority === 'URGENT' ? 'bg-red-500' :
-          task.priority === 'HIGH' ? 'bg-orange-500' :
-            task.priority === 'MEDIUM' ? 'bg-blue-500' : 'bg-gray-500'
+        task.priority === 'HIGH' ? 'bg-orange-500' :
+          task.priority === 'MEDIUM' ? 'bg-blue-500' : 'bg-gray-500'
         }`} />
+
+      {/* TAGS ROW */}
+      {task.tags && task.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2 pl-2">
+          {task.tags.map(tag => (
+            <span
+              key={tag.id}
+              className="text-[9px] px-1.5 py-0.5 rounded border"
+              style={{
+                backgroundColor: tag.color + '15',
+                borderColor: tag.color + '30',
+                color: tag.color
+              }}
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      )}
 
       <h4 className="font-semibold text-sm text-gray-200 mb-3 truncate pl-2">{task.title}</h4>
 
-      <div className="flex items-center justify-between">
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${prioClass} uppercase tracking-wider`}>
-          {task.priority || "MEDIUM"}
-        </span>
+      <div className="flex items-center justify-between mt-auto">
+        <div className="flex items-center gap-2 pl-2">
+          {/* PRIORITY */}
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${prioClass} uppercase tracking-wider`}>
+            {task.priority || "MEDIUM"}
+          </span>
+
+          {/* ENTERPRISE ICONS */}
+          {task.recurring && (
+            <div className="text-blue-400" title="Recurring Task">
+              <RotateCcw size={12} />
+            </div>
+          )}
+          {task.blockers && task.blockers.length > 0 && (
+            <div className="text-red-400" title={`Blocked by ${task.blockers.length} task(s)`}>
+              <Lock size={12} />
+            </div>
+          )}
+        </div>
 
         {task.assigned ? (
-          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20">
+          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20" title={task.assigned.name}>
             {task.assigned.name?.substring(0, 2)?.toUpperCase() || "U"}
           </div>
         ) : (
