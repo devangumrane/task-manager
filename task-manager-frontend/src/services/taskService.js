@@ -22,6 +22,12 @@ export const getTaskAttachments = async (workspaceId, projectId, taskId) => {
   return res.data.data ?? [];
 };
 
+// Global
+export const getMyTasks = async () => {
+  const response = await api.get('/tasks/me');
+  return response.data.data ?? [];
+};
+
 export const createTask = async (workspaceId, projectId, payload) => {
   const res = await api.post(
     `/workspaces/${workspaceId}/projects/${projectId}/tasks`,

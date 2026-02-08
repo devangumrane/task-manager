@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, Home, Grid, Users, FileText, User, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { Menu, Home, Grid, Users, FileText, User, LogOut, ChevronLeft, ChevronRight, CheckSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ROUTES } from "../../router/paths";
 import { useAuthStore } from "../../store/authStore";
@@ -30,6 +30,7 @@ export default function NavSidebar() {
 
     const navItems = [
         { label: "Dashboard", to: ROUTES.DASHBOARD, icon: Home },
+        { label: "My Tasks", to: ROUTES.MY_TASKS, icon: CheckSquare }, // New Link
         { label: "Workspaces", to: ROUTES.WORKSPACES, icon: Users },
         { label: "Projects", to: ROUTES.PROJECTS, icon: Grid },
         {

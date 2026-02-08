@@ -207,4 +207,15 @@ export const taskController = {
     await taskService.removeRecurring(taskId, req.user.id);
     res.json({ success: true, message: "Recurring rule removed" });
   }),
+
+  // --------------------------------------------------------
+  // GLOBAL
+  // --------------------------------------------------------
+  listMyTasks: asyncHandler(async (req, res) => {
+    const tasks = await taskService.getTasksByUser(req.user.id);
+    res.json({
+      success: true,
+      data: tasks
+    });
+  }),
 };

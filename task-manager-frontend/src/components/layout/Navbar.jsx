@@ -1,7 +1,7 @@
 import { useAuthStore } from "../../store/authStore";
 import ThemeToggle from "../ThemeToggle";
 import { LogOut, User } from "lucide-react";
-import { Button } from "../ui/button";
+import { IconButton, Tooltip } from "@mui/material";
 import { Link } from "react-router-dom";
 import { ROUTES } from "../../router/paths";
 
@@ -36,9 +36,14 @@ export default function Navbar() {
                         </div>
                     </Link>
 
-                    <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
-                        <LogOut className="h-4 w-4" />
-                    </Button>
+                    <Tooltip title="Logout">
+                        <IconButton
+                            onClick={handleLogout}
+                            size="small"
+                        >
+                            <LogOut className="h-4 w-4" />
+                        </IconButton>
+                    </Tooltip>
                 </div>
             </div>
         </header>

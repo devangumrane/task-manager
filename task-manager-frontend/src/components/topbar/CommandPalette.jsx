@@ -1,25 +1,41 @@
 import { useEffect } from "react";
-import { Dialog, DialogContent } from "../ui/dialog";
-import { Input } from "../ui/input";
+import { Dialog, DialogContent, TextField, List, ListItem, ListItemText, Typography } from "@mui/material";
 
 export default function CommandPalette({ open, onClose }) {
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: {
+          backgroundImage: 'none',
+          bgcolor: 'background.paper',
+          overflow: 'hidden'
+        }
+      }}
+    >
+      <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
         {/* Search Bar */}
         <div className="border-b p-3">
-          <Input
+          <TextField
             placeholder="Search anything..."
             autoFocus
-            className="border-0 focus-visible:ring-0"
+            fullWidth
+            variant="standard"
+            InputProps={{
+              disableUnderline: true,
+              sx: { fontSize: '1rem' }
+            }}
           />
         </div>
 
         {/* Placeholder Results */}
         <div className="max-h-72 overflow-y-auto">
-          <p className="text-muted-foreground p-4 text-sm">
+          <Typography color="text.secondary" p={2} variant="body2">
             Type to search workspaces, projects, tasks...
-          </p>
+          </Typography>
         </div>
       </DialogContent>
     </Dialog>

@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
-import { Input } from "../ui/input";
+import { InputBase, Paper } from "@mui/material";
 
 export default function SearchInput() {
   const [expanded, setExpanded] = useState(false);
@@ -18,16 +18,31 @@ export default function SearchInput() {
     >
       <Search
         size={16}
-        className="absolute left-3 text-muted-foreground pointer-events-none"
+        className="absolute left-3 text-muted-foreground pointer-events-none z-10"
       />
 
-      <Input
-        ref={inputRef}
+      <InputBase
+        inputRef={inputRef}
         placeholder="Search..."
         onFocus={() => setExpanded(true)}
         onBlur={() => setExpanded(false)}
-        className="pl-9 pr-3 py-2 h-9 rounded-md border bg-background
-                   focus-visible:ring-2 focus-visible:ring-ring focus:outline-none text-sm"
+        sx={{
+          pl: 5,
+          pr: 2,
+          py: 0.5,
+          height: 36,
+          width: '100%',
+          borderRadius: 1,
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+          fontSize: '0.875rem',
+          transition: 'all 0.2s',
+          '&.Mui-focused': {
+            borderColor: 'primary.main',
+            boxShadow: (theme) => `0 0 0 2px ${theme.palette.primary.main}20`
+          }
+        }}
       />
     </motion.div>
   );

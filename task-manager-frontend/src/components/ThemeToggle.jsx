@@ -1,4 +1,4 @@
-import { Button } from "./ui/button";
+import { IconButton } from "@mui/material";
 import { useTheme } from "./ThemeProvider";
 import { Moon, Sun } from "lucide-react";
 
@@ -6,23 +6,27 @@ export default function ThemeToggle() {
   const { theme, toggle } = useTheme();
 
   return (
-    <Button
-      variant="outline"
-      size="icon"
+    <IconButton
       onClick={toggle}
-      className={`
-        rounded-xl transition-all duration-300
-        ${theme === 'dark'
-          ? 'bg-secondary hover:bg-white/10 border-white/10'
-          : 'bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary shadow-sm'
-        }
-      `}
+      color="primary"
+      sx={{
+        bgcolor: theme === 'dark' ? 'secondary.main' : 'primary.light',
+        '&:hover': {
+          bgcolor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'primary.main',
+          color: theme === 'dark' ? 'inherit' : 'white',
+        },
+        border: '1px solid',
+        borderColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'primary.main',
+        width: 40,
+        height: 40,
+        borderRadius: 2
+      }}
     >
       {theme === "light" ? (
-        <Moon className="h-4 w-4 text-primary" />
+        <Moon size={20} />
       ) : (
-        <Sun className="h-4 w-4 text-orange-400" />
+        <Sun size={20} className="text-orange-400" />
       )}
-    </Button>
+    </IconButton>
   );
 }

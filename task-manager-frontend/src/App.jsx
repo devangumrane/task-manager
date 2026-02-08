@@ -8,6 +8,7 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 
 import Dashboard from "./pages/Dashboard";
+import MyTasks from "./pages/MyTasks"; // Import
 import WorkspacesIndex from "./pages/WorkspacesIndex";
 import WorkspaceDetails from "./pages/WorkspaceDetails";
 
@@ -53,6 +54,7 @@ export default function App() {
       <Route element={<ProtectedLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path={ROUTES.MY_TASKS} element={<MyTasks />} />
 
         <Route path={ROUTES.PROFILE} element={<Profile />} />
         <Route path="/users/:id" element={<UserProfile />} />

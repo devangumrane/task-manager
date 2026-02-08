@@ -3,6 +3,7 @@ export const ROUTES = {
   REGISTER: "/register",
 
   DASHBOARD: "/",
+  MY_TASKS: "/tasks", // Global tasks
   WORKSPACES: "/workspaces",
   WORKSPACE: (id) => `/workspaces/${id}`,
 

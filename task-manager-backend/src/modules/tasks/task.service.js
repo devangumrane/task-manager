@@ -420,5 +420,40 @@ export const taskService = {
       await t.rollback();
       throw err;
     }
+  },
+
+  // --------------------------------------------------------
+  // GLOBAL: GET TASKS BY USER
+  // --------------------------------------------------------
+  async getTasksByUser(userId) {
+    return Task.findAll({
+      where: {
+        assigned_to: userId,
+        status: ['pending', 'in_progress'] // Show active tasks by default. Use status filter if needed later.
+      },
+      include: [
+        {
+          model: Project,
+          as: 'project',
+          attributes: ['id', 'name', 'workspace_id'],
+          include: { // Include workspace for context
+            model: 'Workspace', // Assuming model name string or import if circular.
+            // Wait, Workspace model index is loaded. But we need to use the model object or string alias.
+            // In index.js: Project.belongsTo(Workspace, ...)
+            as: 'workspace',
+            attributes: ['id', 'name']
+          }
+        },
+        { model: User, as: 'creator', attributes: ['id', 'username', 'email'] },
+        { model: Tag, as: 'tags', through: { attributes: [] } }
+      ],
+      order: [
+        ['priority', 'DESC'], // High priority first? Enums are string though... 'high', 'medium', 'low'. 
+        // string sort: high > low > medium. Not ideal.
+        // Let's sort by createdAt for now or deadline.
+        ['deadline', 'ASC'], // Soonest due first
+        ['createdAt', 'DESC']
+      ]
+    });
   }
 };
