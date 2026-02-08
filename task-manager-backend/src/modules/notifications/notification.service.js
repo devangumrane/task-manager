@@ -117,4 +117,52 @@ export const notificationService = {
       body: message,
     });
   },
+
+  // --------------------------------------------------------
+  // USER METHODS
+  // --------------------------------------------------------
+  async getUserNotifications(userId, page = 1, limit = 20) {
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Notification.findAndCountAll({
+      where: { userId },
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+    });
+
+    const unreadCount = await Notification.count({
+      where: { userId, isRead: false }
+    });
+
+    return {
+      notifications: rows,
+      meta: {
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+        unreadCount
+      }
+    };
+  },
+
+  async markAsRead(notificationId, userId) {
+    // Ensure ownership
+    const notif = await Notification.findOne({
+      where: { id: notificationId, userId }
+    });
+
+    if (notif) {
+      notif.isRead = true;
+      await notif.save();
+    }
+  },
+
+  async markAllAsRead(userId) {
+    await Notification.update(
+      { isRead: true },
+      { where: { userId, isRead: false } }
+    );
+  }
 };

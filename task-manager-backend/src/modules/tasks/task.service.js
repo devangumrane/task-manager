@@ -1,4 +1,4 @@
-import { Task, Project, User, FailedTask, WorkspaceMember, RecurringTask, TimeEntry, Tag } from "../../models/index.js";
+import { Task, Project, User, FailedTask, WorkspaceMember, RecurringTask, TimeEntry, Tag, Workspace } from "../../models/index.js";
 import sequelize from "../../config/database.js";
 import ApiError from "../../core/errors/ApiError.js";
 
@@ -437,9 +437,7 @@ export const taskService = {
           as: 'project',
           attributes: ['id', 'name', 'workspace_id'],
           include: { // Include workspace for context
-            model: 'Workspace', // Assuming model name string or import if circular.
-            // Wait, Workspace model index is loaded. But we need to use the model object or string alias.
-            // In index.js: Project.belongsTo(Workspace, ...)
+            model: Workspace,
             as: 'workspace',
             attributes: ['id', 'name']
           }

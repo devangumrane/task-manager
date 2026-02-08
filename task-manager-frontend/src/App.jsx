@@ -8,7 +8,7 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 
 import Dashboard from "./pages/Dashboard";
-import MyTasks from "./pages/MyTasks"; // Import
+import MyTasks from "./pages/MyTasks";
 import WorkspacesIndex from "./pages/WorkspacesIndex";
 import WorkspaceDetails from "./pages/WorkspaceDetails";
 
