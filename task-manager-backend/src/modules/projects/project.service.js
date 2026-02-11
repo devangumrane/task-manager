@@ -9,23 +9,24 @@ export const projectService = {
     const name = data?.name?.trim();
     if (!name) throw new ApiError("INVALID_INPUT", "Project name is required", 400);
 
-    let project;
-    try {
-      project = await Project.create({
-        workspace_id: workspaceId,
-        name,
-        description: data.description || null,
-        owner_id: userId,
-      });
-    } catch (err) {
-      if (err.name === 'SequelizeUniqueConstraintError') {
-        throw new ApiError("CONFLICT", "Project with same unique field exists", 409, { meta: err.fields });
+    const project = await sequelize.transaction(async (t) => {
+      try {
+        return await Project.create({
+          workspace_id: workspaceId,
+          name,
+          description: data.description || null,
+          owner_id: userId,
+        }, { transaction: t });
+      } catch (err) {
+        if (err.name === 'SequelizeUniqueConstraintError') {
+          throw new ApiError("CONFLICT", "Project with same unique field exists", 409, { meta: err.fields });
+        }
+        throw err;
       }
-      throw err;
-    }
+    });
 
     // -------------------------
-    // Activity log
+    // Activity log (Best Effort)
     // -------------------------
     try {
       await activityService.log({

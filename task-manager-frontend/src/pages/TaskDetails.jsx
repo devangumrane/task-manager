@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTaskById, getTaskAttachments } from "../services/taskService";
 import { getReminders, createReminder, deleteReminder } from "../services/reminderService";
-import { ArrowLeft, Plus, Trash, Save, X, Edit2, MessageSquare, Calendar, User, Clock, Paperclip, CheckSquare, FileText, RotateCcw } from "lucide-react";
+import { ArrowLeft, Plus, Trash, Edit2, MessageSquare, CheckSquare, FileText, Clock } from "lucide-react";
 import { useDeleteTask, useUpdateTask } from "../hooks/useTasks";
 import { useTaskRealtime } from "../hooks/useTaskRealtime";
 import { useComments } from "../hooks/useComments";
@@ -15,15 +15,14 @@ import Checklist from "../components/tasks/Checklist";
 import ReminderList from "../components/reminders/ReminderList";
 import CreateReminderDialog from "../components/reminders/CreateReminderDialog";
 import ConfirmDialog from "../components/shared/ConfirmDialog";
-import AttachmentUploader from "../components/attachments/AttachmentUploader";
-import SkillSelector from "../components/tasks/SkillSelector";
-import TagSelector from "../components/tasks/TagSelector";
+import TaskHeader from "../components/tasks/TaskHeader";
+import TaskMetaCard from "../components/tasks/TaskMetaCard";
+import TaskAttachmentsWidget from "../components/tasks/TaskAttachmentsWidget";
 import DependencyList from "../components/tasks/DependencyList";
 import TimeTracker from "../components/tasks/TimeTracker";
 import RecurrenceDialog from "../components/reminders/RecurrenceDialog";
 import GlassCard from "../components/shared/GlassCard";
-import MemberSelector from "../components/shared/MemberSelector";
-import { motion, AnimatePresence } from "framer-motion";
+import { getStatusColor, getPriorityColor } from "../config/theme.constants";
 
 export default function TaskDetails() {
   const { workspaceId, projectId, taskId } = useParams();
@@ -44,8 +43,7 @@ export default function TaskDetails() {
 
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [descriptionContent, setDescriptionContent] = useState("");
-  const [isEditingSkills, setIsEditingSkills] = useState(false);
-  const [skillSelection, setSkillSelection] = useState([]);
+  /* Removed unused state */
 
   // Fetch Data
   const { data: task, isLoading: loadingTask } = useQuery({
@@ -66,7 +64,6 @@ export default function TaskDetails() {
   useEffect(() => {
     if (task) {
       setDescriptionContent(task.description || "");
-      setSkillSelection(task.skills || []);
     }
   }, [task]);
 
@@ -76,11 +73,7 @@ export default function TaskDetails() {
     });
   };
 
-  const handleSaveSkills = () => {
-    updateTaskMutation.mutate({ taskId: Number(taskId), payload: { skills: skillSelection.map(s => s.id) } }, {
-      onSuccess: () => setIsEditingSkills(false)
-    });
-  };
+  /* Removed handleSaveSkills */
 
   const handleDeleteTask = () => {
     deleteTaskMutation.mutate(taskId, {
@@ -112,18 +105,8 @@ export default function TaskDetails() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header / Nav */}
-      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-4">
-        <button
-          onClick={() => navigate(ROUTES.TASK(workspaceId, projectId, task.id).replace('tasks/' + task.id, ''))}
-          className="p-2 rounded-xl hover:bg-white/5 text-muted-foreground hover:text-white transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <span className="text-muted-foreground">/</span>
-        <button className="text-muted-foreground hover:text-white transition-colors">Projects</button>
-        <span className="text-muted-foreground">/</span>
-        <span className="text-white font-medium truncate max-w-md">{task.title}</span>
-      </motion.div>
+      {/* Header / Nav */}
+      <TaskHeader workspaceId={workspaceId} projectId={projectId} task={task} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Main Content */}
@@ -132,21 +115,16 @@ export default function TaskDetails() {
           {/* Main Task Card */}
           <GlassCard className="relative overflow-hidden group">
             {/* Status Stripe */}
-            <div className={`absolute top-0 left-0 bottom-0 w-1 ${task.status === 'completed' ? 'bg-emerald-500' :
-              task.status === 'in_progress' ? 'bg-blue-500' : 'bg-orange-500'
-              }`} />
+            <div className={`absolute top-0 left-0 bottom-0 w-1 ${getStatusColor(task.status).stripe}`} />
 
             <div className="flex justify-between items-start mb-6 pl-4">
               <div>
                 <h1 className="text-3xl font-bold text-white mb-2">{task.title}</h1>
                 <div className="flex items-center gap-3">
-                  <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${task.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' :
-                    task.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'
-                    }`}>
+                  <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${getStatusColor(task.status).badgeBg} ${getStatusColor(task.status).text}`}>
                     {task.status === 'pending' ? 'To Do' : task.status.replace('_', ' ')}
                   </span>
-                  <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider border border-white/10 ${(task.priority?.toLowerCase() || 'medium') === 'high' ? 'text-red-400' : 'text-muted-foreground'
-                    }`}>
+                  <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider border border-white/10 ${getPriorityColor(task.priority)}`}>
                     {task.priority} Priority
                   </span>
                 </div>
@@ -231,87 +209,14 @@ export default function TaskDetails() {
           <TimeTracker workspaceId={workspaceId} projectId={projectId} taskId={taskId} timeEntries={task.timeEntries || []} />
 
           {/* Meta Card */}
-          <GlassCard>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Details</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-3 text-sm text-white w-full">
-                  <div className="p-2 rounded-lg bg-white/5 group-hover:bg-primary/20 transition-colors">
-                    <User size={16} className="text-muted-foreground group-hover:text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs text-muted-foreground mb-1">Assignee</p>
-                    <MemberSelector
-                      workspaceId={workspaceId}
-                      currentAssigneeId={task.assignee?.id}
-                      onSelect={(user) => {
-                        updateTaskMutation.mutate({
-                          taskId: Number(taskId),
-                          payload: { assignedTo: user ? user.id : null }
-                        });
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-3 text-sm text-white">
-                  <div className="p-2 rounded-lg bg-white/5 group-hover:bg-primary/20 transition-colors">
-                    <Calendar size={16} className="text-muted-foreground group-hover:text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Due Date</p>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{task.deadline ? new Date(task.deadline).toLocaleDateString() : "-"}</p>
-                      <button
-                        onClick={() => setIsRecurrenceDialogOpen(true)}
-                        className={`p-1 rounded hover:bg-white/10 ${task.recurring ? 'text-blue-400' : 'text-muted-foreground'}`}
-                        title="Set Recurring Schedule"
-                      >
-                        <RotateCcw size={12} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="my-6 h-px bg-white/10" />
-
-            {/* Tags */}
-            <div className="mb-6">
-              <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Tags</p>
-              <TagSelector workspaceId={workspaceId} projectId={projectId} taskId={taskId} currentTags={task.tags || []} />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase">Skills</p>
-                <button onClick={() => setIsEditingSkills(!isEditingSkills)} className="text-xs text-primary hover:underline">
-                  {isEditingSkills ? 'Done' : 'Edit'}
-                </button>
-              </div>
-              {isEditingSkills ? (
-                <div className="space-y-2">
-                  <SkillSelector value={skillSelection} onChange={setSkillSelection} />
-                  <button onClick={handleSaveSkills} className="w-full py-1.5 rounded bg-primary/20 text-primary text-xs font-bold hover:bg-primary/30">Save Skills</button>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {task.skills?.length > 0 ? (
-                    task.skills.map(s => (
-                      <span key={s.id} className="px-2 py-1 rounded bg-secondary/50 border border-white/5 text-xs text-secondary-foreground hover:border-primary/50 transition-colors cursor-default">
-                        {s.name}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-muted-foreground italic">No skills required</span>
-                  )}
-                </div>
-              )}
-            </div>
-          </GlassCard>
+          <TaskMetaCard
+            workspaceId={workspaceId}
+            projectId={projectId}
+            taskId={taskId}
+            task={task}
+            onUpdate={updateTaskMutation.mutate}
+            onRecurrenceClick={() => setIsRecurrenceDialogOpen(true)}
+          />
 
           {/* Dependencies */}
           <GlassCard>
@@ -337,41 +242,13 @@ export default function TaskDetails() {
           </GlassCard>
 
           {/* Attachments Sidebar Widget */}
-          <GlassCard>
-            <div className="flex items-center gap-2 mb-4 text-white font-semibold">
-              <Paperclip size={16} className="text-primary" />
-              Attachments
-            </div>
-
-            <div className="mb-4">
-              <AttachmentUploader workspaceId={workspaceId} projectId={projectId} taskId={taskId} minimalist />
-            </div>
-
-            <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
-              {attachments?.map((file) => (
-                <a
-                  key={file.id}
-                  href={file.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block p-2 rounded-lg bg-black/20 hover:bg-white/5 transition-colors group"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded bg-white/5">
-                      <FileText size={14} className="text-muted-foreground group-hover:text-primary" />
-                    </div>
-                    <div className="overflow-hidden">
-                      <p className="text-xs font-medium text-white truncate">{file.filename}</p>
-                      <p className="text-[10px] text-muted-foreground uppercase">{file.mimetype.split('/')[1]}</p>
-                    </div>
-                  </div>
-                </a>
-              ))}
-              {!loadingAttachments && attachments?.length === 0 && (
-                <p className="text-xs text-center text-muted-foreground py-2">No files attached</p>
-              )}
-            </div>
-          </GlassCard>
+          <TaskAttachmentsWidget
+            workspaceId={workspaceId}
+            projectId={projectId}
+            taskId={taskId}
+            attachments={attachments}
+            isLoading={loadingAttachments}
+          />
 
         </div>
       </div>

@@ -66,7 +66,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Data Sanitization against XSS
-// app.use(xss());
+app.use(xss());
 
 app.use(morgan("dev"));
 app.use(express.json());

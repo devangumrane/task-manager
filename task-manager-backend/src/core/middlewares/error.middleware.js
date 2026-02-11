@@ -1,5 +1,6 @@
-import fs from 'fs';
+
 import ApiError from "../errors/ApiError.js";
+import { logger } from "../utils/logger.js";
 
 /**
  * Centralized error middleware.
@@ -69,13 +70,14 @@ export default function errorMiddleware(err, req, res, next) {
     isProd ? {} : { stack: err?.stack }
   );
 
-  // Log the original error for ops/debug
-  // eslint-disable-next-line no-console
-  console.error(`[ERROR] ${req.method} ${req.originalUrl} ->`, err);
-
-  try {
-    fs.appendFileSync('backend-fatal.log', `[${new Date().toISOString()}] ${req.method} ${req.originalUrl}\n${err.stack || err.message}\n---\n`);
-  } catch (e) { console.error("Failed to write log", e); }
+  // Log using Winston
+  logger.error(`${req.method} ${req.originalUrl}`, {
+    message: err.message,
+    stack: err.stack,
+    code: err.code || 'UNKNOWN',
+    url: req.originalUrl,
+    method: req.method
+  });
 
   return res.status(fallback.status).json(fallback.toJSON());
 }

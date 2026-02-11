@@ -9,6 +9,7 @@ import app from "./app.js";
 import sequelize from "./config/database.js";
 import bree from "./core/jobs/bree.js";
 import { initSocket } from "./core/realtime/socket.js";
+import { logger } from "./core/utils/logger.js";
 
 // HTTP + SOCKET SERVER
 const server = http.createServer(app);
@@ -29,9 +30,10 @@ bree.on("error", (jobName, err) =>
 const PORT = process.env.PORT || 5000;
 
 sequelize.sync({ force: false }).then(() => {
-  console.log("Database connected & synced");
+  logger.info("Database connected & synced");
   server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    logger.info(`Server running on http://localhost:${PORT}`);
+    logger.info(`Environment: ${process.env.NODE_ENV}`);
   });
 }).catch(err => {
   console.error("Database connection failed:", err);

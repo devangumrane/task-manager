@@ -18,11 +18,9 @@ export const taskService = {
   // CREATE TASK
   // --------------------------------------------------------
   async createTask(projectId, userId, data) {
-    const t = await sequelize.transaction();
-
-    try {
+    const { task, project } = await sequelize.transaction(async (t) => {
       // 1️⃣ Resolve project
-      const project = await Project.findByPk(projectId);
+      const project = await Project.findByPk(projectId, { transaction: t });
 
       if (!project) {
         throw new ApiError("PROJECT_NOT_FOUND", "Project not found", 404);
@@ -69,24 +67,21 @@ export const taskService = {
         throw err;
       }
 
-      await t.commit();
+      return { task, project };
+    });
 
-      // 5️⃣ Side effects (BEST-EFFORT)
-      try {
-        // Fetch full task for effects
-        const fullTask = await Task.findByPk(task.id, {
-          include: [{ model: User, as: 'assignee' }, { model: User, as: 'creator' }]
-        });
-        await onTaskCreated(project, fullTask, userId);
-      } catch (err) {
-        console.error("onTaskCreated failed:", err);
-      }
-
-      return task;
-    } catch (error) {
-      await t.rollback();
-      throw error;
+    // 5️⃣ Side effects (BEST-EFFORT)
+    try {
+      // Fetch full task for effects
+      const fullTask = await Task.findByPk(task.id, {
+        include: [{ model: User, as: 'assignee' }, { model: User, as: 'creator' }]
+      });
+      await onTaskCreated(project, fullTask, userId);
+    } catch (err) {
+      console.error("onTaskCreated failed:", err);
     }
+
+    return task;
   },
 
   // --------------------------------------------------------
@@ -168,9 +163,7 @@ export const taskService = {
   // UPDATE TASK
   // --------------------------------------------------------
   async updateTask(taskId, data, updatedBy) {
-    const t = await sequelize.transaction();
-
-    try {
+    const { updated, originalTask, updatePayloadCore } = await sequelize.transaction(async (t) => {
       // 1️⃣ Authorization + fetch
       const task = await assertTaskWorkspaceAccess(t, updatedBy, taskId);
       // assertTaskWorkspaceAccess returns task with project
@@ -188,35 +181,16 @@ export const taskService = {
 
         // 🚨 BLOCKER CHECK
         if (newStatus === 'completed' && task.status !== 'completed') {
-          const pendingBlockers = await TaskDependency.count({
-            where: { blocked_task_id: taskId },
-            include: [{
-              model: Task,
-              as: 'blocker', // Must align with association alias in index.js (Task.belongsToMany(..., as: 'blocking'/'blockers')) 
-              // Wait, in index.js:
-              // Task.belongsToMany(Task, { as: 'blockers', foreignKey: 'blocked_task_id' ... })
-              // But TaskDependency itself does not have 'blocker' alias unless we define it or use manual query.
-              // Better approach: Query TaskDependency to get blocker IDs, then count Tasks.
-              required: true,
-              where: { status: ['pending', 'in_progress'] } // Any non-completed status
-            }]
-          });
-
-          // Actually, simpler query on TaskDependency directly if we associate:
-          // We need to check if ANY blocker is not completed.
-          // Let's do raw query or two-step for safety if associations are tricky.
-
           const blockers = await Task.findAll({
             include: [{
               model: Task,
-              as: 'blocking', // Tasks that THIS task is blocking? No.
-              // We want tasks that are blocking THIS task.
-              // In index.js: Task.belongsToMany(Task, { as: 'blockers', ... }) -> "This task has blockers"
+              as: 'blocking',
               where: { id: taskId }
             }],
             where: {
               status: ['pending', 'in_progress']
-            }
+            },
+            transaction: t
           });
 
           if (blockers.length > 0) {
@@ -262,38 +236,34 @@ export const taskService = {
 
       const updated = await Task.findByPk(taskId, { transaction: t });
 
-      await t.commit();
+      return { updated, originalTask: task, updatePayloadCore };
+    });
 
-      // 5️⃣ Side effects (BEST-EFFORT)
-      try {
-        await onTaskUpdated(
-          updated,
-          updatePayloadCore, // pass original payload for effects if structure matters
-          updatedBy,
-          task.project.workspace_id
-        );
+    // 5️⃣ Side effects (BEST-EFFORT)
+    try {
+      await onTaskUpdated(
+        updated,
+        updatePayloadCore, // pass original payload for effects if structure matters
+        updatedBy,
+        originalTask.project.workspace_id
+      );
 
-        // Check for completion
-        if (task.status !== 'completed' && updated.status === 'completed') {
-          await analyticsService.recordTaskCompletion(updated.assignee?.id || updated.assigned_to, taskId);
-        }
-      } catch (err) {
-        console.error("onTaskUpdated effects failed:", err);
+      // Check for completion
+      if (originalTask.status !== 'completed' && updated.status === 'completed') {
+        await analyticsService.recordTaskCompletion(updated.assignee?.id || updated.assigned_to, taskId);
       }
-
-      return updated;
-    } catch (error) {
-      await t.rollback();
-      throw error;
+    } catch (err) {
+      console.error("onTaskUpdated effects failed:", err);
     }
+
+    return updated;
   },
 
   // --------------------------------------------------------
   // FAIL TASK (Archive)
   // --------------------------------------------------------
   async failTask(taskId, userId, reason) {
-    const t = await sequelize.transaction();
-    try {
+    return sequelize.transaction(async (t) => {
       // 1️⃣ Get task with data to snapshot
       const task = await Task.findByPk(taskId, {
         include: {
@@ -322,12 +292,8 @@ export const taskService = {
       // 4️⃣ Delete original task
       await Task.destroy({ where: { id: taskId }, transaction: t });
 
-      await t.commit();
       return failedTask;
-    } catch (error) {
-      await t.rollback();
-      throw error;
-    }
+    });
   },
 
   async deleteTask(taskId, userId) {
@@ -361,8 +327,7 @@ export const taskService = {
   // RECURRING TASKS
   // --------------------------------------------------------
   async setRecurring(taskId, cronExpression, userId) {
-    const t = await sequelize.transaction();
-    try {
+    return sequelize.transaction(async (t) => {
       // 1. Auth & Existence
       const task = await assertTaskWorkspaceAccess(t, userId, taskId);
 
@@ -375,48 +340,26 @@ export const taskService = {
 
       if (existing) {
         existing.cron_expression = cronExpression;
-        // Reset next run? Or keep?
-        // Let's assume parser calculates next run from NOW.
-        // We'll leave next_run updates to the worker or recalculate here if we import parser.
-        // Ideally we should calculate next_run here to start it.
-        // But for MVP, the worker checks all? No, worker checks where next_run <= NOW.
-        // So we MUST set next_run.
-        // We need cron-parser here too.
-        // Let's import parser dynamically or at top?
-        // See if imported.
-
         await existing.save({ transaction: t });
       } else {
         await RecurringTask.create({
           original_task_id: taskId,
           cron_expression: cronExpression,
           workspace_id: task.project.workspace_id,
-          next_run: new Date() // Temporary, worker will pick up? 
-          // Wait, if next_run is NOW, it will run immediately?
-          // We should parse it.
+          next_run: new Date()
         }, { transaction: t });
       }
-
-      await t.commit();
-    } catch (err) {
-      await t.rollback();
-      throw err;
-    }
+    });
   },
 
   async removeRecurring(taskId, userId) {
-    const t = await sequelize.transaction();
-    try {
+    return sequelize.transaction(async (t) => {
       await assertTaskWorkspaceAccess(t, userId, taskId);
       await RecurringTask.destroy({
         where: { original_task_id: taskId },
         transaction: t
       });
-      await t.commit();
-    } catch (err) {
-      await t.rollback();
-      throw err;
-    }
+    });
   },
 
   // --------------------------------------------------------
