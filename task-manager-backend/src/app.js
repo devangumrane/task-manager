@@ -52,9 +52,9 @@ app.use(
 );
 
 
-// app.use(helmet({
-//   crossOriginResourcePolicy: { policy: "cross-origin" },
-// }));
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
 
 // Rate limiting: 100 requests per 15 minutes
 const limiter = rateLimit({
@@ -63,7 +63,7 @@ const limiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
-// app.use(limiter);
+app.use(limiter);
 
 // Data Sanitization against XSS
 // app.use(xss());

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useCreateTask } from "../../hooks/useTasks";
 import { useWorkspace } from "../../hooks/useWorkspaces";
-import { X, Loader2, User, Check, AlignLeft } from "lucide-react";
+import { X, Loader2, Check, AlignLeft } from "lucide-react";
+import MemberSelector from "../shared/MemberSelector";
 import { motion, AnimatePresence } from "framer-motion";
 import Editor from "../shared/Editor";
 import SkillSelector from "./SkillSelector";
@@ -11,10 +12,8 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
 
-  const [assigneeQuery, setAssigneeQuery] = useState("");
-  const [assigneeResults, setAssigneeResults] = useState([]);
+
   const [assignedUser, setAssignedUser] = useState(null);
-  const [isSearching, setIsSearching] = useState(false);
 
   const [skills, setSkills] = useState([]);
 
@@ -28,43 +27,9 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
       setTitle("");
       setDescription("");
       setPriority("medium");
-      setAssigneeQuery("");
-      setAssigneeResults([]);
-      setAssignedUser(null);
       setSkills([]);
     }
   }, [open]);
-
-  // Handle outside click for assignee dropdown
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (assignDropdownRef.current && !assignDropdownRef.current.contains(event.target)) {
-        setAssigneeResults([]);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleAssigneeSearch = (q = "") => {
-    setAssigneeQuery(q);
-
-    if (workspace?.members) {
-      const users = workspace.members.map(m => m.user);
-
-      if (!q.trim()) {
-        setAssigneeResults(users);
-        return;
-      }
-
-      const lowerQ = q.toLowerCase();
-      const matches = users.filter(u =>
-        u.name.toLowerCase().includes(lowerQ) ||
-        u.email.toLowerCase().includes(lowerQ)
-      );
-      setAssigneeResults(matches);
-    }
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -160,57 +125,14 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
                   </div>
 
                   {/* Assignee */}
-                  <div className="space-y-2 relative" ref={assignDropdownRef}>
+                  <div className="space-y-2 relative">
                     <label className="text-sm font-medium text-muted-foreground">Assignee</label>
-                    {assignedUser ? (
-                      <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-lg p-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-white">
-                            {assignedUser.name?.[0] || "U"}
-                          </div>
-                          <span className="text-sm text-white font-medium">{assignedUser.name}</span>
-                        </div>
-                        <button onClick={() => setAssignedUser(null)} className="text-muted-foreground hover:text-white">
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={assigneeQuery}
-                          onChange={(e) => handleAssigneeSearch(e.target.value)}
-                          onFocus={() => handleAssigneeSearch(assigneeQuery)}
-                          placeholder="Search member..."
-                          className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder:text-muted-foreground/50 focus:border-primary outline-none"
-                        />
-                        {isSearching && <Loader2 size={16} className="absolute right-3 top-3 animate-spin text-muted-foreground" />}
-
-                        {assigneeResults.length > 0 && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-[#1A202C] border border-white/10 rounded-lg shadow-xl max-h-48 overflow-y-auto z-10">
-                            {assigneeResults.map(user => (
-                              <button
-                                key={user.id}
-                                onClick={() => {
-                                  setAssignedUser(user);
-                                  setAssigneeResults([]);
-                                  setAssigneeQuery("");
-                                }}
-                                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-white/5 text-left transition-colors"
-                              >
-                                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs text-muted-foreground">
-                                  <User size={12} />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="text-sm text-white">{user.name}</span>
-                                  <span className="text-xs text-muted-foreground">{user.email}</span>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <MemberSelector
+                      workspaceId={workspaceId}
+                      currentAssigneeId={assignedUser?.id}
+                      onSelect={setAssignedUser}
+                      placeholder="Select assignee..."
+                    />
                   </div>
                 </div>
 

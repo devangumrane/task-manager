@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTaskById, getTaskAttachments } from "../services/taskService";
 import { getReminders, createReminder, deleteReminder } from "../services/reminderService";
-import { ArrowLeft, Plus, Trash, Save, X, Edit2, MessageSquare, Calendar, User, Clock, Paperclip, CheckSquare } from "lucide-react";
+import { ArrowLeft, Plus, Trash, Save, X, Edit2, MessageSquare, Calendar, User, Clock, Paperclip, CheckSquare, FileText, RotateCcw } from "lucide-react";
 import { useDeleteTask, useUpdateTask } from "../hooks/useTasks";
 import { useTaskRealtime } from "../hooks/useTaskRealtime";
 import { useComments } from "../hooks/useComments";
@@ -22,6 +22,7 @@ import DependencyList from "../components/tasks/DependencyList";
 import TimeTracker from "../components/tasks/TimeTracker";
 import RecurrenceDialog from "../components/reminders/RecurrenceDialog";
 import GlassCard from "../components/shared/GlassCard";
+import MemberSelector from "../components/shared/MemberSelector";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function TaskDetails() {
@@ -234,13 +235,22 @@ export default function TaskDetails() {
             <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Details</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-3 text-sm text-white">
+                <div className="flex items-center gap-3 text-sm text-white w-full">
                   <div className="p-2 rounded-lg bg-white/5 group-hover:bg-primary/20 transition-colors">
                     <User size={16} className="text-muted-foreground group-hover:text-primary" />
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Assignee</p>
-                    <p className="font-medium">{task.assignee?.name || <span className="italic text-muted-foreground">Unassigned</span>}</p>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground mb-1">Assignee</p>
+                    <MemberSelector
+                      workspaceId={workspaceId}
+                      currentAssigneeId={task.assignee?.id}
+                      onSelect={(user) => {
+                        updateTaskMutation.mutate({
+                          taskId: Number(taskId),
+                          payload: { assignedTo: user ? user.id : null }
+                        });
+                      }}
+                    />
                   </div>
                 </div>
               </div>

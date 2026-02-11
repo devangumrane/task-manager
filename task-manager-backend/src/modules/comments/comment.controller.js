@@ -17,9 +17,14 @@ export const commentController = {
     }),
 
     list: asyncHandler(async (req, res) => {
-        const taskId = Number(req.params.taskId);
-        const comments = await commentService.list(taskId);
-        res.json({ success: true, data: comments });
+        try {
+            const taskId = Number(req.params.taskId);
+            const comments = await commentService.list(taskId);
+            res.json({ success: true, data: comments });
+        } catch (error) {
+            console.error("[COMMENT_LIST_ERROR]", error);
+            res.status(500).json({ success: false, message: error.message, stack: error.stack });
+        }
     }),
 
     delete: asyncHandler(async (req, res) => {

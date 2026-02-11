@@ -17,10 +17,10 @@ export const commentService = {
         }
 
         const comment = await Comment.create({
-            task_id: taskId,
-            user_id: userId,
+            taskId,
+            userId,
             content,
-            parent_id: parentId || null,
+            parentId: parentId || null,
         });
 
         // Re-fetch to include user details
@@ -28,21 +28,14 @@ export const commentService = {
             include: {
                 model: User,
                 as: 'user',
-                attributes: ['id', 'name', 'profile_image', 'email'] // Ensure field names match User model (profile_image vs profileImage?) 
-                // User model defines 'profile_image' usually in DB, but Sequelize model might map it.
-                // Let's check User model later. Assuming snake_case due to my pattern.
-                // Actually User model was defined in step 24 (initially) or 437?
-                // Step 437 showed User.js was 1189 bytes. 
-                // If I check User.js content I can confirm.
-                // Let's assume standard Sequelize attributes (camelCase mapped unless specified).
-                // My User model likely has `profileImage`.
-            }
+                attributes: ['id', ['username', 'name'], 'email', 'profile_image'],
+            },
         });
 
         // Real-time Event
         try {
             const emitters = getEmitters();
-            if (emitters) {
+            if (emitters && emitters.io) {
                 emitters.io.to(`task:${taskId}`).emit("comment.created", commentWithUser);
             }
         } catch (e) {
@@ -54,11 +47,11 @@ export const commentService = {
 
     async list(taskId) {
         return Comment.findAll({
-            where: { task_id: taskId },
+            where: { taskId },
             include: {
                 model: User,
                 as: 'user',
-                attributes: ['id', 'name', 'email']
+                attributes: ['id', ['username', 'name'], 'email', 'profile_image']
             },
             order: [["createdAt", "ASC"]],
         });

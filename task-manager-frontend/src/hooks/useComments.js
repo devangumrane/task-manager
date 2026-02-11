@@ -5,7 +5,7 @@ const fetchComments = async (workspaceId, projectId, taskId) => {
     const res = await api.get(
         `/workspaces/${workspaceId}/projects/${projectId}/tasks/${taskId}/comments`
     );
-    return res.data;
+    return res.data.data;
 };
 
 const createComment = async ({ workspaceId, projectId, taskId, content }) => {
@@ -13,7 +13,7 @@ const createComment = async ({ workspaceId, projectId, taskId, content }) => {
         `/workspaces/${workspaceId}/projects/${projectId}/tasks/${taskId}/comments`,
         { content }
     );
-    return res.data;
+    return res.data.data;
 };
 
 const deleteComment = async ({ workspaceId, projectId, taskId, commentId }) => {
