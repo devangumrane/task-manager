@@ -3,10 +3,10 @@ import { CSS } from "@dnd-kit/utilities";
 import { User, RotateCcw, Lock } from "lucide-react";
 
 const priorityColors = {
-  LOW: "bg-gray-500/10 text-gray-400 border-gray-500/20",
-  MEDIUM: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  HIGH: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  URGENT: "bg-red-500/10 text-red-400 border-red-500/20",
+  low: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+  medium: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  high: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  urgent: "bg-red-500/10 text-red-400 border-red-500/20",
 };
 
 export default function KanbanCard({ task, isOverlay, onClick }) {
@@ -34,7 +34,8 @@ export default function KanbanCard({ task, isOverlay, onClick }) {
 
   if (!task) return null;
 
-  const prioClass = priorityColors[task.priority] || priorityColors.MEDIUM;
+  const priority = task.priority?.toLowerCase() || 'medium';
+  const prioClass = priorityColors[priority] || priorityColors.medium;
 
   return (
     <div
@@ -54,9 +55,9 @@ export default function KanbanCard({ task, isOverlay, onClick }) {
       `}
     >
       {/* Priority Indicator Line */}
-      <div className={`absolute top-3 left-0 w-0.5 h-6 rounded-r-full ${task.priority === 'URGENT' ? 'bg-red-500' :
-        task.priority === 'HIGH' ? 'bg-orange-500' :
-          task.priority === 'MEDIUM' ? 'bg-blue-500' : 'bg-gray-500'
+      <div className={`absolute top-3 left-0 w-0.5 h-6 rounded-r-full ${priority === 'urgent' ? 'bg-red-500' :
+        priority === 'high' ? 'bg-orange-500' :
+          priority === 'medium' ? 'bg-blue-500' : 'bg-gray-500'
         }`} />
 
       {/* TAGS ROW */}

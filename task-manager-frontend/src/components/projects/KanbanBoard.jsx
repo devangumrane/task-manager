@@ -13,16 +13,18 @@ import { createPortal } from "react-dom";
 import KanbanColumn from "./KanbanColumn";
 import KanbanCard from "./KanbanCard";
 
-const statuses = ["todo", "in_progress", "done"];
+const statuses = ["pending", "in_progress", "completed"];
 
 export default function KanbanBoard({ tasks = [], onTaskUpdate, onTaskClick }) {
   const [activeTask, setActiveTask] = useState(null);
 
   // Derive columns from tasks prop (assumes tasks are already sorted by order by parent/API)
   const columns = useMemo(() => {
-    const cols = { todo: [], in_progress: [], done: [] };
+    const cols = { pending: [], in_progress: [], completed: [] };
     tasks.forEach((t) => {
-      if (cols[t.status]) cols[t.status].push(t);
+      // Normalize 'todo' to 'pending' just in case of legacy data
+      const status = t.status === 'todo' ? 'pending' : (t.status === 'done' ? 'completed' : t.status);
+      if (cols[status]) cols[status].push(t);
     });
     return cols;
   }, [tasks]);

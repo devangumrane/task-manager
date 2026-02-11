@@ -74,7 +74,7 @@ export default function ProjectDetails() {
         <KanbanBoard
           tasks={tasks}
           onTaskUpdate={(taskId, updates) =>
-            updateTask.mutate({ taskId, payload: { status: updates.status } })
+            updateTask.mutate({ taskId, payload: updates })
           }
           onTaskClick={(task) => {
             navigate(ROUTES.TASK(workspaceId, projectId, task.id));

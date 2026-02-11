@@ -131,20 +131,20 @@ export default function TaskDetails() {
           {/* Main Task Card */}
           <GlassCard className="relative overflow-hidden group">
             {/* Status Stripe */}
-            <div className={`absolute top-0 left-0 bottom-0 w-1 ${task.status === 'COMPLETED' ? 'bg-emerald-500' :
-              task.status === 'IN_PROGRESS' ? 'bg-blue-500' : 'bg-orange-500'
+            <div className={`absolute top-0 left-0 bottom-0 w-1 ${task.status === 'completed' ? 'bg-emerald-500' :
+              task.status === 'in_progress' ? 'bg-blue-500' : 'bg-orange-500'
               }`} />
 
             <div className="flex justify-between items-start mb-6 pl-4">
               <div>
                 <h1 className="text-3xl font-bold text-white mb-2">{task.title}</h1>
                 <div className="flex items-center gap-3">
-                  <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${task.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400' :
-                    task.status === 'IN_PROGRESS' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'
+                  <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${task.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' :
+                    task.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'
                     }`}>
-                    {task.status.replace('_', ' ')}
+                    {task.status === 'pending' ? 'To Do' : task.status.replace('_', ' ')}
                   </span>
-                  <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider border border-white/10 ${task.priority === 'HIGH' ? 'text-red-400' : 'text-muted-foreground'
+                  <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider border border-white/10 ${(task.priority?.toLowerCase() || 'medium') === 'high' ? 'text-red-400' : 'text-muted-foreground'
                     }`}>
                     {task.priority} Priority
                   </span>

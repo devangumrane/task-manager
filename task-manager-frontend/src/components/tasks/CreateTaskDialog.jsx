@@ -9,7 +9,7 @@ import SkillSelector from "./SkillSelector";
 export default function CreateTaskDialog({ open, onClose, workspaceId, projectId }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("MEDIUM");
+  const [priority, setPriority] = useState("medium");
 
   const [assigneeQuery, setAssigneeQuery] = useState("");
   const [assigneeResults, setAssigneeResults] = useState([]);
@@ -27,7 +27,7 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
       // Reset form
       setTitle("");
       setDescription("");
-      setPriority("MEDIUM");
+      setPriority("medium");
       setAssigneeQuery("");
       setAssigneeResults([]);
       setAssignedUser(null);
@@ -152,10 +152,10 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
                       onChange={(e) => setPriority(e.target.value)}
                       className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white outline-none focus:border-primary appearance-none"
                     >
-                      <option value="LOW">Low Priority</option>
-                      <option value="MEDIUM">Medium Priority</option>
-                      <option value="HIGH">High Priority</option>
-                      <option value="URGENT">Urgent</option>
+                      <option value="low">Low Priority</option>
+                      <option value="medium">Medium Priority</option>
+                      <option value="high">High Priority</option>
+                      <option value="urgent">Urgent</option>
                     </select>
                   </div>
 

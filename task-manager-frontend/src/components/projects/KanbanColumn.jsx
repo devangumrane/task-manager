@@ -3,9 +3,9 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import KanbanCard from "./KanbanCard";
 
 const titleMap = {
-  todo: "To Do",
+  pending: "To Do",
   in_progress: "In Progress",
-  done: "Done",
+  completed: "Done",
 };
 
 export default function KanbanColumn({ status, tasks, onTaskClick }) {
