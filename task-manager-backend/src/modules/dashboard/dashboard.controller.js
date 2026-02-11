@@ -1,4 +1,4 @@
-import { Workspace, Project, Task, ActivityLog, User } from "../../models/index.js";
+import { Workspace, Project, Task, ActivityLog, User, UserSkill, TimeEntry } from "../../models/index.js";
 import { assertWorkspaceMember } from "../../core/authorization/workspace.guard.js";
 
 export const dashboardController = {
@@ -77,6 +77,16 @@ export const dashboardController = {
                 });
             }
 
+            // 5. Skills & Focus
+            const skillsCount = await UserSkill.count({
+                where: { user_id: userId }
+            });
+
+            const totalDurationMinutes = await TimeEntry.sum('duration', {
+                where: { user_id: userId }
+            });
+            const focusHours = totalDurationMinutes ? (totalDurationMinutes / 60).toFixed(1) : 0;
+
             res.json({
                 success: true,
                 data: {
@@ -87,6 +97,8 @@ export const dashboardController = {
                         pending: tasksPendingCount,
                         completed: tasksCompletedCount
                     },
+                    skills: skillsCount,
+                    focusHours: focusHours,
                     activities: recentActivity
                 },
             });

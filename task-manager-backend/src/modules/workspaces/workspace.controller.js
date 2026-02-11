@@ -30,7 +30,6 @@ export const workspaceController = {
   // --------------------------------------------------------
   list: asyncHandler(async (req, res) => {
     const workspaces = await workspaceService.listUserWorkspaces(req.user.id);
-
     res.json({ success: true, data: workspaces });
   }),
 

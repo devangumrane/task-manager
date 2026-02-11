@@ -88,17 +88,17 @@ export default function Dashboard() {
 
         {/* Stat Cards */}
         <StatCard
-          title="Workspaces"
-          value={stats?.workspaces || 0}
-          icon={Users}
+          title="Skills Developed"
+          value={stats?.skills || 0}
+          icon={Zap}
           color="text-violet-500 dark:text-violet-400"
           bg="bg-violet-500/10"
           delay={0.1}
         />
         <StatCard
-          title="Active Projects"
-          value={stats?.projects || 0}
-          icon={FileText}
+          title="Focus Hours"
+          value={stats?.focusHours || 0}
+          icon={Clock}
           color="text-blue-500 dark:text-blue-400"
           bg="bg-blue-500/10"
           delay={0.2}

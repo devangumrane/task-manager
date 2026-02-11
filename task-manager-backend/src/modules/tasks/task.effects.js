@@ -1,5 +1,5 @@
 import { activityService } from "../activity/activity.service.js";
-import { activityService } from "../activity/activity.service.js";
+
 import { notificationService } from "../notifications/notification.service.js"; // Import
 import { getEmitters } from "../../core/realtime/socket.js";
 
@@ -7,7 +7,7 @@ export async function onTaskCreated(project, task, userId) {
   // Activity
   try {
     await activityService.log({
-      workspaceId: project.workspaceId,
+      workspaceId: project.workspace_id,
       userId,
       taskId: task.id,
       projectId: project.id,
@@ -25,7 +25,7 @@ export async function onTaskCreated(project, task, userId) {
   // Realtime
   try {
     const emitters = getEmitters();
-    emitters?.emitToWorkspace(project.workspaceId, "task.created", {
+    emitters?.emitToWorkspace(project.workspace_id, "task.created", {
       task: {
         id: task.id,
         title: task.title,
@@ -45,7 +45,7 @@ export async function onTaskCreated(project, task, userId) {
         type: "task_assigned",
         title: "New Task Assigned",
         body: `You have been assigned to task: ${task.title}`,
-        data: { taskId: task.id, projectId: project.id, workspaceId: project.workspaceId }
+        data: { taskId: task.id, projectId: project.id, workspaceId: project.workspace_id }
       });
     } catch (err) {
       console.error("notificationService.createNotificationRecord (task.created) failed:", err);

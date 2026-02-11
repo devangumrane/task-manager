@@ -10,52 +10,104 @@ const api = axios.create({
 });
 
 // Attach access token
-api.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().accessToken;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+/* ------------------------------------------------------------------ */
+/* 🔐 REQUEST: attach access token                                     */
+/* ------------------------------------------------------------------ */
+api.interceptors.request.use(
+  (config) => {
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-// Auto-refresh on 401
+/* ------------------------------------------------------------------ */
+/* 🔁 RESPONSE: refresh token flow                                     */
+/* ------------------------------------------------------------------ */
+
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
-  (res) => res,
-  async (err) => {
-    const status = err.response?.status;
-    const original = err.config;
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-    if (status === 401 && !original?._retry) {
-      original._retry = true;
-
-      try {
-        const refreshRes = await axios.post(
-          `${BASE_URL}/api/v1/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
-
-        const newToken = refreshRes.data?.data?.accessToken;
-        if (!newToken) throw new Error("No token");
-
-        useAuthStore.getState().setAuth(newToken, null);
-
-        original.headers.Authorization = `Bearer ${newToken}`;
-        return api(original);
-      } catch {
-        useAuthStore.getState().clearAuth();
-        return Promise.reject(err);
+    // If not 401 → propagate
+    if (error.response?.status !== 401) {
+      // Optional: Toast for non-401 errors if needed, but keeping it clean for now or preserving existing logic
+      // Existing logic had toast for >= 500. Let's keep that.
+      if (!error.response || error.response.status >= 500) {
+        toast.error("Something went wrong. Please try again later.");
       }
+      return Promise.reject(error);
     }
 
-    if (!status || status >= 500) {
-      toast.error("Something went wrong. Please try again later.");
-    } else if (status === 400 && err.response?.data?.message) {
-      // Optional: auto-show validation errors if they are simple strings
-      // toast.error(err.response.data.message);
+    // If refresh itself failed → logout hard
+    if (originalRequest.url?.includes("/auth/refresh")) {
+      useAuthStore.getState().clearAuth();
+      return Promise.reject(error);
     }
 
-    return Promise.reject(err);
+    // Prevent infinite retry loop
+    if (originalRequest._retry) {
+      useAuthStore.getState().clearAuth();
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+
+    if (isRefreshing) {
+      // Queue requests while refresh is in flight
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      }).then((token) => {
+        originalRequest.headers.Authorization = `Bearer ${token}`;
+        return api(originalRequest);
+      });
+    }
+
+    isRefreshing = true;
+
+    try {
+      // Use axios directly to avoid interceptors loop, and use full URL because API instance has baseURL with /api/v1
+      // Actually, BASE_URL is localhost:8001. Refresh endpoint is /api/v1/auth/refresh.
+      const res = await axios.post(
+        `${BASE_URL}/api/v1/auth/refresh`,
+        {},
+        { withCredentials: true }
+      );
+      const newAccessToken = res.data?.data?.accessToken;
+
+      if (!newAccessToken) throw new Error("No token returned");
+
+      useAuthStore.getState().setAuth(newAccessToken, useAuthStore.getState().user); // Keep user? Refresh might not return user.
+
+      processQueue(null, newAccessToken);
+
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+      return api(originalRequest);
+    } catch (refreshErr) {
+      processQueue(refreshErr, null);
+      useAuthStore.getState().clearAuth();
+      return Promise.reject(refreshErr);
+    } finally {
+      isRefreshing = false;
+    }
   }
 );
 

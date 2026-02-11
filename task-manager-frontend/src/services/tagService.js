@@ -1,4 +1,4 @@
-import api from "../api/axios";
+import api from "./api";
 
 // List all tags in the workspace (via task context or generally)
 // The backend route was mounted on task routes but exposes workspace level tags

@@ -19,6 +19,9 @@ export const taskController = {
     const workspaceId = Number(req.params.workspaceId);
     const projectId = Number(req.params.projectId);
 
+    debugLog(`[TaskController] Create Task Request - User: ${req.user?.id}, Workspace: ${workspaceId}, Project: ${projectId}`);
+    debugLog(`[TaskController] Body: ${JSON.stringify(req.body)}`);
+
     if (!workspaceId) {
       throw new ApiError("INVALID_WORKSPACE_ID", "Workspace ID is invalid", 400);
     }
@@ -58,7 +61,7 @@ export const taskController = {
       throw new ApiError("INVALID_PROJECT_ID", "Project ID is invalid", 400);
     }
 
-    const tasks = await taskService.listTasks(projectId);
+    const tasks = await taskService.listTasks(projectId, req.user.id);
 
     res.json({
       success: true,
@@ -77,7 +80,7 @@ export const taskController = {
       throw new ApiError("INVALID_TASK_ID", "Task ID is invalid", 400);
     }
 
-    const task = await taskService.getTask(taskId);
+    const task = await taskService.getTask(taskId, req.user.id);
 
     res.json({
       success: true,

@@ -1,0 +1,147 @@
+  console.log
+    [dotenv@17.2.3] injecting env (8) from .env -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+
+      at _log (node_modules/dotenv/lib/main.js:142:11)
+
+(node:15176) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0mPOST /api/v1/auth/register [32m201[0m 63.243 ms - 217[0m
+[0mPOST /api/v1/auth/login [32m200[0m 54.501 ms - 485[0m
+  console.error
+    REGISTER ERROR: ZodError: [
+      {
+        "expected": "string",
+        "code": "invalid_type",
+        "path": [
+          "email"
+        ],
+        "message": "Invalid input: expected string, received undefined"
+      },
+      {
+        "expected": "string",
+        "code": "invalid_type",
+        "path": [
+          "password"
+        ],
+        "message": "Invalid input: expected string, received undefined"
+      }
+    ]
+        at D:\My projects\task-manager\task-manager-backend\src\modules\auth\auth.controller.js:26:37
+        at D:\My projects\task-manager\task-manager-backend\src\core\middlewares\asyncHandler.js:3:21
+        at Layer.handleRequest (D:\My projects\task-manager\task-manager-backend\node_modules\router\lib\layer.js:152:17)
+        at next (D:\My projects\task-manager\task-manager-backend\node_modules\router\lib\route.js:157:13)
+        at Route.dispatch (D:\My projects\task-manager\task-manager-backend\node_modules\router\lib\route.js:117:3)
+        at handle (D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:435:11)
+        at Layer.handleRequest (D:\My projects\task-manager\task-manager-backend\node_modules\router\lib\layer.js:152:17)
+        at D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:295:15
+        at processParams (D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:582:12)
+        at next (D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:291:5)
+        at router.handle (D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:186:3)
+        at router (D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:60:12)
+        at Layer.handleRequest (D:\My projects\task-manager\task-manager-backend\node_modules\router\lib\layer.js:152:17)
+        at trimPrefix (D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:342:13)
+        at D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:297:9
+        at processParams (D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:582:12)
+        at next (D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:291:5)
+        at cookieParser (D:\My projects\task-manager\task-manager-backend\node_modules\cookie-parser\index.js:57:14)
+        at Layer.handleRequest (D:\My projects\task-manager\task-manager-backend\node_modules\router\lib\layer.js:152:17)
+        at trimPrefix (D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:342:13)
+        at D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:297:9
+        at processParams (D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:582:12)
+        at next (D:\My projects\task-manager\task-manager-backend\node_modules\router\index.js:291:5)
+        at D:\My projects\task-manager\task-manager-backend\node_modules\body-parser\lib\read.js:172:5
+        at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+        at invokeCallback (D:\My projects\task-manager\task-manager-backend\node_modules\raw-body\index.js:238:16)
+        at done (D:\My projects\task-manager\task-manager-backend\node_modules\raw-body\index.js:227:7)
+        at IncomingMessage.onEnd (D:\My projects\task-manager\task-manager-backend\node_modules\raw-body\index.js:287:7)
+        at IncomingMessage.emit (node:events:508:28)
+        at endReadableNT (node:internal/streams/readable:1701:12)
+        at processTicksAndRejections (node:internal/process/task_queues:89:21)
+
+    [0m [90m 32 |[39m       })[33m;[39m
+     [90m 33 |[39m     } [36mcatch[39m (error) {
+    [31m[1m>[22m[39m[90m 34 |[39m       console[33m.[39merror([32m"REGISTER ERROR:"[39m[33m,[39m error)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 35 |[39m       [36mconst[39m fs [33m=[39m [36mawait[39m [36mimport[39m([32m'fs'[39m)[33m;[39m
+     [90m 36 |[39m       fs[33m.[39mappendFileSync([32m'backend-error.log'[39m[33m,[39m [36mnew[39m [33mDate[39m()[33m.[39mtoISOString() [33m+[39m [32m' '[39m [33m+[39m (error[33m.[39mstack [33m||[39m error[33m.[39mmessage) [33m+[39m [32m'\n'[39m)[33m;[39m
+     [90m 37 |[39m       [36mthrow[39m error[33m;[39m[0m
+
+      at src/modules/auth/auth.controller.js:34:15
+      at src/core/middlewares/asyncHandler.js:3:21
+      at Layer.handleRequest (node_modules/router/lib/layer.js:152:17)
+      at next (node_modules/router/lib/route.js:157:13)
+      at Route.dispatch (node_modules/router/lib/route.js:117:3)
+      at handle (node_modules/router/index.js:435:11)
+      at Layer.handleRequest (node_modules/router/lib/layer.js:152:17)
+      at node_modules/router/index.js:295:15
+      at processParams (node_modules/router/index.js:582:12)
+      at next (node_modules/router/index.js:291:5)
+      at router.handle (node_modules/router/index.js:186:3)
+      at router (node_modules/router/index.js:60:12)
+      at Layer.handleRequest (node_modules/router/lib/layer.js:152:17)
+      at trimPrefix (node_modules/router/index.js:342:13)
+      at node_modules/router/index.js:297:9
+      at processParams (node_modules/router/index.js:582:12)
+      at next (node_modules/router/index.js:291:5)
+      at cookieParser (node_modules/cookie-parser/index.js:57:14)
+      at Layer.handleRequest (node_modules/router/lib/layer.js:152:17)
+      at trimPrefix (node_modules/router/index.js:342:13)
+      at node_modules/router/index.js:297:9
+      at processParams (node_modules/router/index.js:582:12)
+      at next (node_modules/router/index.js:291:5)
+      at node_modules/body-parser/lib/read.js:172:5
+      at invokeCallback (node_modules/raw-body/index.js:238:16)
+      at done (node_modules/raw-body/index.js:227:7)
+      at IncomingMessage.onEnd (node_modules/raw-body/index.js:287:7)
+
+[0mPOST /api/v1/auth/register [33m400[0m 7.103 ms - 271[0m
+FAIL tests/integration/auth.test.js
+  Auth Endpoints
+    × should register a new user (75 ms)
+    × should login the user (58 ms)
+    √ should fail validation with missing fields (10 ms)
+
+  ● Auth Endpoints › should register a new user
+
+    expect(received).toHaveProperty(path)
+
+    Expected path: "token"
+    Received path: []
+
+    Received value: {"data": {"createdAt": "2026-02-08T07:03:27.598Z", "email": "test_1770534207509@example.com", "id": 9, "is_verified": false, "role": "user", "updatedAt": "2026-02-08T07:03:27.598Z", "username": "test_1770534207509"}, "success": true}
+
+    [0m [90m 17 |[39m
+     [90m 18 |[39m         expect(res[33m.[39mstatusCode)[33m.[39mtoEqual([35m201[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 19 |[39m         expect(res[33m.[39mbody)[33m.[39mtoHaveProperty([32m"token"[39m)[33m;[39m
+     [90m    |[39m                          [31m[1m^[22m[39m
+     [90m 20 |[39m     })[33m;[39m
+     [90m 21 |[39m
+     [90m 22 |[39m     it([32m"should login the user"[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+
+      at Object.<anonymous> (tests/integration/auth.test.js:19:26)
+
+  ● Auth Endpoints › should login the user
+
+    expect(received).toHaveProperty(path)
+
+    Expected path: "token"
+    Received path: []
+
+    Received value: {"data": {"accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjksImVtYWlsIjoidGVzdF8xNzcwNTM0MjA3NTA5QGV4YW1wbGUuY29tIiwiaWF0IjoxNzcwNTM0MjA3LCJleHAiOjE3NzA1MzUxMDd9.o3US_QJTOjYgIlytArlBJzUOzB0R8ZpnqDC_0O2vRZ4", "user": {"bio": null, "createdAt": "2026-02-08T07:03:27.000Z", "email": "test_1770534207509@example.com", "id": 9, "is_verified": false, "profile_image": null, "role": "user", "title": null, "updatedAt": "2026-02-08T07:03:27.000Z", "username": "test_1770534207509"}}, "success": true}
+
+    [0m [90m 29 |[39m
+     [90m 30 |[39m         expect(res[33m.[39mstatusCode)[33m.[39mtoEqual([35m200[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 31 |[39m         expect(res[33m.[39mbody)[33m.[39mtoHaveProperty([32m"token"[39m)[33m;[39m
+     [90m    |[39m                          [31m[1m^[22m[39m
+     [90m 32 |[39m     })[33m;[39m
+     [90m 33 |[39m
+     [90m 34 |[39m     it([32m"should fail validation with missing fields"[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+
+      at Object.<anonymous> (tests/integration/auth.test.js:31:26)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 1 passed, 3 total
+Snapshots:   0 total
+Time:        0.934 s, estimated 1 s
+Ran all test suites matching tests/integration/auth.test.js.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

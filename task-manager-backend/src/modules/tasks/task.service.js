@@ -17,22 +17,19 @@ export const taskService = {
   // --------------------------------------------------------
   // CREATE TASK
   // --------------------------------------------------------
-  async createTask(projectId, creatorId, data) {
+  async createTask(projectId, userId, data) {
     const t = await sequelize.transaction();
 
     try {
       // 1️⃣ Resolve project
-      const project = await Project.findByPk(projectId, {
-        attributes: ['id', 'workspace_id'],
-        transaction: t
-      });
+      const project = await Project.findByPk(projectId);
 
       if (!project) {
         throw new ApiError("PROJECT_NOT_FOUND", "Project not found", 404);
       }
 
       // 2️⃣ Authorization
-      await assertWorkspaceMember(t, creatorId, project.workspace_id);
+      await assertWorkspaceMember(t, userId, project.workspace_id);
 
       // 3️⃣ Assigned user invariant (CREATE)
       if (data.assignedTo) {
@@ -59,7 +56,7 @@ export const taskService = {
         task = await createTaskCore(t, {
           ...data,
           projectId,
-          createdBy: creatorId,
+          createdBy: userId,
           workspaceId: project.workspace_id, // Pass workspaceId
           status: "pending", // Default
         });
@@ -80,7 +77,7 @@ export const taskService = {
         const fullTask = await Task.findByPk(task.id, {
           include: [{ model: User, as: 'assignee' }, { model: User, as: 'creator' }]
         });
-        await onTaskCreated(project, fullTask, creatorId);
+        await onTaskCreated(project, fullTask, userId);
       } catch (err) {
         console.error("onTaskCreated failed:", err);
       }

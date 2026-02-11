@@ -99,13 +99,13 @@ router.post(
 router.post(
   "/:taskId/tags",
   workspaceAccessGuard,
-  tagsController.attach
+  (req, res, next) => tagsController.attach(req, res, next)
 );
 
 router.delete(
   "/:taskId/tags/:tagId",
   workspaceAccessGuard,
-  tagsController.detach
+  (req, res, next) => tagsController.detach(req, res, next)
 );
 
 // Tags (Workspace Level - usually simpler to mount separately, but can do here for speed)
@@ -121,7 +121,7 @@ router.post(
   // GET /workspaces/:workspaceId/projects/:projectId/tasks/tags (List applicable tags)
   // ok for list.
   workspaceAccessGuard,
-  tagsController.list
+  (req, res, next) => tagsController.list(req, res, next)
 );
 
 // Create tag inside a project context? Weird but okay.
@@ -133,13 +133,13 @@ router.post(
 router.get( // List tags available
   "/tags/all",
   workspaceAccessGuard,
-  tagsController.list
+  (req, res, next) => tagsController.list(req, res, next)
 );
 
 router.post(
   "/tags/create",
   workspaceAccessGuard,
-  tagsController.create
+  (req, res, next) => tagsController.create(req, res, next)
 );
 
 // Recurring Tasks

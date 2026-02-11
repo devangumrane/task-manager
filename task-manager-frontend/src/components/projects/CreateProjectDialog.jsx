@@ -1,27 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCreateProject } from "../../hooks/useProjects";
-import { Dialog, DialogContent, DialogTitle } from "@mui/material"; // Removing this
-import { X, Loader2, Folder } from "lucide-react";
+import { useWorkspaces } from "../../hooks/useWorkspaces";
+import { X, Loader2, Folder, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function CreateProjectDialog({ open, onClose, workspaceId }) {
   const [name, setName] = useState("");
-  const createProject = useCreateProject(workspaceId);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(workspaceId || "");
+
+  const { data: workspaces = [] } = useWorkspaces();
+  const createProject = useCreateProject(workspaceId); // Pass original (or undefined)
+
+  useEffect(() => {
+    if (open) {
+      setName("");
+      setSelectedWorkspaceId(workspaceId || "");
+    }
+  }, [open, workspaceId]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
 
+    // Use selected ID if original is missing
+    const targetWsId = workspaceId || selectedWorkspaceId;
+    if (!targetWsId) return;
+
     createProject.mutate(
-      { name, workspaceId },
+      { name, workspaceId: targetWsId },
       {
         onSuccess: () => {
-          setName("");
           onClose();
         },
       }
     );
   };
+
+  const showWorkspaceSelect = !workspaceId;
 
   return (
     <AnimatePresence>
@@ -55,6 +70,24 @@ export default function CreateProjectDialog({ open, onClose, workspaceId }) {
               </div>
 
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                {showWorkspaceSelect && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Briefcase size={14} /> Workspace
+                    </label>
+                    <select
+                      value={selectedWorkspaceId}
+                      onChange={(e) => setSelectedWorkspaceId(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-primary outline-none appearance-none"
+                    >
+                      <option value="" disabled>Select a workspace</option>
+                      {workspaces.map(ws => (
+                        <option key={ws.id} value={ws.id} className="bg-slate-800">{ws.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-muted-foreground">Project Name</label>
                   <input
@@ -77,7 +110,7 @@ export default function CreateProjectDialog({ open, onClose, workspaceId }) {
                   </button>
                   <button
                     type="submit"
-                    disabled={createProject.isPending || !name.trim()}
+                    disabled={createProject.isPending || !name.trim() || (!workspaceId && !selectedWorkspaceId)}
                     className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium shadow-lg shadow-primary/25 transition-all disabled:opacity-50 text-sm flex items-center gap-2"
                   >
                     {createProject.isPending ? <Loader2 size={16} className="animate-spin" /> : "Create Project"}

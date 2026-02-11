@@ -53,6 +53,14 @@ export const projectController = {
   }),
 
   // --------------------------------------------------------
+  // List ALL projects for user (Global)
+  // --------------------------------------------------------
+  listAll: asyncHandler(async (req, res) => {
+    const projects = await projectService.listAllUserProjects(req.user.id);
+    res.json({ success: true, data: projects });
+  }),
+
+  // --------------------------------------------------------
   // Get a single project inside workspace
   // --------------------------------------------------------
   get: asyncHandler(async (req, res) => {

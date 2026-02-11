@@ -46,7 +46,7 @@ export default function ProjectList({ projects = [], workspaceId, emptyMessage =
             {projects.map((project) => (
                 <motion.div key={project.id} variants={item}>
                     <Link
-                        to={ROUTES.PROJECT(workspaceId, project.id).replace(":workspaceId", workspaceId).replace(":projectId", project.id)}
+                        to={ROUTES.PROJECT(project.workspace_id || workspaceId, project.id).replace(":workspaceId", project.workspace_id || workspaceId).replace(":projectId", project.id)}
                         className="group block h-full"
                     >
                         <GlassCard className="h-full flex flex-col p-0 overflow-hidden relative" hoverEffect>

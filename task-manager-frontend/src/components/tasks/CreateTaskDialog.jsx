@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useCreateTask } from "../../hooks/useTasks";
-import { searchUsers } from "../../services/userService";
+import { useWorkspace } from "../../hooks/useWorkspaces";
 import { X, Loader2, User, Check, AlignLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Editor from "../shared/Editor";
@@ -18,6 +18,7 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
 
   const [skills, setSkills] = useState([]);
 
+  const { data: workspace } = useWorkspace(workspaceId);
   const createTask = useCreateTask(workspaceId, projectId);
   const assignDropdownRef = useRef(null);
 
@@ -45,20 +46,23 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleAssigneeSearch = async (q) => {
+  const handleAssigneeSearch = (q = "") => {
     setAssigneeQuery(q);
-    if (!q.trim()) {
-      setAssigneeResults([]);
-      return;
-    }
-    setIsSearching(true);
-    try {
-      const users = await searchUsers(q);
-      setAssigneeResults(users);
-    } catch {
-      setAssigneeResults([]);
-    } finally {
-      setIsSearching(false);
+
+    if (workspace?.members) {
+      const users = workspace.members.map(m => m.user);
+
+      if (!q.trim()) {
+        setAssigneeResults(users);
+        return;
+      }
+
+      const lowerQ = q.toLowerCase();
+      const matches = users.filter(u =>
+        u.name.toLowerCase().includes(lowerQ) ||
+        u.email.toLowerCase().includes(lowerQ)
+      );
+      setAssigneeResults(matches);
     }
   };
 
@@ -176,6 +180,7 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
                           type="text"
                           value={assigneeQuery}
                           onChange={(e) => handleAssigneeSearch(e.target.value)}
+                          onFocus={() => handleAssigneeSearch(assigneeQuery)}
                           placeholder="Search member..."
                           className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder:text-muted-foreground/50 focus:border-primary outline-none"
                         />

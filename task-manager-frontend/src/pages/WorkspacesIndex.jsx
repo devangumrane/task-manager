@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useWorkspaces } from "../hooks/useWorkspaces";
@@ -14,6 +15,7 @@ import WorkspaceTable from "../components/workspaces/WorkspaceTable";
 import CreateWorkspaceDialog from "../components/workspaces/CreateWorkspaceDialog";
 
 export default function WorkspacesIndex() {
+  const navigate = useNavigate();
   const [openCreate, setOpenCreate] = useState(false);
 
   const { data: workspaces = [], isLoading } = useWorkspaces();
@@ -55,7 +57,10 @@ export default function WorkspacesIndex() {
             </Button>
           </Box>
         ) : (
-          <WorkspaceTable data={workspaces} />
+          <WorkspaceTable
+            workspaces={workspaces}
+            onRowClick={(ws) => navigate(`/workspaces/${ws.id}`)}
+          />
         )}
       </Paper>
 

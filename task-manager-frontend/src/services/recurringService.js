@@ -1,4 +1,4 @@
-import api from "../api/axios";
+import api from "./api";
 
 export const setRecurring = async (workspaceId, projectId, taskId, cronExpression) => {
     const res = await api.post(

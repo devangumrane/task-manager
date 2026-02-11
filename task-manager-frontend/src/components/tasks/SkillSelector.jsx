@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import api from '../../api/axios';
+import api from '../../services/api';
 import { X, Search, Plus, Loader2 } from 'lucide-react';
 
 export default function SkillSelector({ value = [], onChange, error }) {

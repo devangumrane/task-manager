@@ -1,7 +1,8 @@
-import { Project, Task } from "../../models/index.js";
+import { Project, Task, User, Workspace } from "../../models/index.js";
 import { activityService } from "../activity/activity.service.js";
 import { getEmitters } from "../../core/realtime/socket.js";
 import ApiError from "../../core/errors/ApiError.js";
+import sequelize from "../../config/database.js";
 
 export const projectService = {
   async createProject(workspaceId, userId, data) {
@@ -63,6 +64,39 @@ export const projectService = {
   async listWorkspaceProjects(workspaceId) {
     return Project.findAll({
       where: { workspace_id: workspaceId },
+      include: [{ model: Task, as: 'tasks' }],
+      order: [["createdAt", "DESC"]],
+    });
+  },
+
+  // ------------------------------------------------------
+  // Safe implementation using standard Sequelize methods
+  // ------------------------------------------------------
+  async listAllUserProjects(userId) {
+    // 1. Get user's workspace memberships
+    // We can use the User model to fetch associated workspaces
+    const user = await User.findByPk(userId, {
+      include: [{
+        model: Workspace,
+        as: 'workspaces',
+        attributes: ['id'],
+        through: { attributes: [] } // avoid fetching join table data unnecessarily
+      }]
+    });
+
+    if (!user) return [];
+
+    const workspaceIds = user.workspaces.map(ws => ws.id);
+
+    if (workspaceIds.length === 0) return [];
+
+    // 2. Fetch projects in these workspaces
+    return Project.findAll({
+      where: {
+        workspace_id: {
+          [sequelize.Sequelize.Op.in]: workspaceIds
+        }
+      },
       include: [{ model: Task, as: 'tasks' }],
       order: [["createdAt", "DESC"]],
     });

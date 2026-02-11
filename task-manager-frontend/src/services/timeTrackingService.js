@@ -1,4 +1,4 @@
-import api from "../api/axios";
+import api from "./api";
 
 // Start Timer
 export const startTimer = async (workspaceId, projectId, taskId) => {

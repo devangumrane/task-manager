@@ -4,17 +4,24 @@ import {
   getTasksByProject,
   createProject,
   listProjects,
+  listAllProjects,
 } from "../services/projectService";
 
 // LIST PROJECTS FOR WORKSPACE
+// LIST PROJECTS (Workspace or Global)
 export const useProjects = (workspaceId) => {
   return useQuery({
-    queryKey: ["workspaceProjects", workspaceId],
+    queryKey: workspaceId ? ["workspaceProjects", workspaceId] : ["allProjects"],
     queryFn: async () => {
-      const res = await listProjects(workspaceId);
-      return Array.isArray(res?.data) ? res.data : []; // FIXED
+      if (workspaceId) {
+        const res = await listProjects(workspaceId);
+        return Array.isArray(res?.data) ? res.data : [];
+      } else {
+        const res = await listAllProjects();
+        return Array.isArray(res?.data) ? res.data : [];
+      }
     },
-    enabled: !!workspaceId,
+    enabled: true,
   });
 };
 
@@ -47,9 +54,12 @@ export const useCreateProject = (workspaceId) => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload) => createProject(workspaceId, payload),
-    onSuccess: () => {
-      qc.invalidateQueries(["workspaceProjects", workspaceId]);
+    mutationFn: (payload) => createProject(payload.workspaceId || workspaceId, payload),
+    onSuccess: (data, variables) => {
+      const targetWsId = variables.workspaceId || workspaceId;
+      if (targetWsId) {
+        qc.invalidateQueries(["workspaceProjects", targetWsId]);
+      }
       qc.invalidateQueries(["workspaces"]);
     },
   });

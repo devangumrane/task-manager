@@ -24,7 +24,10 @@ export const useWorkspaces = () => {
 export const useWorkspace = (workspaceId) => {
   return useQuery({
     queryKey: ["workspace", workspaceId],
-    queryFn: () => getWorkspace(workspaceId),
+    queryFn: async () => {
+      const res = await getWorkspace(workspaceId);
+      return res.data;
+    },
     enabled: !!workspaceId,
   });
 };

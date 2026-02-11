@@ -1,4 +1,4 @@
-import api from "../api/axios";
+import api from "./api";
 
 // Add a dependency (Task A blocks Task B)
 // The route says "addDependency" on specific task.

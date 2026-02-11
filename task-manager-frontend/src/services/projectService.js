@@ -17,6 +17,11 @@ export const listProjects = async (workspaceId) => {
   return res.data;
 };
 
+export const listAllProjects = async () => {
+  const res = await api.get(`/projects`);
+  return res.data;
+};
+
 export const getTasksByProject = async (workspaceId, projectId) => {
   const res = await api.get(
     `/workspaces/${workspaceId}/projects/${projectId}/tasks`

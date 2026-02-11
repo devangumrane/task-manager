@@ -1,0 +1,104 @@
+Connection has been established successfully.
+Users found: 23
+User: devangumrane8888@gmail.com (ID: 1)
+Workspaces: 5
+ - Workspace 01 (ID: 1)
+ - Workspace 01 (ID: 2)
+ - Workspace 01 (ID: 3)
+ - workspace 01 (ID: 4)
+ - Workspace 01 (ID: 5)
+User: kevin@gmail.com (ID: 2)
+Workspaces: 8
+ - Workspace01 (ID: 6)
+ - wkspace 01 (ID: 7)
+ - workspace 01 (ID: 8)
+ - df'sem (ID: 9)
+ - Workspace 01 (ID: 10)
+ - vlrgb58465934856 (ID: 16)
+ - geh545 (ID: 17)
+ - worskpaces 001 (ID: 18)
+User: test.ent.1770358857664@example.com (ID: 3)
+Workspaces: 0
+User: test.ent.1770358872937@example.com (ID: 4)
+Workspaces: 0
+User: task_1770534162339@example.com (ID: 5)
+Workspaces: 0
+User: test_1770534162831@example.com (ID: 6)
+Workspaces: 0
+User: test_1770534177506@example.com (ID: 7)
+Workspaces: 0
+User: test_1770534196012@example.com (ID: 8)
+Workspaces: 0
+User: test_1770534207509@example.com (ID: 9)
+Workspaces: 0
+User: test_1770534264812@example.com (ID: 10)
+Workspaces: 0
+User: task_1770534265414@example.com (ID: 11)
+Workspaces: 0
+User: test_1770534283993@example.com (ID: 12)
+Workspaces: 0
+User: task_1770534284591@example.com (ID: 13)
+Workspaces: 0
+User: test_1770534396997@example.com (ID: 14)
+Workspaces: 0
+User: task_1770534397566@example.com (ID: 15)
+Workspaces: 1
+ - Test Workspace 1770534397566 (ID: 11)
+User: task_1770534427250@example.com (ID: 16)
+Workspaces: 1
+ - Test Workspace 1770534427250 (ID: 12)
+User: test_1770534427848@example.com (ID: 17)
+Workspaces: 0
+User: task_1770534517966@example.com (ID: 18)
+Workspaces: 1
+ - Test Workspace 1770534517966 (ID: 13)
+User: test_1770534517968@example.com (ID: 19)
+Workspaces: 0
+User: test_1770534533178@example.com (ID: 20)
+Workspaces: 0
+User: task_1770534533194@example.com (ID: 21)
+Workspaces: 1
+ - Test Workspace 1770534533194 (ID: 14)
+User: task_1770534617187@example.com (ID: 22)
+Workspaces: 1
+ - Test Workspace 1770534617187 (ID: 15)
+User: test_1770534617188@example.com (ID: 23)
+Workspaces: 0
+Total Workspaces in DB: 18
+ - Workspace 01 (ID: 1, Owner: 1)
+ - Workspace 01 (ID: 2, Owner: 1)
+ - Workspace 01 (ID: 3, Owner: 1)
+ - workspace 01 (ID: 4, Owner: 1)
+ - Workspace 01 (ID: 5, Owner: 1)
+ - Workspace01 (ID: 6, Owner: 2)
+ - wkspace 01 (ID: 7, Owner: 2)
+ - workspace 01 (ID: 8, Owner: 2)
+ - df'sem (ID: 9, Owner: 2)
+ - Workspace 01 (ID: 10, Owner: 2)
+ - Test Workspace 1770534397566 (ID: 11, Owner: 15)
+ - Test Workspace 1770534427250 (ID: 12, Owner: 16)
+ - Test Workspace 1770534517966 (ID: 13, Owner: 18)
+ - Test Workspace 1770534533194 (ID: 14, Owner: 21)
+ - Test Workspace 1770534617187 (ID: 15, Owner: 22)
+ - vlrgb58465934856 (ID: 16, Owner: 2)
+ - geh545 (ID: 17, Owner: 2)
+ - worskpaces 001 (ID: 18, Owner: 2)
+Total Workspace Memberships: 18
+ - Workspace 1 User 1 Role admin
+ - Workspace 2 User 1 Role admin
+ - Workspace 3 User 1 Role admin
+ - Workspace 4 User 1 Role admin
+ - Workspace 5 User 1 Role admin
+ - Workspace 6 User 2 Role admin
+ - Workspace 7 User 2 Role admin
+ - Workspace 8 User 2 Role admin
+ - Workspace 9 User 2 Role admin
+ - Workspace 10 User 2 Role admin
+ - Workspace 11 User 15 Role admin
+ - Workspace 12 User 16 Role admin
+ - Workspace 13 User 18 Role admin
+ - Workspace 14 User 21 Role admin
+ - Workspace 15 User 22 Role admin
+ - Workspace 16 User 2 Role admin
+ - Workspace 17 User 2 Role admin
+ - Workspace 18 User 2 Role admin
