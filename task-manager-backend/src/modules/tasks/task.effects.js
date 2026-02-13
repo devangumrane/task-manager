@@ -34,6 +34,17 @@ export async function onTaskCreated(project, task, userId) {
       },
       meta: { byUserId: userId },
     });
+
+    // 2.1 Emit to Dashboard (Specific Users)
+    // Assignee
+    if (task.assignedTo) {
+      emitters?.emitToUser(task.assignedTo, "dashboard.update", { type: "task.assigned" });
+    }
+    // Creator (if different and not purely self-assigned)
+    if (task.createdBy && task.createdBy !== task.assignedTo) {
+      emitters?.emitToUser(task.createdBy, "dashboard.update", { type: "task.created" });
+    }
+
   } catch (err) {
     console.error("emitters.emitToWorkspace (task.created) failed:", err);
   }
@@ -79,6 +90,17 @@ export async function onTaskDeleted(task, userId, workspaceId) {
       projectId: task.projectId,
       meta: { byUserId: userId },
     });
+
+    // Emit to user for dashboard update
+    if (userId) {
+      emitters?.emitToUser(userId, "dashboard.update", { type: "task.deleted" });
+    }
+    // Also try to emit to assignee if known? (task object might be minimal here)
+    // The 'task' arg in onTaskDeleted usually has basic info.
+    if (task.assignedTo) { // If implementation passes full task with assignedTo
+      emitters?.emitToUser(task.assignedTo, "dashboard.update", { type: "task.deleted" });
+    }
+
   } catch (err) {
     console.error("emitters.emitToWorkspace (task.deleted) failed:", err);
   }

@@ -10,9 +10,7 @@ export async function createTaskCore(tx, payload) {
     created_by: payload.createdBy,
     title: payload.title,
     description: payload.description ?? null,
-    status: payload.status ?? "pending", // Task model uses 'pending', payload might define 'todo' -> map it?
-    // 'todo' is not in ENUM('pending', 'in_progress', 'completed')
-    // Let's assume 'todo' maps to 'pending'
+    status: (payload.status === 'todo' || !payload.status) ? 'pending' : payload.status,
     priority: payload.priority ? payload.priority.toLowerCase() : "medium",
     // order: payload.order ?? 0, // Task model (step 437) didn't have 'order' field. Skipping if not in model.
     // parentId: payload.parentId ?? null, // Task model didn't have parentId. Skipping.

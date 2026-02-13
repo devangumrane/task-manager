@@ -6,12 +6,11 @@ import { assertWorkspaceMember } from "../../core/authorization/workspace.guard.
 import { assertTaskWorkspaceAccess } from "../../core/authorization/task.guard.js";
 
 import { createTaskCore } from "./task.logic.js";
-import { buildTaskUpdatePayload } from "./task.update.logic.js"; // This returns camelCase. Need mapping in updateTask.
+import { buildTaskUpdatePayload } from "./task.update.logic.js";
 
-import { onTaskCreated, onTaskDeleted } from "./task.effects.js";
-import { onTaskUpdated } from "./task.update.effects.js";
+import { eventBus, EVENTS } from "../../core/events/eventBus.js";
 import { analyticsService } from "../analytics/analytics.service.js";
-import { TaskDependency } from "../../models/index.js"; // Import Dependency model
+import { TaskDependency } from "../../models/index.js";
 
 export const taskService = {
   // --------------------------------------------------------
@@ -76,9 +75,9 @@ export const taskService = {
       const fullTask = await Task.findByPk(task.id, {
         include: [{ model: User, as: 'assignee' }, { model: User, as: 'creator' }]
       });
-      await onTaskCreated(project, fullTask, userId);
+      eventBus.emit(EVENTS.TASK.CREATED, { project, task: fullTask, userId });
     } catch (err) {
-      console.error("onTaskCreated failed:", err);
+      console.error("Event emit (TASK.CREATED) failed:", err);
     }
 
     return task;
@@ -241,19 +240,19 @@ export const taskService = {
 
     // 5️⃣ Side effects (BEST-EFFORT)
     try {
-      await onTaskUpdated(
-        updated,
-        updatePayloadCore, // pass original payload for effects if structure matters
-        updatedBy,
-        originalTask.project.workspace_id
-      );
+      eventBus.emit(EVENTS.TASK.UPDATED, {
+        task: updated,
+        changes: updatePayloadCore,
+        userId: updatedBy,
+        workspaceId: originalTask.project.workspace_id
+      });
 
       // Check for completion
       if (originalTask.status !== 'completed' && updated.status === 'completed') {
         await analyticsService.recordTaskCompletion(updated.assignee?.id || updated.assigned_to, taskId);
       }
     } catch (err) {
-      console.error("onTaskUpdated effects failed:", err);
+      console.error("Event emit (TASK.UPDATED) failed:", err);
     }
 
     return updated;
@@ -314,10 +313,11 @@ export const taskService = {
     await Task.destroy({ where: { id: taskId } });
 
     // Side effect: emit deleted event
+    // Side effect: emit deleted event
     try {
-      await onTaskDeleted(task, userId, task.project.workspace_id);
+      eventBus.emit(EVENTS.TASK.DELETED, { task, userId, workspaceId: task.project.workspace_id });
     } catch (err) {
-      console.error("onTaskDeleted failed:", err);
+      console.error("Event emit (TASK.DELETED) failed:", err);
     }
 
     return true;

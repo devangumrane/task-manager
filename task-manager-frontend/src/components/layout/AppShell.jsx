@@ -3,10 +3,14 @@ import NavSidebar from "./NavSidebar";
 import TopBar from "./TopBar";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useGlobalRealtime } from "../../hooks/useGlobalRealtime";
 
 export default function AppShell() {
     const location = useLocation();
     const currentOutlet = useOutlet();
+
+    // Initialize Global Realtime Events
+    useGlobalRealtime();
 
     // Simplified sidebar state (future: move to global store)
     const [collapsed] = useState(() => {

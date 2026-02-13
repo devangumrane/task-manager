@@ -27,6 +27,14 @@ export async function onTaskUpdated(task, changes, userId, workspaceId) {
       },
       meta: { byUserId: userId },
     });
+
+    // Emit to dashboard users
+    if (task.assignedTo) {
+      emitters?.emitToUser(task.assignedTo, "dashboard.update", { type: "task.updated" });
+    }
+    if (userId && userId !== task.assignedTo) {
+      emitters?.emitToUser(userId, "dashboard.update", { type: "task.updated" });
+    }
   } catch (err) {
     console.error("emitters.emitToWorkspace (task.updated) failed:", err);
   }

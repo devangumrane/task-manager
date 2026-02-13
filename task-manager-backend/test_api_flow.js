@@ -113,6 +113,51 @@ async function testPort(port) {
         } else {
             const listData2 = await listRes2.json();
             console.log("Workspaces List 2:", JSON.stringify(listData2, null, 2));
+
+            // 5. Create Project (Verify project.service.js transaction)
+            const workspaceId = listData2.data?.[0]?.id || listData2[0]?.id;
+            if (workspaceId) {
+                console.log(`Creating Project in Workspace ${workspaceId}...`);
+                const projRes = await fetch(`${BASE_URL}/workspaces/${workspaceId}/projects`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: 'Debug Project' })
+                });
+
+                if (!projRes.ok) {
+                    console.log(`Create Project Failed (${projRes.status}):`, await projRes.text());
+                } else {
+                    const projData = await projRes.json();
+                    console.log("Create Project Success:", JSON.stringify(projData, null, 2));
+                    const projectId = projData.data?.id || projData.id;
+
+                    // 6. Create Task (Verify task.service.js transaction)
+                    if (projectId) {
+                        console.log(`Creating Task in Project ${projectId}...`);
+                        // Route: /api/v1/workspaces/:workspaceId/projects/:projectId/tasks
+                        const taskPath = `${BASE_URL}/workspaces/${workspaceId}/projects/${projectId}/tasks`;
+                        console.log(`Attempting POST to ${taskPath}`);
+
+                        const taskRes = await fetch(taskPath, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                title: 'Debug Task',
+                                status: 'pending'
+                            })
+                        });
+
+                        if (!taskRes.ok) {
+                            console.log(`Create Task Failed (${taskRes.status}):`, await taskRes.text());
+                        } else {
+                            const taskData = await taskRes.json();
+                            console.log("Create Task Success:", JSON.stringify(taskData, null, 2));
+                        }
+                    }
+                }
+            } else {
+                console.log("No workspace found to create project in.");
+            }
         }
 
     } catch (err) {
@@ -125,9 +170,17 @@ import fs from 'fs';
 // ... (existing code) ...
 
 const logFile = 'api_test.log';
+const originalLog = console.log;
+const originalError = console.error;
+
 function log(msg) {
-    console.log(msg);
-    fs.appendFileSync(logFile, msg + '\n');
+    originalLog(msg);
+    if (typeof msg === 'string') {
+        fs.appendFileSync(logFile, msg + '\n');
+    } else {
+        fs.appendFileSync(logFile, JSON.stringify(msg) + '\n');
+    }
+
 }
 
 // Override console.log
@@ -136,7 +189,7 @@ console.error = log;
 
 async function run() {
     fs.writeFileSync(logFile, '');
-    await testPort(8002);
+    await testPort(8001);
 }
 
 run();

@@ -75,8 +75,19 @@ export default function ProjectList({ projects = [], workspaceId, emptyMessage =
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <ListTodo size={14} />
-                                        <span>Tasks</span>
+                                        <span>{project.tasks?.length || 0} Tasks</span>
                                     </div>
+                                    {project.owner && (
+                                        <div className="flex items-center gap-1 ml-auto" title={`Owner: ${project.owner.username}`}>
+                                            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary font-bold">
+                                                {project.owner.profile_image ? (
+                                                    <img src={project.owner.profile_image} alt={project.owner.username} className="w-full h-full rounded-full object-cover" />
+                                                ) : (
+                                                    project.owner.username?.charAt(0).toUpperCase()
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </GlassCard>

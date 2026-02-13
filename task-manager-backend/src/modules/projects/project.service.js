@@ -65,7 +65,10 @@ export const projectService = {
   async listWorkspaceProjects(workspaceId) {
     return Project.findAll({
       where: { workspace_id: workspaceId },
-      include: [{ model: Task, as: 'tasks' }],
+      include: [
+        { model: Task, as: 'tasks' },
+        { model: User, as: 'owner', attributes: ['id', 'username', 'email', 'profile_image'] }
+      ],
       order: [["createdAt", "DESC"]],
     });
   },
@@ -98,7 +101,10 @@ export const projectService = {
           [sequelize.Sequelize.Op.in]: workspaceIds
         }
       },
-      include: [{ model: Task, as: 'tasks' }],
+      include: [
+        { model: Task, as: 'tasks' },
+        { model: User, as: 'owner', attributes: ['id', 'username', 'email', 'profile_image'] }
+      ],
       order: [["createdAt", "DESC"]],
     });
   },

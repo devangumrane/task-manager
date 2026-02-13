@@ -10,6 +10,7 @@ import getTheme from "./theme";
 import { Toaster } from "react-hot-toast";
 import AuthGate from "./components/AuthGate";
 import { MotionConfig } from "framer-motion";
+import ErrorBoundary from "./components/shared/ErrorBoundary.jsx";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -48,7 +49,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <ThemeProvider>
-        <AppWrapper />
+        <ErrorBoundary>
+          <AppWrapper />
+        </ErrorBoundary>
       </ThemeProvider>
     </BrowserRouter>
   </QueryClientProvider>

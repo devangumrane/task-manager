@@ -9,6 +9,11 @@
             "date": 1770839721513,
             "name": "logs\\combined-2026-02-12.log",
             "hash": "d6a711dc4eb3860540f67e209cca62a9661e39104c311f5c22a6eec838873f49"
+        },
+        {
+            "date": 1770956281251,
+            "name": "logs\\combined-2026-02-13.log",
+            "hash": "6f868d4d3715655fe6497bd174594ad7d7bbe62211111be02b9f26c72444931d"
         }
     ],
     "hashType": "sha256"

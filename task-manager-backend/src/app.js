@@ -8,6 +8,9 @@ import rateLimit from "express-rate-limit";
 import xss from "xss-clean";
 import sequelize from "./config/database.js";
 import "./models/index.js"; // Init associations
+import { initEventListeners } from "./core/events/index.js";
+initEventListeners();
+
 import errorMiddleware from "./core/middlewares/error.middleware.js";
 
 import authRoutes from "./modules/auth/auth.routes.js";
@@ -66,7 +69,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Data Sanitization against XSS
-app.use(xss());
+// app.use(xss()); // CRASHES with Express 5: Cannot set property query of #<IncomingMessage>
 
 app.use(morgan("dev"));
 app.use(express.json());

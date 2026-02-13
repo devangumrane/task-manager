@@ -71,6 +71,7 @@ export default function errorMiddleware(err, req, res, next) {
   );
 
   // Log using Winston
+  console.error("DEBUG ERROR LOG:", err);
   logger.error(`${req.method} ${req.originalUrl}`, {
     message: err.message,
     stack: err.stack,
