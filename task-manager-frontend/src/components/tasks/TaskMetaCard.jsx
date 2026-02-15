@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { User, Calendar, RotateCcw } from "lucide-react";
 import GlassCard from "../shared/GlassCard";
 import MemberSelector from "../shared/MemberSelector";
@@ -16,11 +16,8 @@ export default function TaskMetaCard({
     const [isEditingSkills, setIsEditingSkills] = useState(false);
     const [skillSelection, setSkillSelection] = useState([]);
 
-    useEffect(() => {
-        if (task) {
-            setSkillSelection(task.skills || []);
-        }
-    }, [task]);
+    // Removed useEffect that synced skillSelection from task
+
 
     const handleSaveSkills = () => {
         onUpdate({
@@ -36,8 +33,8 @@ export default function TaskMetaCard({
             <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Details</h3>
             <div className="space-y-4">
                 <div className="flex items-center justify-between group">
-                    <div className="flex items-center gap-3 text-sm text-white w-full">
-                        <div className="p-2 rounded-lg bg-white/5 group-hover:bg-primary/20 transition-colors">
+                    <div className="flex items-center gap-3 text-sm text-foreground w-full">
+                        <div className="p-2 rounded-lg bg-accent group-hover:bg-primary/20 transition-colors">
                             <User size={16} className="text-muted-foreground group-hover:text-primary" />
                         </div>
                         <div className="flex-1">
@@ -57,8 +54,8 @@ export default function TaskMetaCard({
                 </div>
 
                 <div className="flex items-center justify-between group">
-                    <div className="flex items-center gap-3 text-sm text-white">
-                        <div className="p-2 rounded-lg bg-white/5 group-hover:bg-primary/20 transition-colors">
+                    <div className="flex items-center gap-3 text-sm text-foreground">
+                        <div className="p-2 rounded-lg bg-accent group-hover:bg-primary/20 transition-colors">
                             <Calendar size={16} className="text-muted-foreground group-hover:text-primary" />
                         </div>
                         <div>
@@ -78,7 +75,7 @@ export default function TaskMetaCard({
                 </div>
             </div>
 
-            <div className="my-6 h-px bg-white/10" />
+            <div className="my-6 h-px bg-border" />
 
             {/* Tags */}
             <div className="mb-6">
@@ -89,7 +86,10 @@ export default function TaskMetaCard({
             <div>
                 <div className="flex items-center justify-between mb-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase">Skills</p>
-                    <button onClick={() => setIsEditingSkills(!isEditingSkills)} className="text-xs text-primary hover:underline">
+                    <button onClick={() => {
+                        if (!isEditingSkills) setSkillSelection(task.skills || []);
+                        setIsEditingSkills(!isEditingSkills);
+                    }} className="text-xs text-primary hover:underline">
                         {isEditingSkills ? 'Done' : 'Edit'}
                     </button>
                 </div>
@@ -102,7 +102,7 @@ export default function TaskMetaCard({
                     <div className="flex flex-wrap gap-2">
                         {task.skills?.length > 0 ? (
                             task.skills.map(s => (
-                                <span key={s.id} className="px-2 py-1 rounded bg-secondary/50 border border-white/5 text-xs text-secondary-foreground hover:border-primary/50 transition-colors cursor-default">
+                                <span key={s.id} className="px-2 py-1 rounded bg-secondary border border-border text-xs text-secondary-foreground hover:border-primary/50 transition-colors cursor-default">
                                     {s.name}
                                 </span>
                             ))

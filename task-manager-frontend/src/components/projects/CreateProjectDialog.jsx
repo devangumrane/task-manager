@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useCreateProject } from "../../hooks/useProjects";
 import { useWorkspaces } from "../../hooks/useWorkspaces";
 import { X, Loader2, Folder, Briefcase } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function CreateProjectDialog({ open, onClose, workspaceId }) {
@@ -12,7 +13,9 @@ export default function CreateProjectDialog({ open, onClose, workspaceId }) {
   const createProject = useCreateProject(workspaceId); // Pass original (or undefined)
 
   useEffect(() => {
+
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setName("");
       setSelectedWorkspaceId(workspaceId || "");
     }

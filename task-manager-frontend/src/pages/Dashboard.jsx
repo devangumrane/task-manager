@@ -17,7 +17,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getDashboardStats } from "../services/dashboardService";
 import GlassCard from "../components/shared/GlassCard";
 import Skeleton from "../components/shared/Skeleton";
-import { motion } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion";
 
 const COLORS = ["#f97316", "#3b82f6", "#10b981"]; // Orange, Blue, Emerald
 
@@ -127,8 +128,8 @@ export default function Dashboard() {
               <Activity className="text-primary w-5 h-5" />
               Task Volume Trend
             </h3>
-            <div className="flex-1 w-full min-h-[300px]">
-              <ResponsiveContainer width="100%" height={300}>
+            <div className="flex-1 w-full min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={trendData}>
                   <defs>
                     <linearGradient id="colorTasks" x1="0" y1="0" x2="0" y2="1">
@@ -136,12 +137,12 @@ export default function Dashboard() {
                       <stop offset="95%" stopColor="#7C3AED" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                  <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
                   <RechartsTooltip
-                    contentStyle={{ backgroundColor: '#151A23', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                    itemStyle={{ color: '#fff' }}
+                    contentStyle={{ backgroundColor: 'var(--popover)', borderColor: 'var(--border)', borderRadius: '8px', color: 'var(--popover-foreground)' }}
+                    itemStyle={{ color: 'var(--popover-foreground)' }}
                   />
                   <Area type="monotone" dataKey="tasks" stroke="#7C3AED" strokeWidth={3} fillOpacity={1} fill="url(#colorTasks)" />
                 </AreaChart>
@@ -169,7 +170,8 @@ export default function Dashboard() {
                     ))}
                   </Pie>
                   <RechartsTooltip
-                    contentStyle={{ backgroundColor: '#151A23', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                    contentStyle={{ backgroundColor: 'var(--popover)', borderColor: 'var(--border)', borderRadius: '8px', color: 'var(--popover-foreground)' }}
+                    itemStyle={{ color: 'var(--popover-foreground)' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -195,11 +197,11 @@ export default function Dashboard() {
                   <div key={activity.id} className="relative pl-6 pb-2 group">
                     {/* Timeline Line */}
                     {index !== stats.activities.length - 1 && (
-                      <div className="absolute left-[9px] top-8 bottom-[-24px] w-[2px] bg-white/5 dark:bg-white/5 bg-black/5 group-hover:bg-primary/30 transition-colors" />
+                      <div className="absolute left-[9px] top-8 bottom-[-24px] w-[2px] bg-border transition-colors" />
                     )}
 
                     {/* Timeline Dot */}
-                    <div className="absolute left-0 top-1 w-5 h-5 rounded-full border border-white/10 dark:border-white/10 border-black/10 bg-card flex items-center justify-center group-hover:border-primary/50 transition-colors">
+                    <div className="absolute left-0 top-1 w-5 h-5 rounded-full border border-border bg-card flex items-center justify-center group-hover:border-primary/50 transition-colors">
                       <div className="w-2 h-2 rounded-full bg-primary" />
                     </div>
 
@@ -235,6 +237,7 @@ export default function Dashboard() {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function StatCard({ title, value, icon: Icon, color, bg, delay }) {
   return (
     <motion.div

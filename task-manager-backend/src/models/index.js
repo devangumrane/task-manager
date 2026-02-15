@@ -19,6 +19,9 @@ import TaskTag from './TaskTag.js';
 import TimeEntry from './TimeEntry.js';
 import TaskDependency from './TaskDependency.js';
 import RecurringTask from './RecurringTask.js';
+import LearningPath from './LearningPath.js';
+import Milestone from './Milestone.js';
+import MilestoneRequirement from './MilestoneRequirement.js';
 
 // --- User Associations ---
 User.hasMany(Task, { foreignKey: 'assigned_to', as: 'assignedTasks' });
@@ -133,9 +136,20 @@ TaskDependency.belongsTo(Task, { foreignKey: 'blocked_task_id', as: 'blocked' })
 RecurringTask.belongsTo(Task, { foreignKey: 'original_task_id', as: 'templateTask' });
 Task.hasOne(RecurringTask, { foreignKey: 'original_task_id', as: 'recurring' });
 
+// --- Learning Path Associations ---
+LearningPath.hasMany(Milestone, { foreignKey: 'learningPathId', as: 'milestones' });
+Milestone.belongsTo(LearningPath, { foreignKey: 'learningPathId', as: 'learningPath' });
+
+Milestone.hasMany(MilestoneRequirement, { foreignKey: 'milestoneId', as: 'requirements' });
+MilestoneRequirement.belongsTo(Milestone, { foreignKey: 'milestoneId', as: 'milestone' });
+
+MilestoneRequirement.belongsTo(Skill, { foreignKey: 'skillId', as: 'skill' });
+Skill.hasMany(MilestoneRequirement, { foreignKey: 'skillId', as: 'milestoneRequirements' });
+
 export {
     User, Task, RefreshToken, Workspace, WorkspaceMember, Project,
     ActivityLog, FailedTask, Comment, Attachment, TaskReminder,
     Notification, SubTask, Skill, TaskSkill, UserSkill,
-    Tag, TaskTag, TimeEntry, TaskDependency, RecurringTask
+    Tag, TaskTag, TimeEntry, TaskDependency, RecurringTask,
+    LearningPath, Milestone, MilestoneRequirement
 };

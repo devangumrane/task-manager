@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getMyTasks } from "../services/taskService";
-import { motion } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, Clock, AlertTriangle, ArrowRight, Layout } from "lucide-react";
 import { Link } from "react-router-dom";
 import GlassCard from "../components/shared/GlassCard";

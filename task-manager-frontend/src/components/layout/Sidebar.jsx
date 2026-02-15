@@ -20,7 +20,7 @@ export default function Sidebar() {
         "sidebar-collapsed",
         JSON.stringify(collapsed)
       );
-    } catch { }
+    } catch { /* empty */ }
   }, [collapsed]);
 
   // -----------------------------------------

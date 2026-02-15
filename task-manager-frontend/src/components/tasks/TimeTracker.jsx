@@ -12,27 +12,21 @@ export default function TimeTracker({ workspaceId, projectId, taskId, timeEntrie
     // Calculate total duration (sum of completed + current active duration)
     const initialCompletedDuration = timeEntries.reduce((acc, curr) => acc + (curr.duration || 0), 0);
 
-    const [elapsed, setElapsed] = useState(0);
+    const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
         let interval;
         if (activeEntry) {
-            // Calculate initial elapsed based on start_time
-            const startTime = new Date(activeEntry.start_time).getTime();
-
-            const updateTick = () => {
-                const now = Date.now();
-                setElapsed(Math.floor((now - startTime) / 1000));
-            };
-
-            updateTick(); // immediate
-            interval = setInterval(updateTick, 1000);
-        } else {
-            setElapsed(0);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setNow(Date.now()); // Update immediately
+            interval = setInterval(() => setNow(Date.now()), 1000);
         }
-
         return () => clearInterval(interval);
     }, [activeEntry]);
+
+    const elapsed = activeEntry
+        ? Math.floor((now - new Date(activeEntry.start_time).getTime()) / 1000)
+        : 0;
 
     const startMutation = useMutation({
         mutationFn: () => startTimer(workspaceId, projectId, taskId),

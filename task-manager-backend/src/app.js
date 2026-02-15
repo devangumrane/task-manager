@@ -22,6 +22,7 @@ import notificationRoutes from "./modules/notifications/notification.routes.js";
 import searchRoutes from "./modules/search/search.routes.js"; // Import
 import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
 import analyticsRoutes from "./modules/analytics/analytics.routes.js";
+import learningPathRoutes from "./modules/learning-paths/learning-path.routes.js";
 import { requireAuth } from "./core/middlewares/auth.middleware.js";
 
 const app = express();
@@ -88,6 +89,7 @@ app.use(`${API_PREFIX}/notifications`, notificationRoutes);
 app.use(`${API_PREFIX}/search`, searchRoutes); // Search
 app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 app.use(`${API_PREFIX}/analytics`, analyticsRoutes);
+app.use(`${API_PREFIX}/learning-paths`, learningPathRoutes);
 
 // ---------------------------------------------
 // GLOBAL ERROR HANDLER

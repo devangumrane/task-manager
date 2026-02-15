@@ -1,5 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from 'framer-motion';
 
 const GlassCard = ({ children, className = '', hoverEffect = false, ...props }) => {
     return (

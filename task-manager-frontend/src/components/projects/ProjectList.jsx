@@ -1,8 +1,10 @@
+
 import { Link } from "react-router-dom";
 import { Folder, ArrowRight, Calendar, ListTodo } from "lucide-react";
 import GlassCard from "../shared/GlassCard";
 import { ROUTES } from "../../router/paths";
-import { motion } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion";
 
 const container = {
     hidden: { opacity: 0 },
@@ -78,7 +80,7 @@ export default function ProjectList({ projects = [], workspaceId, emptyMessage =
                                         <span>{project.tasks?.length || 0} Tasks</span>
                                     </div>
                                     {project.owner && (
-                                        <div className="flex items-center gap-1 ml-auto" title={`Owner: ${project.owner.username}`}>
+                                        <div className="flex items-center gap-1 ml-auto" title={`Owner: ${project.owner.username} `}>
                                             <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary font-bold">
                                                 {project.owner.profile_image ? (
                                                     <img src={project.owner.profile_image} alt={project.owner.username} className="w-full h-full rounded-full object-cover" />

@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useCreateTask } from "../../hooks/useTasks";
-import { useWorkspace } from "../../hooks/useWorkspaces";
 import { X, Loader2, Check, AlignLeft } from "lucide-react";
 import MemberSelector from "../shared/MemberSelector";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import Editor from "../shared/Editor";
 import SkillSelector from "./SkillSelector";
@@ -17,13 +17,13 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
 
   const [skills, setSkills] = useState([]);
 
-  const { data: workspace } = useWorkspace(workspaceId);
   const createTask = useCreateTask(workspaceId, projectId);
-  const assignDropdownRef = useRef(null);
 
   useEffect(() => {
     if (open) {
+
       // Reset form
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTitle("");
       setDescription("");
       setPriority("medium");

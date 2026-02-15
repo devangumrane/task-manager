@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { searchGlobal } from "../../services/searchService";
 import { ROUTES } from "../../router/paths";
 import { Search, Command, X, ArrowRight, Layout, Folder, CheckSquare } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 
 // Inline debounce hook if not exists
@@ -53,6 +54,7 @@ export default function CommandPalette() {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuery(""); // Reset on close
     }
   }, [isOpen]);

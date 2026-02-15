@@ -85,7 +85,7 @@ export const dashboardController = {
             const totalDurationMinutes = await TimeEntry.sum('duration', {
                 where: { user_id: userId }
             });
-            const focusHours = totalDurationMinutes ? (totalDurationMinutes / 60).toFixed(1) : 0;
+            const focusHours = totalDurationMinutes ? (totalDurationMinutes / 3600).toFixed(1) : 0;
 
             res.json({
                 success: true,

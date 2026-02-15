@@ -4,7 +4,8 @@ import ProjectList from "../components/projects/ProjectList";
 import CreateProjectDialog from "../components/projects/CreateProjectDialog";
 import { useState } from "react";
 import { Plus, Folder } from "lucide-react";
-import { motion } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion";
 import Skeleton from "../components/shared/Skeleton";
 import GlassCard from "../components/shared/GlassCard";
 

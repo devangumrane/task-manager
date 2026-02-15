@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../../../utils/test-utils';
 import Login from '../Login';
-import * as useAuthHook from '../../../hooks/useAuth';
 
 // Initialize mock
 const mockLoginMutate = vi.fn();

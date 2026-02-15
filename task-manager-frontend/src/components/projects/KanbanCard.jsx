@@ -50,7 +50,7 @@ export default function KanbanCard({ task, isOverlay, onClick }) {
         transition-all duration-200
         ${isOverlay
           ? 'shadow-[0_0_30px_rgba(124,58,237,0.3)] border-primary/50 scale-105'
-          : 'border-white/5 shadow-lg hover:border-white/10 hover:bg-white/5'
+          : 'border-border shadow-sm hover:border-primary/20 hover:bg-accent/50'
         }
       `}
     >
@@ -79,7 +79,7 @@ export default function KanbanCard({ task, isOverlay, onClick }) {
         </div>
       )}
 
-      <h4 className="font-semibold text-sm text-gray-200 mb-3 truncate pl-2">{task.title}</h4>
+      <h4 className="font-semibold text-sm text-foreground mb-3 truncate pl-2">{task.title}</h4>
 
       <div className="flex items-center justify-between mt-auto">
         <div className="flex items-center gap-2 pl-2">
@@ -106,7 +106,7 @@ export default function KanbanCard({ task, isOverlay, onClick }) {
             {task.assigned.name?.substring(0, 2)?.toUpperCase() || "U"}
           </div>
         ) : (
-          <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-muted-foreground border border-white/5">
+          <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-muted-foreground border border-border">
             <User size={12} />
           </div>
         )}

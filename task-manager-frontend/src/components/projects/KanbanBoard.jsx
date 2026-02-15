@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -80,10 +80,6 @@ export default function KanbanBoard({ tasks = [], onTaskUpdate, onTaskClick }) {
     // If we dropped over a card
     if (overTask) {
       // Find index of overTask
-      const overIndex = targetColumnTasks.findIndex(t => t.id === overId);
-      const activeIndex = targetColumnTasks.findIndex(t => t.id === activeId); // might be -1 if different column
-
-      // Calculate generic new positions
       // Simplification: We take the average of neighbors.
       // But we don't know if we dropped 'above' or 'below' easily without measuring client rects 
       // OR dnd-kit's collision.

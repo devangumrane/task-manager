@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Tag as TagIcon } from "lucide-react";
 import { getWorkspaceTags, createTag, attachTag, detachTag } from "../../services/tagService";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function TagSelector({ workspaceId, projectId, taskId, currentTags = [] }) {
     const queryClient = useQueryClient();
     const [isAdding, setIsAdding] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
-    const [isCreating, setIsCreating] = useState(false);
     const [newTagColor, setNewTagColor] = useState("#3B82F6"); // Default blue
 
     // Fetch all available tags
@@ -23,7 +23,7 @@ export default function TagSelector({ workspaceId, projectId, taskId, currentTag
             queryClient.invalidateQueries(["tags", workspaceId]);
             // Auto attach after create
             attachTagMutation.mutate(newTag.id);
-            setIsCreating(false);
+            setIsAdding(false);
             setSearchTerm("");
         },
     });

@@ -8,9 +8,7 @@ function CommentItem({ comment, onDelete }) {
     const { user: currentUser } = useAuthStore();
     const isMine = currentUser && comment.user_id === currentUser.id;
 
-    const avatarUrl = comment.user?.profile_image // Correct field name? Backend sends 'profile_image' usually in raw, but include maps to model.
-        ? `${API_BASE_URL}${comment.user.profile_image}`
-        : null;
+
 
     // Check backend service: `attributes: ['id', 'name', 'profile_image', 'email']`
     // Wait, does sequelize return snake_case for attributes if defined in array? 

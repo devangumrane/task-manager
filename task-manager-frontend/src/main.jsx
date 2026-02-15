@@ -16,7 +16,8 @@ import "./index.css";
 const queryClient = new QueryClient();
 
 // Create a wrapper component to consume the theme context
-const AppWrapper = () => {
+// eslint-disable-next-line react-refresh/only-export-components
+function AppWrapper() {
   const { theme } = useTheme();
 
   // Memoize theme to prevent unnecessary re-renders

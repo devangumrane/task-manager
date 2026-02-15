@@ -8,7 +8,8 @@ import { useTaskRealtime } from "../hooks/useTaskRealtime";
 import KanbanBoard from "../components/projects/KanbanBoard";
 import CreateTaskDialog from "../components/tasks/CreateTaskDialog";
 import { ROUTES } from "../router/paths";
-import { motion } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion";
 import GlassCard from "../components/shared/GlassCard";
 
 export default function ProjectDetails() {
@@ -44,19 +45,19 @@ export default function ProjectDetails() {
         <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-4">
           <button
             onClick={() => navigate(ROUTES.WORKSPACE(workspaceId))}
-            className="p-2 rounded-xl hover:bg-white/5 text-muted-foreground hover:text-white transition-colors"
+            className="p-2 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
             title="Back to Projects"
           >
             <ArrowLeft size={20} />
           </button>
 
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-white mb-1">{project.title || project.name}</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-1">{project.title || project.name}</h1>
             <p className="text-muted-foreground text-sm">{project.description || "Manage your project tasks"}</p>
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="p-2 text-muted-foreground hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+            <button className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors">
               <Settings size={20} />
             </button>
             <button
@@ -70,7 +71,7 @@ export default function ProjectDetails() {
       </div>
 
       {/* Kanban Board */}
-      <div className="flex-1 min-h-0 overflow-hidden rounded-2xl border border-white/5 bg-black/20">
+      <div className="flex-1 min-h-0 overflow-hidden rounded-2xl border border-border bg-secondary/30">
         <KanbanBoard
           tasks={tasks}
           onTaskUpdate={(taskId, updates) =>

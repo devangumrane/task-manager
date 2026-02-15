@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
-import { LayoutDashboard, Layers, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Layers, LogOut } from "lucide-react";
 import { cn } from "../../lib/utils";
 
-const SidebarItem = ({ icon: Icon, label, href }) => {
+// eslint-disable-next-line no-unused-vars
+const SidebarItem = ({ icon: IconComponent, label, href }) => {
   const location = useLocation();
   const isActive = location.pathname.startsWith(href);
 
@@ -17,7 +17,7 @@ const SidebarItem = ({ icon: Icon, label, href }) => {
           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
       )}
     >
-      <Icon className={cn("w-5 h-5", isActive ? "text-primary" : "group-hover:text-foreground")} />
+      <IconComponent className={cn("w-5 h-5", isActive ? "text-primary" : "group-hover:text-foreground")} />
       <span className="font-medium">{label}</span>
     </Link>
   );

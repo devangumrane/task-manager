@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -39,15 +39,20 @@ export default function UserProfile() {
     }
   });
 
+  /* Use ref to track reset status */
+  const hasReset = useRef(false);
+
   // Effect to reset form when data loads
-  if (user && !isEditing && (reset.isReset === undefined || reset.isReset === false)) {
-    reset({
-      username: user.username,
-      title: user.title,
-      bio: user.bio,
-    });
-    reset.isReset = true; // hacky flag to prevent loop
-  }
+  useEffect(() => {
+    if (user && !isEditing && !hasReset.current) {
+      reset({
+        username: user.username,
+        title: user.title,
+        bio: user.bio,
+      });
+      hasReset.current = true;
+    }
+  }, [user, isEditing, reset]);
 
   // 3. Mutations
   const updateProfileMutation = useMutation({

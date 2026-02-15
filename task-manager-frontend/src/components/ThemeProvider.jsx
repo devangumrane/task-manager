@@ -1,12 +1,15 @@
 // src/components/ThemeProvider.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 
+
+
 const ThemeContext = createContext({
   theme: "light",
-  setTheme: (t) => { },
+  setTheme: () => { },
   toggle: () => { },
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => useContext(ThemeContext);
 
 export function ThemeProvider({ children }) {
@@ -21,7 +24,7 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     try {
       localStorage.setItem("theme_v2", theme);
-    } catch { }
+    } catch { /* empty */ }
     const root = document.documentElement;
     if (theme === "dark") {
       root.classList.add("dark");

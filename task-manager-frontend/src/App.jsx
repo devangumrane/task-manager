@@ -20,6 +20,8 @@ import ActivityPage from "./pages/ActivityPage";
 
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
+import PathList from "./pages/LearningPaths/PathList";
+import PathDetails from "./pages/LearningPaths/PathDetails";
 
 /* ---------------- PROTECTED LAYOUT ---------------- */
 
@@ -80,6 +82,8 @@ export default function App() {
           path="/workspaces/:workspaceId/activity"
           element={<ActivityPage />}
         />
+        <Route path="/learning-paths" element={<PathList />} />
+        <Route path="/learning-paths/:pathId" element={<PathDetails />} />
       </Route>
 
       {/* Fallback */}

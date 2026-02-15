@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { User, Settings, LogOut } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ROUTES } from "../../router/paths";

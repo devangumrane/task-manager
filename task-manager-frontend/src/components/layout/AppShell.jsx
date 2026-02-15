@@ -1,8 +1,8 @@
 import { useOutlet, useLocation } from "react-router-dom";
 import NavSidebar from "./NavSidebar";
 import TopBar from "./TopBar";
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion";
 import { useGlobalRealtime } from "../../hooks/useGlobalRealtime";
 
 export default function AppShell() {
@@ -13,13 +13,13 @@ export default function AppShell() {
     useGlobalRealtime();
 
     // Simplified sidebar state (future: move to global store)
-    const [collapsed] = useState(() => {
-        try {
-            return JSON.parse(localStorage.getItem("sidebar-collapsed")) || false;
-        } catch {
-            return false;
-        }
-    });
+    // const [collapsed] = useState(() => {
+    //     try {
+    //         return JSON.parse(localStorage.getItem("sidebar-collapsed")) || false;
+    //     } catch {
+    //         return false;
+    //     }
+    // });
 
     return (
         <div className="min-h-screen bg-background text-foreground flex font-sans selection:bg-primary/30 overflow-hidden">

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getNotifications, markAsRead, markAllAsRead } from "../../services/notificationService";
 import { Bell, Check, Clock, Info } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ROUTES } from "../../router/paths";

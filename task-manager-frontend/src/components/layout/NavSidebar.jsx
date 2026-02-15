@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, Home, Grid, Users, FileText, User, LogOut, ChevronLeft, ChevronRight, CheckSquare } from "lucide-react";
+import { Menu, Home, Grid, Users, FileText, User, LogOut, ChevronLeft, ChevronRight, CheckSquare, GraduationCap } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { ROUTES } from "../../router/paths";
 import { useAuthStore } from "../../store/authStore";
@@ -20,7 +21,7 @@ export default function NavSidebar() {
     useEffect(() => {
         try {
             localStorage.setItem("sidebar-collapsed", JSON.stringify(collapsed));
-        } catch { }
+        } catch { /* empty */ }
     }, [collapsed]);
 
     const activeWorkspaceId = useMemo(() => {
@@ -33,6 +34,7 @@ export default function NavSidebar() {
         { label: "My Tasks", to: ROUTES.MY_TASKS, icon: CheckSquare }, // New Link
         { label: "Workspaces", to: ROUTES.WORKSPACES, icon: Users },
         { label: "Projects", to: ROUTES.PROJECTS, icon: Grid },
+        { label: "Learning Paths", to: "/learning-paths", icon: GraduationCap },
         {
             label: "Activity",
             to: activeWorkspaceId ? ROUTES.ACTIVITY(activeWorkspaceId) : ROUTES.WORKSPACES,
@@ -51,10 +53,10 @@ export default function NavSidebar() {
         <motion.aside
             initial={false}
             animate={{ width: collapsed ? 80 : 280 }}
-            className="fixed left-0 top-0 bottom-0 z-40 flex flex-col glass-panel border-r border-white/5 m-4 rounded-2xl"
+            className="fixed left-0 top-0 bottom-0 z-40 flex flex-col glass-panel border-r border-border m-4 rounded-2xl"
         >
             {/* Header */}
-            <div className="h-20 flex items-center justify-between px-6 border-b border-white/5">
+            <div className="h-20 flex items-center justify-between px-6 border-b border-border">
                 <AnimatePresence>
                     {!collapsed && (
                         <motion.div
@@ -73,7 +75,7 @@ export default function NavSidebar() {
 
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className="p-2 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-primary transition-colors"
+                    className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-primary transition-colors"
                 >
                     {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
                 </button>
@@ -92,8 +94,8 @@ export default function NavSidebar() {
                                     to={item.to}
                                     className={`relative flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group
                     ${isActive
-                                            ? "text-white bg-primary/10 shadow-[0_0_20px_rgba(124,58,237,0.15)]"
-                                            : "text-muted-foreground hover:text-white hover:bg-white/5"
+                                            ? "text-primary bg-primary/10 shadow-[0_0_20px_rgba(124,58,237,0.15)]"
+                                            : "text-muted-foreground hover:text-foreground hover:bg-accent"
                                         }
                     ${item.disabled ? "opacity-50 pointer-events-none" : ""}
                   `}
@@ -131,7 +133,7 @@ export default function NavSidebar() {
             </nav>
 
             {/* Footer */}
-            <div className="p-4 border-t border-white/5">
+            <div className="p-4 border-t border-border">
                 <button
                     onClick={handleLogout}
                     className={`flex items-center gap-4 w-full p-3 rounded-xl text-muted-foreground hover:bg-red-500/10 hover:text-red-400 transition-colors

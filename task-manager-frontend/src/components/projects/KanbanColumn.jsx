@@ -19,7 +19,7 @@ export default function KanbanColumn({ status, tasks, onTaskClick }) {
         <h3 className="font-bold text-muted-foreground text-sm uppercase tracking-wider">
           {titleMap[status]}
         </h3>
-        <span className="bg-white/5 text-xs font-mono py-0.5 px-2 rounded-md text-muted-foreground">
+        <span className="bg-secondary text-xs font-mono py-0.5 px-2 rounded-md text-foreground">
           {tasks.length}
         </span>
       </div>
@@ -27,7 +27,7 @@ export default function KanbanColumn({ status, tasks, onTaskClick }) {
       <div
         ref={setNodeRef}
         className="
-            flex-1 p-2 rounded-xl bg-white/[0.02] border border-white/5
+            flex-1 p-2 rounded-xl bg-muted/50 border border-border
             flex flex-col gap-3 min-h-[200px]
             transition-colors
         "
@@ -39,7 +39,7 @@ export default function KanbanColumn({ status, tasks, onTaskClick }) {
         </SortableContext>
 
         {tasks.length === 0 && (
-          <div className="h-24 flex items-center justify-center border-2 border-dashed border-white/5 rounded-lg">
+          <div className="h-24 flex items-center justify-center border-2 border-dashed border-border rounded-lg">
             <span className="text-xs text-muted-foreground/50 italic">
               Drop items here
             </span>

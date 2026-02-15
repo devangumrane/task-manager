@@ -1,11 +1,11 @@
 import express from "express";
 import { reminderController } from "./reminder.controller.js";
-import { workspaceAccessGuard } from "../../core/middlewares/workspace-access.middleware.js";
+import { workspaceRoleGuard } from "../../core/middlewares/workspace-role.middleware.js";
 
 const router = express.Router({ mergeParams: true });
 
-router.post("/", workspaceAccessGuard, reminderController.create);
-router.get("/", workspaceAccessGuard, reminderController.list);
-router.delete("/:reminderId", workspaceAccessGuard, reminderController.remove);
+router.post("/", workspaceRoleGuard("member"), reminderController.create);
+router.get("/", workspaceRoleGuard("member"), reminderController.list);
+router.delete("/:reminderId", workspaceRoleGuard("member"), reminderController.remove);
 
 export default router;

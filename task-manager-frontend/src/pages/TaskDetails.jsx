@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTaskById, getTaskAttachments } from "../services/taskService";
@@ -61,11 +61,12 @@ export default function TaskDetails() {
     queryFn: () => getReminders(workspaceId, projectId, taskId),
   });
 
-  useEffect(() => {
-    if (task) {
-      setDescriptionContent(task.description || "");
-    }
-  }, [task]);
+  const handleEditDescription = () => {
+    setDescriptionContent(task.description || "");
+    setIsEditingDescription(true);
+  };
+
+  /* Removed useEffect syncing description */
 
   const handleSaveDescription = () => {
     updateTaskMutation.mutate({ taskId: Number(taskId), payload: { description: descriptionContent } }, {
@@ -80,6 +81,15 @@ export default function TaskDetails() {
       onSuccess: () => navigate(ROUTES.PROJECT(workspaceId, projectId)),
     });
   };
+  // ...
+  // ... in render:
+  {
+    !isEditingDescription && (
+      <button onClick={handleEditDescription} className="text-xs text-primary hover:text-primary/80 flex items-center gap-1">
+        <Edit2 size={12} /> Edit
+      </button>
+    )
+  }
 
   const createReminderMutation = useMutation({
     mutationFn: (data) => createReminder(workspaceId, projectId, taskId, data),

@@ -2,7 +2,6 @@
 import express from "express";
 import { taskController } from "./task.controller.js";
 import { tagsController } from "./tags.controller.js";
-import { workspaceAccessGuard } from "../../core/middlewares/workspace-access.middleware.js";
 import attachmentRoutes from "../attachments/attachment.routes.js";
 import reminderRoutes from "../reminders/reminder.routes.js";
 import { workspaceRoleGuard } from "../../core/middlewares/workspace-role.middleware.js";
@@ -15,40 +14,36 @@ const router = express.Router({ mergeParams: true });
 
 router.post(
   "/",
-  workspaceAccessGuard,
   workspaceRoleGuard("member"),
   taskController.create
 );
 
 router.get(
   "/",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   taskController.list
 );
 
 router.get(
   "/:taskId",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   taskController.get
 );
 
 router.patch(
   "/:taskId",
-  workspaceAccessGuard,
   workspaceRoleGuard("member"),
   taskController.update
 );
 
 router.post(
   "/:taskId/fail",
-  workspaceAccessGuard,
   workspaceRoleGuard("member"),
   taskController.fail
 );
 
 router.delete(
   "/:taskId",
-  workspaceAccessGuard,
   workspaceRoleGuard("member"),
   taskController.delete
 );
@@ -62,7 +57,7 @@ router.use("/:taskId/subtasks", subtaskRoutes);
 // Dependencies
 router.post(
   "/:taskId/dependencies",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   // workspaceRoleGuard("member"), // Optional: allow members or just owners? 
   // Assuming member access checks are done in service for now or we rely on general guard
   taskController.addDependency
@@ -70,14 +65,14 @@ router.post(
 
 router.delete(
   "/:taskId/dependencies/:blockerId",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   taskController.removeDependency
 );
 
 // Time Tracking
 router.post(
   "/:taskId/timer/start",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   taskController.startTimer
 );
 
@@ -91,20 +86,20 @@ router.post(
 // Or just `POST /:taskId/timer/stop` works fine.
 router.post(
   "/:taskId/timer/stop",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   taskController.stopTimer
 );
 
 // Tags (Task Level)
 router.post(
   "/:taskId/tags",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   (req, res, next) => tagsController.attach(req, res, next)
 );
 
 router.delete(
   "/:taskId/tags/:tagId",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   (req, res, next) => tagsController.detach(req, res, next)
 );
 
@@ -120,7 +115,7 @@ router.post(
   // BUT for simplicity, if we want to access workspace tags while in a project context:
   // GET /workspaces/:workspaceId/projects/:projectId/tasks/tags (List applicable tags)
   // ok for list.
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   (req, res, next) => tagsController.list(req, res, next)
 );
 
@@ -132,26 +127,26 @@ router.post(
 
 router.get( // List tags available
   "/tags/all",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   (req, res, next) => tagsController.list(req, res, next)
 );
 
 router.post(
   "/tags/create",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   (req, res, next) => tagsController.create(req, res, next)
 );
 
 // Recurring Tasks
 router.post(
   "/:taskId/recurring",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   taskController.createRecurring
 );
 
 router.delete(
   "/:taskId/recurring",
-  workspaceAccessGuard,
+  workspaceRoleGuard("member"),
   taskController.deleteRecurring
 );
 

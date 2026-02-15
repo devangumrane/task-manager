@@ -4,6 +4,7 @@ import { Link2, X, AlertCircle, Plus, Search } from "lucide-react";
 import { addDependency, removeDependency } from "../../services/dependencyService";
 import { getTasksByProject } from "../../services/taskService";
 import { useQuery } from "@tanstack/react-query";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function DependencyList({ workspaceId, projectId, task }) {

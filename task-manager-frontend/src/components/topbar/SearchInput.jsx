@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { motion } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion";
 import { Search } from "lucide-react";
 import { InputBase, Paper } from "@mui/material";
 
