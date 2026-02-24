@@ -18,6 +18,13 @@ router.post("/", workspaceRoleGuard("admin"), projectController.create);
 // Get project
 router.get("/:projectId", workspaceRoleGuard("member"), projectController.get);
 
+// Delete project (creator or workspace admin)
+router.delete(
+    "/:projectId",
+    workspaceRoleGuard("member"),
+    projectController.delete
+);
+
 // Mount tasks under /:projectId/tasks
 router.use("/:projectId/tasks", taskRoutes);
 

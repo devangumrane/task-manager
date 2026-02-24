@@ -2,23 +2,33 @@ import { useAuthStore } from "../../store/authStore";
 import ThemeToggle from "../ThemeToggle";
 import { LogOut, User } from "lucide-react";
 import { IconButton, Tooltip } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ROUTES } from "../../router/paths";
 
 export default function Navbar() {
     const user = useAuthStore((s) => s.user);
     const clearAuth = useAuthStore((s) => s.clearAuth);
+    const location = useLocation();
 
     const handleLogout = () => {
         clearAuth();
         window.location.href = "/login";
     };
 
+    const getPageTitle = () => {
+        const path = location.pathname;
+        if (path.startsWith("/workspaces")) return "Workspaces";
+        if (path.startsWith("/projects")) return "Projects";
+        if (path.startsWith("/tasks")) return "Tasks";
+        if (path.startsWith("/profile")) return "Profile";
+        if (path.startsWith("/activity")) return "Activity";
+        return "Dashboard";
+    };
+
     return (
         <header className="h-16 border-b bg-card flex items-center justify-between px-6 sticky top-0 z-10">
             <div className="flex items-center gap-4">
-                {/* Placeholder for Breadcrumbs or Page Title */}
-                <h2 className="font-semibold text-lg">Task Manager</h2>
+                <h2 className="font-semibold text-lg">{getPageTitle()}</h2>
             </div>
 
             <div className="flex items-center gap-4">

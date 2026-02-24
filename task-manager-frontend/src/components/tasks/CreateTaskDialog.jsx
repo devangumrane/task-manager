@@ -5,7 +5,6 @@ import MemberSelector from "../shared/MemberSelector";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import Editor from "../shared/Editor";
-import SkillSelector from "./SkillSelector";
 
 export default function CreateTaskDialog({ open, onClose, workspaceId, projectId }) {
   const [title, setTitle] = useState("");
@@ -14,8 +13,6 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
 
 
   const [assignedUser, setAssignedUser] = useState(null);
-
-  const [skills, setSkills] = useState([]);
 
   const createTask = useCreateTask(workspaceId, projectId);
 
@@ -27,7 +24,6 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
       setTitle("");
       setDescription("");
       setPriority("medium");
-      setSkills([]);
     }
   }, [open]);
 
@@ -40,7 +36,6 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
         title,
         description,
         priority, // Added payload
-        skills: skills.map(s => s.id),
         ...(assignedUser?.id ? { assignedTo: assignedUser.id } : {}),
       },
       {
@@ -134,12 +129,6 @@ export default function CreateTaskDialog({ open, onClose, workspaceId, projectId
                       placeholder="Select assignee..."
                     />
                   </div>
-                </div>
-
-                {/* Skills */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">Required Skills</label>
-                  <SkillSelector value={skills} onChange={setSkills} />
                 </div>
 
               </div>

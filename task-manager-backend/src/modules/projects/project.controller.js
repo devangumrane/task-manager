@@ -86,4 +86,26 @@ export const projectController = {
 
     res.json({ success: true, data: project });
   }),
+
+  // --------------------------------------------------------
+  // Delete project
+  // --------------------------------------------------------
+  delete: asyncHandler(async (req, res) => {
+    const projectId = Number(req.params.projectId);
+
+    if (!projectId) {
+      throw new ApiError(
+        "INVALID_PROJECT_ID",
+        "Invalid or missing project ID",
+        400
+      );
+    }
+
+    await projectService.deleteProject(projectId, req.user.id);
+
+    res.json({
+      success: true,
+      message: "Project deleted successfully",
+    });
+  }),
 };

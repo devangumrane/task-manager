@@ -117,4 +117,53 @@ export const projectService = {
     if (!project) throw new ApiError("PROJECT_NOT_FOUND", "Project not found", 404);
     return project;
   },
+
+  async deleteProject(projectId, userId) {
+    const project = await Project.findByPk(projectId);
+
+    if (!project) throw new ApiError("PROJECT_NOT_FOUND", "Project not found", 404);
+
+    // Authorization: Project Owner OR Workspace Admin
+    let isAuthorized = false;
+
+    if (project.owner_id === userId) {
+      isAuthorized = true;
+    } else {
+      // Check if user is workspace admin
+      const member = await WorkspaceMember.findOne({
+        where: {
+          workspace_id: project.workspace_id,
+          user_id: userId
+        }
+      });
+
+      if (member && member.role === 'admin') {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      throw new ApiError("FORBIDDEN", "Only the project owner or workspace admin can delete this project", 403);
+    }
+
+    await Project.destroy({ where: { id: projectId } });
+
+    // Activity log
+    try {
+      await activityService.log({
+        workspaceId: project.workspace_id,
+        userId,
+        type: "project.deleted",
+        metadata: {
+          id: projectId,
+          name: project.name,
+          actorId: userId,
+        },
+      });
+    } catch (err) {
+      console.error("activityService.log (project.deleted) failed:", err);
+    }
+
+    return true;
+  },
 };

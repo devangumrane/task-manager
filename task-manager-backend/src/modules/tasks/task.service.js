@@ -9,7 +9,6 @@ import { createTaskCore } from "./task.logic.js";
 import { buildTaskUpdatePayload } from "./task.update.logic.js";
 
 import { eventBus, EVENTS } from "../../core/events/eventBus.js";
-import { analyticsService } from "../analytics/analytics.service.js";
 import { TaskDependency } from "../../models/index.js";
 
 export const taskService = {
@@ -228,11 +227,6 @@ export const taskService = {
         transaction: t
       });
 
-      if (data.skills && Array.isArray(data.skills)) {
-        // Use the fetched task instance to set association
-        await task.setSkills(data.skills, { transaction: t });
-      }
-
       const updated = await Task.findByPk(taskId, { transaction: t });
 
       return { updated, originalTask: task, updatePayloadCore };
@@ -246,11 +240,6 @@ export const taskService = {
         userId: updatedBy,
         workspaceId: originalTask.project.workspace_id
       });
-
-      // Check for completion
-      if (originalTask.status !== 'completed' && updated.status === 'completed') {
-        await analyticsService.recordTaskCompletion(updated.assignee?.id || updated.assigned_to, taskId);
-      }
     } catch (err) {
       console.error("Event emit (TASK.UPDATED) failed:", err);
     }
@@ -308,7 +297,28 @@ export const taskService = {
       throw new ApiError("TASK_NOT_FOUND", "Task not found", 404);
     }
 
-    await assertWorkspaceMember(null, userId, task.project.workspace_id);
+    // Authorization: Creator OR Workspace Admin
+    let isAuthorized = false;
+
+    if (task.created_by === userId) {
+      isAuthorized = true;
+    } else {
+      // Check if user is workspace admin
+      const member = await WorkspaceMember.findOne({
+        where: {
+          workspace_id: task.project.workspace_id,
+          user_id: userId
+        }
+      });
+
+      if (member && member.role === 'admin') {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      throw new ApiError("FORBIDDEN", "Only the task creator or workspace admin can delete this task", 403);
+    }
 
     await Task.destroy({ where: { id: taskId } });
 

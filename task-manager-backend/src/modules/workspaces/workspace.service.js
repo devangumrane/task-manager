@@ -188,4 +188,50 @@ export const workspaceService = {
 
     return memberWithUser;
   },
+
+  async deleteWorkspace(workspaceId, userId) {
+    // 1. Fetch workspace
+    const workspace = await Workspace.findByPk(workspaceId);
+
+    if (!workspace) {
+      throw new ApiError("WORKSPACE_NOT_FOUND", "Workspace not found", 404);
+    }
+
+    // 2. Ownership Check (redundant if checking in controller/middleware, but safe)
+    if (workspace.owner_id !== userId) {
+      throw new ApiError(
+        "FORBIDDEN",
+        "Only the workspace owner can delete this workspace",
+        403
+      );
+    }
+
+    // 3. Delete
+    // Cascade delete should handle related tables if configured in DB.
+    // Otherwise, we might need manual cleanup of projects/tasks/members.
+    // Assuming DB constraints or Sequelize hooks handle it.
+    // Ideally:
+    // User -> Workspaces (Client)
+    // Workspace -> Projects -> Tasks
+    // Workspace -> Members
+    await Workspace.destroy({ where: { id: workspaceId } });
+
+    // 4. Activity/Event
+    try {
+      await activityService.log({
+        workspaceId, // Might be null in DB if row deleted, but useful for audit logs if preserved
+        userId,
+        type: "workspace.deleted",
+        metadata: {
+          id: workspaceId,
+          name: workspace.name,
+          actorId: userId,
+        },
+      });
+    } catch (err) {
+      console.error("activityService.log (workspace.deleted) failed:", err);
+    }
+
+    return true;
+  },
 };

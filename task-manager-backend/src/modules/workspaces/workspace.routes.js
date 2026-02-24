@@ -26,6 +26,14 @@ router.post(
   workspaceController.addMember
 );
 
+// Delete workspace (owner only)
+router.delete(
+  "/:workspaceId",
+  workspaceRoleGuard("member"),
+  workspaceOwnerGuard,
+  workspaceController.delete
+);
+
 // Mount project routes under /:workspaceId/projects
 router.use("/:workspaceId/projects", projectRoutes);
 

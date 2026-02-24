@@ -77,4 +77,25 @@ export const workspaceController = {
 
     res.json({ success: true, data: member });
   }),
+
+  // --------------------------------------------------------
+  // Delete workspace (owner only)
+  // --------------------------------------------------------
+  delete: asyncHandler(async (req, res) => {
+    const workspaceId = Number(req.params.workspaceId);
+    if (!workspaceId) {
+      throw new ApiError(
+        "INVALID_WORKSPACE_ID",
+        "Invalid workspace ID",
+        400
+      );
+    }
+
+    await workspaceService.deleteWorkspace(workspaceId, req.user.id);
+
+    res.json({
+      success: true,
+      message: "Workspace deleted successfully",
+    });
+  }),
 };

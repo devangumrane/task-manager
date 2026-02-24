@@ -37,16 +37,8 @@ export default function Dashboard() {
     { name: "Completed", value: stats?.tasks?.completed || 0 },
   ];
 
-  // Mock trend data for the area chart since we don't have it yet
-  const trendData = [
-    { name: 'Mon', tasks: 12 },
-    { name: 'Tue', tasks: 19 },
-    { name: 'Wed', tasks: 15 },
-    { name: 'Thu', tasks: 22 },
-    { name: 'Fri', tasks: 30 },
-    { name: 'Sat', tasks: 25 },
-    { name: 'Sun', tasks: 35 },
-  ];
+  // Real trend data from backend
+  const trendData = stats?.trendData || [];
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -85,24 +77,17 @@ export default function Dashboard() {
       </div>
 
       {/* Bento Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
         {/* Stat Cards */}
-        <StatCard
-          title="Skills Developed"
-          value={stats?.skills || 0}
-          icon={Zap}
-          color="text-violet-500 dark:text-violet-400"
-          bg="bg-violet-500/10"
-          delay={0.1}
-        />
         <StatCard
           title="Focus Hours"
           value={stats?.focusHours || 0}
           icon={Clock}
           color="text-blue-500 dark:text-blue-400"
           bg="bg-blue-500/10"
-          delay={0.2}
+          delay={0.1}
+          trend={stats?.growthPercentage}
         />
         <StatCard
           title="Pending Tasks"
@@ -110,15 +95,17 @@ export default function Dashboard() {
           icon={Target}
           color="text-orange-500 dark:text-orange-400"
           bg="bg-orange-500/10"
-          delay={0.3}
+          delay={0.2}
+          trend={stats?.growthPercentage}
         />
         <StatCard
-          title="Completed"
+          title="Completed Tasks"
           value={stats?.tasks?.completed || 0}
           icon={CheckCircle}
           color="text-emerald-500 dark:text-emerald-400"
           bg="bg-emerald-500/10"
-          delay={0.4}
+          delay={0.3}
+          trend={stats?.growthPercentage}
         />
 
         {/* Charts & Graphs */}
@@ -238,7 +225,7 @@ export default function Dashboard() {
 }
 
 // eslint-disable-next-line no-unused-vars
-function StatCard({ title, value, icon: Icon, color, bg, delay }) {
+function StatCard({ title, value, icon: Icon, color, bg, delay, trend }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -250,10 +237,12 @@ function StatCard({ title, value, icon: Icon, color, bg, delay }) {
           <h3 className="text-sm font-medium text-muted-foreground mb-1">{title}</h3>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold text-foreground">{value}</span>
-            {/* Mock Trend - Could be real later */}
-            <span className="text-xs font-medium text-emerald-400 flex items-center">
-              <ArrowUpRight size={12} strokeWidth={3} /> +12%
-            </span>
+            {trend !== undefined && (
+              <span className={`text-xs font-medium flex items-center ${trend >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                <ArrowUpRight size={12} strokeWidth={3} className={trend < 0 ? "rotate-90" : ""} />
+                {trend > 0 ? "+" : ""}{trend}%
+              </span>
+            )}
           </div>
         </div>
         <div className={`p-4 rounded-2xl ${bg} ${color} flex items-center justify-center shadow-inner`}>
